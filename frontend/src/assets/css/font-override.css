@@ -1,0 +1,57 @@
+/* Garantir que a fonte Lato seja aplicada em todos os elementos */
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+/* Override global para garantir Lato em todos os elementos */
+html, body, #root {
+  font-family: "Lato", "Helvetica", "Arial", sans-serif !important;
+}
+
+/* Override específico para todos os elementos */
+* {
+  font-family: "Lato", "Helvetica", "Arial", sans-serif !important;
+}
+
+/* Override específico para Material-UI components */
+.MuiTypography-root,
+.MuiButton-root,
+.MuiInputBase-root,
+.MuiInputLabel-root,
+.MuiFormLabel-root,
+.MuiChip-root,
+.MuiTab-root,
+.MuiMenuItem-root,
+.MuiListItemText-root,
+.MuiDialogTitle-root,
+.MuiCardHeader-title,
+.MuiTableCell-root,
+.MuiFormControlLabel-label,
+.MuiCheckbox-root,
+.MuiRadio-root,
+.MuiSelect-root,
+.MuiAutocomplete-root,
+.MuiTooltip-tooltip {
+  font-family: "Lato", "Helvetica", "Arial", sans-serif !important;
+}
+
+/* Override para elementos HTML básicos */
+h1, h2, h3, h4, h5, h6,
+p, span, div, label, button,
+input, textarea, select,
+strong, b, em, i {
+  font-family: "Lato", "Helvetica", "Arial", sans-serif !important;
+}
+
+/* Override específico para formulários */
+form, fieldset, legend {
+  font-family: "Lato", "Helvetica", "Arial", sans-serif !important;
+}
+
+/* Override para elementos de lista */
+ul, ol, li {
+  font-family: "Lato", "Helvetica", "Arial", sans-serif !important;
+}
+
+/* Override para tabelas */
+table, th, td {
+  font-family: "Lato", "Helvetica", "Arial", sans-serif !important;
+}

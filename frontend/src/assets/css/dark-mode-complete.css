@@ -1,0 +1,563 @@
+/* ===== CORREÇÕES COMPLETAS PARA MODO DARK ===== */
+
+/* Garantir que o HTML e body sejam sempre escuros no modo dark */
+[data-theme="dark"] html,
+.theme-dark html,
+[data-theme="dark"] body,
+.theme-dark body {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que o root div também seja escuro */
+[data-theme="dark"] #root,
+.theme-dark #root {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+  min-height: 100vh !important;
+}
+
+/* Garantir que todos os containers principais sejam escuros */
+[data-theme="dark"] .MuiContainer-root,
+.theme-dark .MuiContainer-root {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que todos os Papers sejam escuros */
+[data-theme="dark"] .MuiPaper-root,
+.theme-dark .MuiPaper-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que Cards sejam escuros */
+[data-theme="dark"] .MuiCard-root,
+.theme-dark .MuiCard-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que todos os elementos de grid sejam escuros */
+[data-theme="dark"] .MuiGrid-root,
+.theme-dark .MuiGrid-root {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que todos os Box components sejam escuros */
+[data-theme="dark"] .MuiBox-root,
+.theme-dark .MuiBox-root {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com background cinza sejam corrigidos */
+[data-theme="dark"] *[style*="background-color: rgb(247, 247, 247)"],
+.theme-dark *[style*="background-color: rgb(247, 247, 247)"],
+[data-theme="dark"] *[style*="background-color: #f7f7f7"],
+.theme-dark *[style*="background-color: #f7f7f7"],
+[data-theme="dark"] *[style*="background-color: rgb(245, 245, 245)"],
+.theme-dark *[style*="background-color: rgb(245, 245, 245)"],
+[data-theme="dark"] *[style*="background-color: #f5f5f5"],
+.theme-dark *[style*="background-color: #f5f5f5"],
+[data-theme="dark"] *[style*="background-color: rgb(238, 238, 238)"],
+.theme-dark *[style*="background-color: rgb(238, 238, 238)"],
+[data-theme="dark"] *[style*="background-color: #eeeeee"],
+.theme-dark *[style*="background-color: #eeeeee"],
+[data-theme="dark"] *[style*="background-color: rgb(215, 215, 215)"],
+.theme-dark *[style*="background-color: rgb(215, 215, 215)"],
+[data-theme="dark"] *[style*="background-color: #d7d7d7"],
+.theme-dark *[style*="background-color: #d7d7d7"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com cor de texto escura sejam corrigidos */
+[data-theme="dark"] *[style*="color: rgb(0, 0, 0)"],
+.theme-dark *[style*="color: rgb(0, 0, 0)"],
+[data-theme="dark"] *[style*="color: #000000"],
+.theme-dark *[style*="color: #000000"],
+[data-theme="dark"] *[style*="color: rgb(33, 33, 33)"],
+.theme-dark *[style*="color: rgb(33, 33, 33)"],
+[data-theme="dark"] *[style*="color: #212121"],
+.theme-dark *[style*="color: #212121"] {
+  color: #ffffff !important;
+}
+
+/* Garantir que todos os elementos de texto sejam brancos */
+[data-theme="dark"] h1,
+.theme-dark h1,
+[data-theme="dark"] h2,
+.theme-dark h2,
+[data-theme="dark"] h3,
+.theme-dark h3,
+[data-theme="dark"] h4,
+.theme-dark h4,
+[data-theme="dark"] h5,
+.theme-dark h5,
+[data-theme="dark"] h6,
+.theme-dark h6,
+[data-theme="dark"] p,
+.theme-dark p,
+[data-theme="dark"] span,
+.theme-dark span,
+[data-theme="dark"] div,
+.theme-dark div,
+[data-theme="dark"] label,
+.theme-dark label {
+  color: inherit !important;
+}
+
+/* Garantir que elementos com classes específicas sejam corrigidos */
+[data-theme="dark"] .bg-white,
+.theme-dark .bg-white {
+  background-color: #1e1e1e !important;
+}
+
+[data-theme="dark"] .bg-light,
+.theme-dark .bg-light {
+  background-color: #2a2a2a !important;
+}
+
+[data-theme="dark"] .bg-gray,
+.theme-dark .bg-gray,
+[data-theme="dark"] .bg-grey,
+.theme-dark .bg-grey {
+  background-color: #333333 !important;
+}
+
+[data-theme="dark"] .text-dark,
+.theme-dark .text-dark,
+[data-theme="dark"] .text-black,
+.theme-dark .text-black {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de formulário sejam escuros */
+[data-theme="dark"] .MuiFormControl-root,
+.theme-dark .MuiFormControl-root {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .MuiInputBase-root,
+.theme-dark .MuiInputBase-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiInputBase-input,
+.theme-dark .MuiInputBase-input {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de seleção sejam escuros */
+[data-theme="dark"] .MuiSelect-root,
+.theme-dark .MuiSelect-root {
+  color: #ffffff !important;
+  background-color: #1e1e1e !important;
+}
+
+[data-theme="dark"] .MuiSelect-select,
+.theme-dark .MuiSelect-select {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de autocomplete sejam escuros */
+[data-theme="dark"] .MuiAutocomplete-root,
+.theme-dark .MuiAutocomplete-root {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .MuiAutocomplete-paper,
+.theme-dark .MuiAutocomplete-paper {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAutocomplete-option,
+.theme-dark .MuiAutocomplete-option {
+  color: #ffffff !important;
+  background-color: #1e1e1e !important;
+}
+
+[data-theme="dark"] .MuiAutocomplete-option:hover,
+.theme-dark .MuiAutocomplete-option:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Garantir que elementos de tooltip sejam escuros */
+[data-theme="dark"] .MuiTooltip-tooltip,
+.theme-dark .MuiTooltip-tooltip {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de snackbar sejam escuros */
+[data-theme="dark"] .MuiSnackbar-root,
+.theme-dark .MuiSnackbar-root {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiSnackbarContent-root,
+.theme-dark .MuiSnackbarContent-root {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de accordion sejam escuros */
+[data-theme="dark"] .MuiAccordion-root,
+.theme-dark .MuiAccordion-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAccordionSummary-root,
+.theme-dark .MuiAccordionSummary-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAccordionDetails-root,
+.theme-dark .MuiAccordionDetails-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de stepper sejam escuros */
+[data-theme="dark"] .MuiStepper-root,
+.theme-dark .MuiStepper-root {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .MuiStep-root,
+.theme-dark .MuiStep-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiStepLabel-label,
+.theme-dark .MuiStepLabel-label {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de breadcrumb sejam escuros */
+[data-theme="dark"] .MuiBreadcrumbs-root,
+.theme-dark .MuiBreadcrumbs-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiBreadcrumbs-li,
+.theme-dark .MuiBreadcrumbs-li {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de rating sejam escuros */
+[data-theme="dark"] .MuiRating-root,
+.theme-dark .MuiRating-root {
+  color: #66bb6a !important;
+}
+
+/* Garantir que elementos de slider sejam escuros */
+[data-theme="dark"] .MuiSlider-root,
+.theme-dark .MuiSlider-root {
+  color: #66bb6a !important;
+}
+
+[data-theme="dark"] .MuiSlider-rail,
+.theme-dark .MuiSlider-rail {
+  background-color: #333333 !important;
+}
+
+/* Garantir que elementos de switch sejam escuros */
+[data-theme="dark"] .MuiSwitch-root,
+.theme-dark .MuiSwitch-root {
+  color: #66bb6a !important;
+}
+
+[data-theme="dark"] .MuiSwitch-track,
+.theme-dark .MuiSwitch-track {
+  background-color: #333333 !important;
+}
+
+/* Garantir que elementos de checkbox sejam escuros */
+[data-theme="dark"] .MuiCheckbox-root,
+.theme-dark .MuiCheckbox-root {
+  color: #66bb6a !important;
+}
+
+/* Garantir que elementos de radio sejam escuros */
+[data-theme="dark"] .MuiRadio-root,
+.theme-dark .MuiRadio-root {
+  color: #66bb6a !important;
+}
+
+/* Garantir que elementos de progress sejam escuros */
+[data-theme="dark"] .MuiCircularProgress-root,
+.theme-dark .MuiCircularProgress-root {
+  color: #66bb6a !important;
+}
+
+[data-theme="dark"] .MuiLinearProgress-root,
+.theme-dark .MuiLinearProgress-root {
+  background-color: #333333 !important;
+}
+
+[data-theme="dark"] .MuiLinearProgress-bar,
+.theme-dark .MuiLinearProgress-bar {
+  background-color: #66bb6a !important;
+}
+
+/* Garantir que elementos de skeleton sejam escuros */
+[data-theme="dark"] .MuiSkeleton-root,
+.theme-dark .MuiSkeleton-root {
+  background-color: #333333 !important;
+}
+
+/* Garantir que elementos de avatar sejam escuros */
+[data-theme="dark"] .MuiAvatar-root,
+.theme-dark .MuiAvatar-root {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Permitir que badges mantenham suas cores originais */
+
+/* Garantir que elementos de fab sejam escuros */
+[data-theme="dark"] .MuiFab-root,
+.theme-dark .MuiFab-root {
+  background-color: #66bb6a !important;
+  color: #000000 !important;
+}
+
+/* Garantir que elementos de speed dial sejam escuros */
+[data-theme="dark"] .MuiSpeedDial-root,
+.theme-dark .MuiSpeedDial-root {
+  background-color: #66bb6a !important;
+  color: #000000 !important;
+}
+
+[data-theme="dark"] .MuiSpeedDialAction-fab,
+.theme-dark .MuiSpeedDialAction-fab {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de bottom navigation sejam escuros */
+[data-theme="dark"] .MuiBottomNavigation-root,
+.theme-dark .MuiBottomNavigation-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiBottomNavigationAction-root,
+.theme-dark .MuiBottomNavigationAction-root {
+  color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .MuiBottomNavigationAction-root.Mui-selected,
+.theme-dark .MuiBottomNavigationAction-root.Mui-selected {
+  color: #66bb6a !important;
+}
+
+/* Garantir que elementos de pagination sejam escuros */
+[data-theme="dark"] .MuiPagination-root,
+.theme-dark .MuiPagination-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiPaginationItem-root,
+.theme-dark .MuiPaginationItem-root {
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+[data-theme="dark"] .MuiPaginationItem-root:hover,
+.theme-dark .MuiPaginationItem-root:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .MuiPaginationItem-root.Mui-selected,
+.theme-dark .MuiPaginationItem-root.Mui-selected {
+  background-color: #66bb6a !important;
+  color: #000000 !important;
+}
+
+/* Garantir que elementos de timeline sejam escuros */
+[data-theme="dark"] .MuiTimeline-root,
+.theme-dark .MuiTimeline-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTimelineItem-root,
+.theme-dark .MuiTimelineItem-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTimelineContent-root,
+.theme-dark .MuiTimelineContent-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTimelineDot-root,
+.theme-dark .MuiTimelineDot-root {
+  background-color: #66bb6a !important;
+  color: #000000 !important;
+}
+
+[data-theme="dark"] .MuiTimelineConnector-root,
+.theme-dark .MuiTimelineConnector-root {
+  background-color: #333333 !important;
+}
+
+/* Garantir que elementos de tree view sejam escuros */
+[data-theme="dark"] .MuiTreeView-root,
+.theme-dark .MuiTreeView-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTreeItem-root,
+.theme-dark .MuiTreeItem-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTreeItem-label,
+.theme-dark .MuiTreeItem-label {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de data grid sejam escuros */
+[data-theme="dark"] .MuiDataGrid-root,
+.theme-dark .MuiDataGrid-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+[data-theme="dark"] .MuiDataGrid-cell,
+.theme-dark .MuiDataGrid-cell {
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+[data-theme="dark"] .MuiDataGrid-columnHeader,
+.theme-dark .MuiDataGrid-columnHeader {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+[data-theme="dark"] .MuiDataGrid-row,
+.theme-dark .MuiDataGrid-row {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiDataGrid-row:hover,
+.theme-dark .MuiDataGrid-row:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .MuiDataGrid-row.Mui-selected,
+.theme-dark .MuiDataGrid-row.Mui-selected {
+  background-color: rgba(102, 187, 106, 0.2) !important;
+}
+
+/* Garantir que elementos de date picker sejam escuros */
+[data-theme="dark"] .MuiPickersDay-root,
+.theme-dark .MuiPickersDay-root {
+  color: #ffffff !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .MuiPickersDay-root:hover,
+.theme-dark .MuiPickersDay-root:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .MuiPickersDay-root.Mui-selected,
+.theme-dark .MuiPickersDay-root.Mui-selected {
+  background-color: #66bb6a !important;
+  color: #000000 !important;
+}
+
+[data-theme="dark"] .MuiPickersCalendarHeader-root,
+.theme-dark .MuiPickersCalendarHeader-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiPickersCalendar-root,
+.theme-dark .MuiPickersCalendar-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir transições suaves */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Garantir que elementos com overflow sejam escuros */
+[data-theme="dark"] .MuiPaper-root::-webkit-scrollbar,
+.theme-dark .MuiPaper-root::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="dark"] .MuiPaper-root::-webkit-scrollbar-thumb,
+.theme-dark .MuiPaper-root::-webkit-scrollbar-thumb {
+  background-color: #555555;
+  border-radius: 4px;
+}
+
+[data-theme="dark"] .MuiPaper-root::-webkit-scrollbar-track,
+.theme-dark .MuiPaper-root::-webkit-scrollbar-track {
+  background-color: #2a2a2a;
+  border-radius: 4px;
+}
+
+/* Garantir que elementos específicos da aplicação sejam escuros */
+[data-theme="dark"] .chat-container,
+.theme-dark .chat-container,
+[data-theme="dark"] .ticket-container,
+.theme-dark .ticket-container,
+[data-theme="dark"] .messages-container,
+.theme-dark .messages-container {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de loading sejam escuros */
+[data-theme="dark"] .loading-container,
+.theme-dark .loading-container {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de erro sejam escuros */
+[data-theme="dark"] .error-container,
+.theme-dark .error-container {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de sucesso sejam escuros */
+[data-theme="dark"] .success-container,
+.theme-dark .success-container {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de warning sejam escuros */
+[data-theme="dark"] .warning-container,
+.theme-dark .warning-container {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de info sejam escuros */
+[data-theme="dark"] .info-container,
+.theme-dark .info-container {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}

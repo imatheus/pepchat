@@ -1,0 +1,2411 @@
+{
+  "timestamp": "2025-06-23T15:43:17.619Z",
+  "summary": {
+    "total": 39,
+    "used": 37,
+    "unused": 2,
+    "usagePercentage": 94.9
+  },
+  "trulyUnused": [],
+  "possiblyUnused": [],
+  "unusedDevDependencies": [
+    "@types/express",
+    "@types/multer"
+  ],
+  "usedPackages": [
+    "express",
+    "cors",
+    "cookie-parser",
+    "path",
+    "dotenv",
+    "multer",
+    "yup",
+    "lodash",
+    "fs",
+    "gn-api-sdk-typescript",
+    "sequelize-typescript",
+    "sequelize",
+    "bcryptjs",
+    "jsonwebtoken",
+    "@whiskeysockets",
+    "@adiwajshing",
+    "mustache",
+    "mime-types",
+    "util",
+    "socket.io",
+    "http",
+    "@hapi",
+    "pino",
+    "moment",
+    "uuid",
+    "bull",
+    "@sentry",
+    "http-graceful-shutdown",
+    "axios",
+    "xlsx",
+    "puppeteer",
+    "file-type",
+    "form-data",
+    "date-fns"
+  ],
+  "importDetails": [
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\app.ts"
+    },
+    {
+      "package": "cors",
+      "fullPath": "cors",
+      "type": "ES6 import",
+      "file": "src\\app.ts"
+    },
+    {
+      "package": "cookie-parser",
+      "fullPath": "cookie-parser",
+      "type": "ES6 import",
+      "file": "src\\app.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\app.ts"
+    },
+    {
+      "package": "dotenv",
+      "fullPath": "dotenv",
+      "type": "ES6 import",
+      "file": "src\\bootstrap.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\config\\Gn.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\config\\upload.ts"
+    },
+    {
+      "package": "multer",
+      "fullPath": "multer",
+      "type": "ES6 import",
+      "file": "src\\config\\upload.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\AsaasController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CampaignController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CampaignController.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CampaignController.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CampaignController.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CampaignController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CampaignSettingController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ChatController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ChatController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CompanyController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CompanyController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CompanyPlanController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\CompanyPlanController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ContactController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ContactController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ContactListController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ContactListController.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ContactListController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ContactListItemController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ContactListItemController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\DashbardController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\HelpController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\HelpController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ImportPhoneContactsController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\InvoicesController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\InvoicesController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\MessageController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\PlanController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\PlanController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\QueueController.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\controllers\\QueueController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\QueueOptionController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\QuickMessageController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\QuickMessageController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\ScheduleController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\SessionController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\SettingController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\SubscriptionController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\SubscriptionController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\SubscriptionController.ts"
+    },
+    {
+      "package": "gn-api-sdk-typescript",
+      "fullPath": "gn-api-sdk-typescript",
+      "type": "ES6 import",
+      "file": "src\\controllers\\SubscriptionController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\TagController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\TicketController.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\controllers\\TicketNoteController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\TicketNoteController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\UserController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\WebChatController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\WebHookMetaController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\WhatsAppController.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\controllers\\WhatsAppSessionController.ts"
+    },
+    {
+      "package": "sequelize-typescript",
+      "fullPath": "sequelize-typescript",
+      "type": "ES6 import",
+      "file": "src\\database\\index.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200717133431-add-uuid-ossp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200717133438-create-users.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200717144403-create-contacts.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200717145643-create-tickets.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200717151645-create-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200717170223-create-whatsapps.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200723200315-create-contacts-custom-fields.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200723202116-add-email-field-to-contacts.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200730153237-remove-user-association-from-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200730153545-add-fromMe-to-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200813114236-change-ticket-lastMessage-column-type.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200901235509-add-profile-column-to-users.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200903215941-create-settings.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200904220257-add-name-to-whatsapp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200906122228-add-name-default-field-to-whatsapp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200906155658-add-whatsapp-field-to-tickets.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200919124112-update-default-column-name-on-whatsappp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200927220708-add-isDeleted-column-to-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200929145451-add-user-tokenVersion-column.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200930162323-add-isGroup-column-to-tickets.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20200930194808-add-isGroup-column-to-contacts.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20201004150008-add-contactId-column-to-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20201004155719-add-vcardContactId-column-to-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20201004955719-remove-vcardContactId-column-to-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20201026215410-add-retries-to-whatsapps.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20201028124427-add-quoted-msg-to-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210108001431-add-unreadMessages-to-tickets.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210108164404-create-queues.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210108164504-add-queueId-to-tickets.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210108174594-associate-whatsapp-queue.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210108204708-associate-users-queue.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192513-add-greetingMessage-to-whatsapp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192514-create-companies-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192515-add-column-companyId-to-Settings-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192516-add-column-companyId-to-Users-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192517-add-column-companyId-to-Contacts-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192518-add-column-companyId-to-Messages-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192519-add-column-companyId-to-Queues-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192520-add-column-companyId-to-Whatsapps-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192521-add-column-companyId-to-Tickets-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192522-create-plans-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192523-add-column-planId-to-Companies.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192523-add-column-status-and-schedules-to-Companies.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192523-create-ticket-notes.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192524-create-quick-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192525-add-column-complationMessage-to-whatsapp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192526-add-column-outOfHoursMessage-to-whatsapp .ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192527-add-column-super-to-Users-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192528-change-column-message-to-quick-messages-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192529-create-helps.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192530-add-unique-constraint-to-Contacts-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192531-create-TicketTracking-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192532-add-column-online-to-Users-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192533-create-UserRatings-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192534-add-rated-to-TicketTraking.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192535-add-column-ratingMessage-to-whatsapp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210109192536-add-unique-constraint-to-Tickets-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210818102606-add-uuid-to-tickets.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210818102607-remove-unique-indexes-to-Contacts-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210818102607-remove-unique-indexes-to-Queues-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210818102608-add-unique-indexes-to-Queues-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20210818102609-add-token-to-Whatsapps.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20211205164404-create-queue-options.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20211212125704-add-chatbot-to-tickets.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20211227010200-create-schedules.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220115114088-add-column-userId-to-QuickMessages-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220117130000-create-tags.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220117134400-associate-tickets-tags.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220122160900-add-status-to-schedules.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220220014719-add-farewellMessage-to-whatsapp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220221014717-add-provider-whatsapp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220221014718-add-remoteJid-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220221014719-add-jsonMessage-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220221014720-add-participant-messages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220221014721-create-baileys.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220315110000-create-ContactLists-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220315110001-create-ContactListItems-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220315110002-create-Campaigns-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220315110004-create-CampaignSettings-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220315110005-remove-constraint-to-Settings.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220321130000-create-CampaignShipping.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220404000000-add-column-queueId-to-Messages-table.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220406000000-add-column-dueDate-to-Companies.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220406000001-add-column-recurrence-to-Companies.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220411000000-add-column-startTime-and-endTime-to-Queues.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220411000001-remove-column-startTime-and-endTime-to-Queues.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220411000002-add-column-schedules-and-outOfHoursMessage-to-Queues.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220411000003-create-table-Announcements.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220425000000-create-table-Chats.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220425000001-create-table-ChatUsers.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220425000002-create-table-ChatMessages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220512000001-create-Indexes.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220512000002-create-subscriptions.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220512000003-create-invoices.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20220814000000-add-value-to-plans.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20222016014719-add-channel-session.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20222016014719-add-channel-to-contacts.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20222016014719-add-channel-to-message.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20222016014719-add-channel-to-ticket.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20222016014719-add-channel-token.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20222016014719-add-channel-tokenUser.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20222016014719-add-facebookPageUserId-whatsapp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20222016014719-add-facebookUserId-whatsapp.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20230813114236-change-ticket-lastMessage-column-type.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20240101000000-add-channels-to-plans.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20241201000000-add-trialExpiration-to-companies.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20250102000001-create-company-plans.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20250121000000-add-user-fields-to-company.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20250121000001-add-fullname-to-company.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "CommonJS require",
+      "file": "src\\database\\migrations\\20250122000000-add-additional-fields-to-ContactListItems.js"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "CommonJS assignment",
+      "file": "src\\database\\migrations\\20250122000000-add-additional-fields-to-ContactListItems.js"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20250122000001-add-useCampaigns-to-plans.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\migrations\\20250122000002-remove-confirmation-fields-from-campaigns.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "CommonJS require",
+      "file": "src\\database\\migrations\\20250623-add-asaas-fields-to-company.js"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "CommonJS assignment",
+      "file": "src\\database\\migrations\\20250623-add-asaas-fields-to-company.js"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\seeds\\20200904070005-create-default-company.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\seeds\\20200904070006-create-default-user.ts"
+    },
+    {
+      "package": "bcryptjs",
+      "fullPath": "bcryptjs",
+      "type": "ES6 import",
+      "file": "src\\database\\seeds\\20200904070006-create-default-user.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\database\\seeds\\20200904070007-create-default-settings.ts"
+    },
+    {
+      "package": "bcryptjs",
+      "fullPath": "bcryptjs",
+      "type": "ES6 import",
+      "file": "src\\database\\seeds\\20200904070007-create-default-settings.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\helpers\\CheckContactOpenTickets.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\helpers\\CheckContactSomeTicket.ts"
+    },
+    {
+      "package": "jsonwebtoken",
+      "fullPath": "jsonwebtoken",
+      "type": "ES6 import",
+      "file": "src\\helpers\\CreateTokens.ts"
+    },
+    {
+      "package": "@whiskeysockets",
+      "fullPath": "@whiskeysockets/baileys",
+      "type": "ES6 import",
+      "file": "src\\helpers\\GetTicketWbot.ts"
+    },
+    {
+      "package": "@adiwajshing",
+      "fullPath": "@adiwajshing/baileys",
+      "type": "ES6 import",
+      "file": "src\\helpers\\GetWbotMessage.ts"
+    },
+    {
+      "package": "mustache",
+      "fullPath": "mustache",
+      "type": "ES6 import",
+      "file": "src\\helpers\\Mustache.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\helpers\\SendMessage.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\helpers\\SendMessage.ts"
+    },
+    {
+      "package": "mime-types",
+      "fullPath": "mime-types",
+      "type": "CommonJS require",
+      "file": "src\\helpers\\SendMessage.ts"
+    },
+    {
+      "package": "mime-types",
+      "fullPath": "mime-types",
+      "type": "CommonJS assignment",
+      "file": "src\\helpers\\SendMessage.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\helpers\\SendRefreshToken.ts"
+    },
+    {
+      "package": "@adiwajshing",
+      "fullPath": "@adiwajshing/baileys",
+      "type": "ES6 import",
+      "file": "src\\helpers\\SetTicketMessagesAsRead.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\helpers\\UploadHelper.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\helpers\\UploadHelper.ts"
+    },
+    {
+      "package": "util",
+      "fullPath": "util",
+      "type": "ES6 import",
+      "file": "src\\helpers\\useMultiFileAuthState.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\helpers\\useMultiFileAuthState.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\helpers\\useMultiFileAuthState.ts"
+    },
+    {
+      "package": "socket.io",
+      "fullPath": "socket.io",
+      "type": "ES6 import",
+      "file": "src\\libs\\socket.ts"
+    },
+    {
+      "package": "http",
+      "fullPath": "http",
+      "type": "ES6 import",
+      "file": "src\\libs\\socket.ts"
+    },
+    {
+      "package": "@adiwajshing",
+      "fullPath": "@adiwajshing/keyed-db",
+      "type": "ES6 import",
+      "file": "src\\libs\\store.d.ts"
+    },
+    {
+      "package": "@hapi",
+      "fullPath": "@hapi/boom",
+      "type": "ES6 import",
+      "file": "src\\libs\\wbot.ts"
+    },
+    {
+      "package": "pino",
+      "fullPath": "pino",
+      "type": "ES6 import",
+      "file": "src\\libs\\wbot.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\middleware\\envTokenAuth.ts"
+    },
+    {
+      "package": "jsonwebtoken",
+      "fullPath": "jsonwebtoken",
+      "type": "ES6 import",
+      "file": "src\\middleware\\isAuth.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\middleware\\isAuth.ts"
+    },
+    {
+      "package": "jsonwebtoken",
+      "fullPath": "jsonwebtoken",
+      "type": "ES6 import",
+      "file": "src\\middleware\\isAuthWithExpiredAccess.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\middleware\\isAuthWithExpiredAccess.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\middleware\\isAuthWithExpiredAccess.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\middleware\\isSuperUser.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\middleware\\tokenAuth.ts"
+    },
+    {
+      "package": "uuid",
+      "fullPath": "uuid",
+      "type": "ES6 import",
+      "file": "src\\models\\Chat.ts"
+    },
+    {
+      "package": "uuid",
+      "fullPath": "uuid",
+      "type": "ES6 import",
+      "file": "src\\models\\Ticket.ts"
+    },
+    {
+      "package": "bcryptjs",
+      "fullPath": "bcryptjs",
+      "type": "ES6 import",
+      "file": "src\\models\\User.ts"
+    },
+    {
+      "package": "bull",
+      "fullPath": "bull",
+      "type": "ES6 import",
+      "file": "src\\queues.ts"
+    },
+    {
+      "package": "@sentry",
+      "fullPath": "@sentry/node",
+      "type": "ES6 import",
+      "file": "src\\queues.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\asaasRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\authRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\campaignRoutes.ts"
+    },
+    {
+      "package": "multer",
+      "fullPath": "multer",
+      "type": "ES6 import",
+      "file": "src\\routes\\campaignRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\campaignSettingRoutes.ts"
+    },
+    {
+      "package": "multer",
+      "fullPath": "multer",
+      "type": "ES6 import",
+      "file": "src\\routes\\campaignSettingRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\chatRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\companyPlanRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\companyRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\contactListItemRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\contactListRoutes.ts"
+    },
+    {
+      "package": "multer",
+      "fullPath": "multer",
+      "type": "ES6 import",
+      "file": "src\\routes\\contactListRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\contactRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\dashboardRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\helpRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\index.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\invoicesRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\messageRoutes.ts"
+    },
+    {
+      "package": "multer",
+      "fullPath": "multer",
+      "type": "ES6 import",
+      "file": "src\\routes\\messageRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\planRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\queueOptionRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\queueRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\quickMessageRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\scheduleRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\settingRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\subScriptionRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\tagRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\ticketNoteRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\ticketRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\userRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\webChatRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\WebHookMetaRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\whatsappRoutes.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\routes\\whatsappSessionRoutes.ts"
+    },
+    {
+      "package": "http-graceful-shutdown",
+      "fullPath": "http-graceful-shutdown",
+      "type": "ES6 import",
+      "file": "src\\server.ts"
+    },
+    {
+      "package": "axios",
+      "fullPath": "axios",
+      "type": "ES6 import",
+      "file": "src\\services\\AsaasService\\AsaasService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\AsaasService\\CreateAsaasCustomerForCompanyService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\AsaasService\\CreateAsaasSubscriptionForCompanyService.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\AsaasService\\ProcessAsaasWebhookService.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\services\\AsaasService\\ProcessAsaasWebhookService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\AsaasService\\ProcessAsaasWebhookService.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\AsaasService\\SyncAsaasInvoicesService.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\services\\AsaasService\\SyncAsaasInvoicesService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\AsaasService\\SyncAsaasInvoicesService.ts"
+    },
+    {
+      "package": "jsonwebtoken",
+      "fullPath": "jsonwebtoken",
+      "type": "ES6 import",
+      "file": "src\\services\\AuthServices\\FindUserFromToken.ts"
+    },
+    {
+      "package": "jsonwebtoken",
+      "fullPath": "jsonwebtoken",
+      "type": "ES6 import",
+      "file": "src\\services\\AuthServices\\RefreshTokenService.ts"
+    },
+    {
+      "package": "express",
+      "fullPath": "express",
+      "type": "ES6 import",
+      "file": "src\\services\\AuthServices\\RefreshTokenService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\AuthServices\\RefreshTokenService.ts"
+    },
+    {
+      "package": "@adiwajshing",
+      "fullPath": "@adiwajshing/baileys",
+      "type": "ES6 import",
+      "file": "src\\services\\BaileysServices\\CreateOrUpdateBaileysService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\BaileysServices\\CreateOrUpdateBaileysService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\CancelService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\CreateService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\ListService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\ListService.ts"
+    },
+    {
+      "package": "bull",
+      "fullPath": "bull",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\ProcessCampaignJob.ts"
+    },
+    {
+      "package": "@sentry",
+      "fullPath": "@sentry/node",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\ProcessCampaignJob.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\ProcessCampaignJob.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\ProcessPendingCampaigns.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\ProcessPendingCampaigns.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\SendCampaignMessage.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\SendCampaignMessage.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\TestMediaSend.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignService\\TestMediaSend.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignSettingServices\\CreateService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignSettingServices\\ListService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\CampaignSettingServices\\ListService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ChatService\\CreateMessageService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\ChatService\\FindMessages.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ChatService\\ListService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\CompanyService\\CheckCompanyExpirationService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\CompanyService\\CheckCompanyExpirationService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\CompanyService\\CreateCompanyService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\CompanyService\\CreateCompanyWithTrialService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\CompanyService\\ListCompaniesService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\CompanyService\\SyncCompanyDueDateService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\CompanyService\\VerifyCurrentSchedule.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactListItemService\\CreateService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactListItemService\\ImportContactsService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactListItemService\\ListService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactListService\\CreateService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactListService\\ImportContacts.ts"
+    },
+    {
+      "package": "xlsx",
+      "fullPath": "xlsx",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactListService\\ImportContacts.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactListService\\ImportContacts.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactListService\\ListService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactListService\\ListService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactServices\\ListContactsService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ContactServices\\SimpleListService.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\facebookMessageListener.ts"
+    },
+    {
+      "package": "axios",
+      "fullPath": "axios",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\facebookMessageListener.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\facebookMessageListener.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\facebookMessageListener.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\facebookMessageListener.ts"
+    },
+    {
+      "package": "puppeteer",
+      "fullPath": "puppeteer",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\facebookMessageListener.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\facebookMessageListener.ts"
+    },
+    {
+      "package": "file-type",
+      "fullPath": "file-type",
+      "type": "Dynamic import",
+      "file": "src\\services\\FacebookServices\\facebookMessageListener.ts"
+    },
+    {
+      "package": "axios",
+      "fullPath": "axios",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\graphAPI.ts"
+    },
+    {
+      "package": "form-data",
+      "fullPath": "form-data",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\graphAPI.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\graphAPI.ts"
+    },
+    {
+      "package": "uuid",
+      "fullPath": "uuid",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\sendFacebookMessage.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\sendFacebookMessageMedia.ts"
+    },
+    {
+      "package": "uuid",
+      "fullPath": "uuid",
+      "type": "ES6 import",
+      "file": "src\\services\\FacebookServices\\sendFacebookMessageMedia.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\HelpServices\\CreateService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\HelpServices\\ListService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\InvoicesService\\GenerateInvoicesService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\InvoicesService\\GenerateInvoicesService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\InvoicesService\\ListInvoicesServices.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize/types",
+      "type": "ES6 import",
+      "file": "src\\services\\MessageServices\\ListMessagesService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\MessageServices\\ListMessagesService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\PlanService\\CreatePlanService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\PlanService\\ListPlansService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize/types",
+      "type": "ES6 import",
+      "file": "src\\services\\QueueOptionService\\ListService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\QueueService\\CreateQueueService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\QueueService\\UpdateQueueService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\QueueService\\UpdateQueueService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\QuickMessageService\\CreateService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\QuickMessageService\\FindService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\QuickMessageService\\ListService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ReportService\\DashbardDataService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\ReportService\\DashbardDataService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\CreateService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\CreateService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\ListService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\ProcessPendingSchedules.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\ProcessPendingSchedules.ts"
+    },
+    {
+      "package": "bull",
+      "fullPath": "bull",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\ProcessScheduleJob.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\ProcessScheduleJob.ts"
+    },
+    {
+      "package": "@sentry",
+      "fullPath": "@sentry/node",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\ProcessScheduleJob.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\ScheduleJobService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\UpdateService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\ScheduleServices\\UpdateService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\TagServices\\CreateService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\TagServices\\ListService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\TagServices\\SimpleListService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\TagServices\\UpdateService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketNoteService\\CreateTicketNoteService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketNoteService\\ListTicketNotesService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\FindOrCreateATicketTrakingService.ts"
+    },
+    {
+      "package": "date-fns",
+      "fullPath": "date-fns",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\FindOrCreateTicketService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\FindOrCreateTicketService.ts"
+    },
+    {
+      "package": "date-fns",
+      "fullPath": "date-fns",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\FindOrCreateTicketServiceMeta.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\FindOrCreateTicketServiceMeta.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\ListTicketsService.ts"
+    },
+    {
+      "package": "date-fns",
+      "fullPath": "date-fns",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\ListTicketsService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\ListTicketsService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\UpdateTicketService.ts"
+    },
+    {
+      "package": "@sentry",
+      "fullPath": "@sentry/node",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\UpdateTicketService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\TicketServices\\UpdateTicketService.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\UserServices\\AuthUserService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\UserServices\\CreateUserService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\UserServices\\ListUsersService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\UserServices\\UpdateUserService.ts"
+    },
+    {
+      "package": "@whiskeysockets",
+      "fullPath": "@whiskeysockets/baileys",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\DeleteWhatsAppMessage.ts"
+    },
+    {
+      "package": "@sentry",
+      "fullPath": "@sentry/node",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\ImportContactsService.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\ImportContactsService.ts"
+    },
+    {
+      "package": "@adiwajshing",
+      "fullPath": "@adiwajshing/baileys",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\providers.ts"
+    },
+    {
+      "package": "puppeteer",
+      "fullPath": "puppeteer",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\providers.ts"
+    },
+    {
+      "package": "axios",
+      "fullPath": "axios",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\providers.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\providers.ts"
+    },
+    {
+      "package": "@adiwajshing",
+      "fullPath": "@adiwajshing/baileys",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\SendWhatsAppMedia.ts"
+    },
+    {
+      "package": "@adiwajshing",
+      "fullPath": "@adiwajshing/baileys",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\SendWhatsAppMessage.ts"
+    },
+    {
+      "package": "@sentry",
+      "fullPath": "@sentry/node",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\StartAllWhatsAppsSessions.ts"
+    },
+    {
+      "package": "path",
+      "fullPath": "path",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\wbotMessageListener.ts"
+    },
+    {
+      "package": "util",
+      "fullPath": "util",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\wbotMessageListener.ts"
+    },
+    {
+      "package": "fs",
+      "fullPath": "fs",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\wbotMessageListener.ts"
+    },
+    {
+      "package": "@sentry",
+      "fullPath": "@sentry/node",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\wbotMessageListener.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\wbotMessageListener.ts"
+    },
+    {
+      "package": "moment",
+      "fullPath": "moment",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\wbotMessageListener.ts"
+    },
+    {
+      "package": "@sentry",
+      "fullPath": "@sentry/node",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\wbotMonitor.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\WbotServices\\wbotMonitor.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\WhatsappService\\CreateWhatsAppService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize/types",
+      "type": "ES6 import",
+      "file": "src\\services\\WhatsappService\\ListWhatsAppsService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize/types",
+      "type": "ES6 import",
+      "file": "src\\services\\WhatsappService\\ShowWhatsAppService.ts"
+    },
+    {
+      "package": "yup",
+      "fullPath": "yup",
+      "type": "ES6 import",
+      "file": "src\\services\\WhatsappService\\UpdateWhatsAppService.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\services\\WhatsappService\\UpdateWhatsAppService.ts"
+    },
+    {
+      "package": "bull",
+      "fullPath": "bull",
+      "type": "ES6 import",
+      "file": "src\\userMonitor.ts"
+    },
+    {
+      "package": "@sentry",
+      "fullPath": "@sentry/node",
+      "type": "ES6 import",
+      "file": "src\\userMonitor.ts"
+    },
+    {
+      "package": "sequelize",
+      "fullPath": "sequelize",
+      "type": "ES6 import",
+      "file": "src\\userMonitor.ts"
+    },
+    {
+      "package": "lodash",
+      "fullPath": "lodash",
+      "type": "ES6 import",
+      "file": "src\\userMonitor.ts"
+    },
+    {
+      "package": "pino",
+      "fullPath": "pino",
+      "type": "ES6 import",
+      "file": "src\\utils\\logger.ts"
+    }
+  ]
+}

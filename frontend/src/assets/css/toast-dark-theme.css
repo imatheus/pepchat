@@ -1,0 +1,183 @@
+/* Toast Dark Theme Styles */
+
+/* Dark theme toast container */
+[data-theme="dark"] .Toastify__toast-container {
+  background: transparent;
+}
+
+/* Dark theme toast styles */
+[data-theme="dark"] .Toastify__toast {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+  border: 1px solid #444444 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Dark theme toast text */
+[data-theme="dark"] .Toastify__toast-body {
+  color: #ffffff !important;
+}
+
+/* Dark theme success toast */
+[data-theme="dark"] .Toastify__toast--success {
+  background-color: #1b5e20 !important;
+  border-color: #2e7d32 !important;
+}
+
+[data-theme="dark"] .Toastify__toast--success .Toastify__toast-icon {
+  color: #4caf50 !important;
+}
+
+/* Dark theme error toast */
+[data-theme="dark"] .Toastify__toast--error {
+  background-color: #b71c1c !important;
+  border-color: #d32f2f !important;
+}
+
+[data-theme="dark"] .Toastify__toast--error .Toastify__toast-icon {
+  color: #f44336 !important;
+}
+
+/* Dark theme warning toast */
+[data-theme="dark"] .Toastify__toast--warning {
+  background-color: #e65100 !important;
+  border-color: #ff9800 !important;
+}
+
+[data-theme="dark"] .Toastify__toast--warning .Toastify__toast-icon {
+  color: #ff9800 !important;
+}
+
+/* Dark theme info toast */
+[data-theme="dark"] .Toastify__toast--info {
+  background-color: #0d47a1 !important;
+  border-color: #2196f3 !important;
+}
+
+[data-theme="dark"] .Toastify__toast--info .Toastify__toast-icon {
+  color: #2196f3 !important;
+}
+
+/* Dark theme progress bar */
+[data-theme="dark"] .Toastify__progress-bar {
+  background: linear-gradient(
+    to right,
+    #66bb6a,
+    #4caf50,
+    #388e3c
+  ) !important;
+}
+
+[data-theme="dark"] .Toastify__progress-bar--success {
+  background: linear-gradient(
+    to right,
+    #66bb6a,
+    #4caf50,
+    #388e3c
+  ) !important;
+}
+
+[data-theme="dark"] .Toastify__progress-bar--error {
+  background: linear-gradient(
+    to right,
+    #ef5350,
+    #f44336,
+    #e53935
+  ) !important;
+}
+
+[data-theme="dark"] .Toastify__progress-bar--warning {
+  background: linear-gradient(
+    to right,
+    #ffb74d,
+    #ff9800,
+    #f57c00
+  ) !important;
+}
+
+[data-theme="dark"] .Toastify__progress-bar--info {
+  background: linear-gradient(
+    to right,
+    #42a5f5,
+    #2196f3,
+    #1976d2
+  ) !important;
+}
+
+/* Dark theme close button */
+[data-theme="dark"] .Toastify__close-button {
+  color: #ffffff !important;
+  opacity: 0.7;
+}
+
+[data-theme="dark"] .Toastify__close-button:hover {
+  opacity: 1;
+}
+
+/* Light theme overrides to ensure consistency */
+[data-theme="light"] .Toastify__toast,
+body:not([data-theme="dark"]) .Toastify__toast {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .Toastify__toast-body,
+body:not([data-theme="dark"]) .Toastify__toast-body {
+  color: #333333 !important;
+}
+
+/* Light theme success toast */
+[data-theme="light"] .Toastify__toast--success,
+body:not([data-theme="dark"]) .Toastify__toast--success {
+  background-color: #e8f5e8 !important;
+  border-color: #4caf50 !important;
+  color: #2e7d32 !important;
+}
+
+[data-theme="light"] .Toastify__toast--success .Toastify__toast-body,
+body:not([data-theme="dark"]) .Toastify__toast--success .Toastify__toast-body {
+  color: #2e7d32 !important;
+}
+
+/* Light theme error toast */
+[data-theme="light"] .Toastify__toast--error,
+body:not([data-theme="dark"]) .Toastify__toast--error {
+  background-color: #ffebee !important;
+  border-color: #f44336 !important;
+  color: #c62828 !important;
+}
+
+[data-theme="light"] .Toastify__toast--error .Toastify__toast-body,
+body:not([data-theme="dark"]) .Toastify__toast--error .Toastify__toast-body {
+  color: #c62828 !important;
+}
+
+/* Light theme warning toast */
+[data-theme="light"] .Toastify__toast--warning,
+body:not([data-theme="dark"]) .Toastify__toast--warning {
+  background-color: #fff3e0 !important;
+  border-color: #ff9800 !important;
+  color: #ef6c00 !important;
+}
+
+[data-theme="light"] .Toastify__toast--warning .Toastify__toast-body,
+body:not([data-theme="dark"]) .Toastify__toast--warning .Toastify__toast-body {
+  color: #ef6c00 !important;
+}
+
+/* Light theme info toast */
+[data-theme="light"] .Toastify__toast--info,
+body:not([data-theme="dark"]) .Toastify__toast--info {
+  background-color: #e3f2fd !important;
+  border-color: #2196f3 !important;
+  color: #1565c0 !important;
+}
+
+[data-theme="light"] .Toastify__toast--info .Toastify__toast-body,
+body:not([data-theme="dark"]) .Toastify__toast--info .Toastify__toast-body {
+  color: #1565c0 !important;
+}

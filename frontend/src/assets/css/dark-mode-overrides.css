@@ -1,0 +1,650 @@
+/* ===== OVERRIDES ESPECÍFICOS PARA ELEMENTOS HARDCODED ===== */
+
+/* Garantir que elementos com cores inline sejam sobrescritos no modo dark */
+[data-theme="dark"] *[style*="background: white"],
+.theme-dark *[style*="background: white"],
+[data-theme="dark"] *[style*="background: #fff"],
+.theme-dark *[style*="background: #fff"],
+[data-theme="dark"] *[style*="background: #ffffff"],
+.theme-dark *[style*="background: #ffffff"],
+[data-theme="dark"] *[style*="background-color: white"],
+.theme-dark *[style*="background-color: white"],
+[data-theme="dark"] *[style*="background-color: #fff"],
+.theme-dark *[style*="background-color: #fff"],
+[data-theme="dark"] *[style*="background-color: #ffffff"],
+.theme-dark *[style*="background-color: #ffffff"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com cores de texto inline sejam sobrescritos */
+[data-theme="dark"] *[style*="color: black"],
+.theme-dark *[style*="color: black"],
+[data-theme="dark"] *[style*="color: #000"],
+.theme-dark *[style*="color: #000"],
+[data-theme="dark"] *[style*="color: #000000"],
+.theme-dark *[style*="color: #000000"] {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com background cinza claro sejam escuros */
+[data-theme="dark"] *[style*="background-color: #fafafa"],
+.theme-dark *[style*="background-color: #fafafa"],
+[data-theme="dark"] *[style*="background-color: #f9f9f9"],
+.theme-dark *[style*="background-color: #f9f9f9"],
+[data-theme="dark"] *[style*="background-color: #f8f8f8"],
+.theme-dark *[style*="background-color: #f8f8f8"],
+[data-theme="dark"] *[style*="background-color: #f0f0f0"],
+.theme-dark *[style*="background-color: #f0f0f0"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com border cinza sejam escuros */
+[data-theme="dark"] *[style*="border-color: #e0e0e0"],
+.theme-dark *[style*="border-color: #e0e0e0"],
+[data-theme="dark"] *[style*="border-color: #ddd"],
+.theme-dark *[style*="border-color: #ddd"],
+[data-theme="dark"] *[style*="border-color: #ccc"],
+.theme-dark *[style*="border-color: #ccc"] {
+  border-color: #333333 !important;
+}
+
+/* Garantir que elementos com box-shadow sejam ajustados */
+[data-theme="dark"] *[style*="box-shadow"],
+.theme-dark *[style*="box-shadow"] {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Garantir que elementos específicos da aplicação sejam escuros */
+[data-theme="dark"] .MuiPaper-root[style*="background"],
+.theme-dark .MuiPaper-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiCard-root[style*="background"],
+.theme-dark .MuiCard-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiContainer-root[style*="background"],
+.theme-dark .MuiContainer-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiGrid-root[style*="background"],
+.theme-dark .MuiGrid-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiBox-root[style*="background"],
+.theme-dark .MuiBox-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de formulário com estilos inline sejam escuros */
+[data-theme="dark"] .MuiFormControl-root[style*="background"],
+.theme-dark .MuiFormControl-root[style*="background"] {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .MuiInputBase-root[style*="background"],
+.theme-dark .MuiInputBase-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTextField-root[style*="background"],
+.theme-dark .MuiTextField-root[style*="background"] {
+  background-color: transparent !important;
+}
+
+/* Garantir que elementos de botão com estilos inline sejam ajustados */
+[data-theme="dark"] .MuiButton-root[style*="background-color: #fff"],
+.theme-dark .MuiButton-root[style*="background-color: #fff"],
+[data-theme="dark"] .MuiButton-root[style*="background-color: white"],
+.theme-dark .MuiButton-root[style*="background-color: white"] {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiButton-root[style*="color: #000"],
+.theme-dark .MuiButton-root[style*="color: #000"],
+[data-theme="dark"] .MuiButton-root[style*="color: black"],
+.theme-dark .MuiButton-root[style*="color: black"] {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de lista com estilos inline sejam escuros */
+[data-theme="dark"] .MuiList-root[style*="background"],
+.theme-dark .MuiList-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiListItem-root[style*="background"],
+.theme-dark .MuiListItem-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de menu com estilos inline sejam escuros */
+[data-theme="dark"] .MuiMenu-paper[style*="background"],
+.theme-dark .MuiMenu-paper[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiMenuItem-root[style*="background"],
+.theme-dark .MuiMenuItem-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de dialog com estilos inline sejam escuros */
+[data-theme="dark"] .MuiDialog-paper[style*="background"],
+.theme-dark .MuiDialog-paper[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiDialogContent-root[style*="background"],
+.theme-dark .MuiDialogContent-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de tabela com estilos inline sejam escuros */
+[data-theme="dark"] .MuiTable-root[style*="background"],
+.theme-dark .MuiTable-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTableCell-root[style*="background"],
+.theme-dark .MuiTableCell-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTableHead-root[style*="background"],
+.theme-dark .MuiTableHead-root[style*="background"] {
+  background-color: #2a2a2a !important;
+}
+
+/* Garantir que elementos de chip com estilos inline sejam ajustados */
+[data-theme="dark"] .MuiChip-root[style*="background-color: #e0e0e0"],
+.theme-dark .MuiChip-root[style*="background-color: #e0e0e0"],
+[data-theme="dark"] .MuiChip-root[style*="background-color: #f5f5f5"],
+.theme-dark .MuiChip-root[style*="background-color: #f5f5f5"] {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de avatar com estilos inline sejam escuros */
+[data-theme="dark"] .MuiAvatar-root[style*="background-color: #e0e0e0"],
+.theme-dark .MuiAvatar-root[style*="background-color: #e0e0e0"],
+[data-theme="dark"] .MuiAvatar-root[style*="background-color: #f5f5f5"],
+.theme-dark .MuiAvatar-root[style*="background-color: #f5f5f5"] {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de tooltip com estilos inline sejam escuros */
+[data-theme="dark"] .MuiTooltip-tooltip[style*="background"],
+.theme-dark .MuiTooltip-tooltip[style*="background"] {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de popover com estilos inline sejam escuros */
+[data-theme="dark"] .MuiPopover-paper[style*="background"],
+.theme-dark .MuiPopover-paper[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de accordion com estilos inline sejam escuros */
+[data-theme="dark"] .MuiAccordion-root[style*="background"],
+.theme-dark .MuiAccordion-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAccordionSummary-root[style*="background"],
+.theme-dark .MuiAccordionSummary-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAccordionDetails-root[style*="background"],
+.theme-dark .MuiAccordionDetails-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de stepper com estilos inline sejam escuros */
+[data-theme="dark"] .MuiStepper-root[style*="background"],
+.theme-dark .MuiStepper-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiStep-root[style*="background"],
+.theme-dark .MuiStep-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de breadcrumb com estilos inline sejam escuros */
+[data-theme="dark"] .MuiBreadcrumbs-root[style*="background"],
+.theme-dark .MuiBreadcrumbs-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de tabs com estilos inline sejam escuros */
+[data-theme="dark"] .MuiTabs-root[style*="background"],
+.theme-dark .MuiTabs-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTab-root[style*="background"],
+.theme-dark .MuiTab-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTabPanel-root[style*="background"],
+.theme-dark .MuiTabPanel-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de drawer com estilos inline sejam escuros */
+[data-theme="dark"] .MuiDrawer-paper[style*="background"],
+.theme-dark .MuiDrawer-paper[style*="background"] {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de app bar com estilos inline sejam escuros */
+[data-theme="dark"] .MuiAppBar-root[style*="background"],
+.theme-dark .MuiAppBar-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiToolbar-root[style*="background"],
+.theme-dark .MuiToolbar-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de bottom navigation com estilos inline sejam escuros */
+[data-theme="dark"] .MuiBottomNavigation-root[style*="background"],
+.theme-dark .MuiBottomNavigation-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiBottomNavigationAction-root[style*="background"],
+.theme-dark .MuiBottomNavigationAction-root[style*="background"] {
+  background-color: transparent !important;
+  color: #b0b0b0 !important;
+}
+
+/* Garantir que elementos de speed dial com estilos inline sejam escuros */
+[data-theme="dark"] .MuiSpeedDial-root[style*="background"],
+.theme-dark .MuiSpeedDial-root[style*="background"] {
+  background-color: #66bb6a !important;
+  color: #000000 !important;
+}
+
+[data-theme="dark"] .MuiSpeedDialAction-fab[style*="background"],
+.theme-dark .MuiSpeedDialAction-fab[style*="background"] {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de pagination com estilos inline sejam escuros */
+[data-theme="dark"] .MuiPagination-root[style*="background"],
+.theme-dark .MuiPagination-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiPaginationItem-root[style*="background"],
+.theme-dark .MuiPaginationItem-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de timeline com estilos inline sejam escuros */
+[data-theme="dark"] .MuiTimeline-root[style*="background"],
+.theme-dark .MuiTimeline-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTimelineItem-root[style*="background"],
+.theme-dark .MuiTimelineItem-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTimelineContent-root[style*="background"],
+.theme-dark .MuiTimelineContent-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de tree view com estilos inline sejam escuros */
+[data-theme="dark"] .MuiTreeView-root[style*="background"],
+.theme-dark .MuiTreeView-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiTreeItem-root[style*="background"],
+.theme-dark .MuiTreeItem-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de data grid com estilos inline sejam escuros */
+[data-theme="dark"] .MuiDataGrid-root[style*="background"],
+.theme-dark .MuiDataGrid-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiDataGrid-cell[style*="background"],
+.theme-dark .MuiDataGrid-cell[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiDataGrid-columnHeader[style*="background"],
+.theme-dark .MuiDataGrid-columnHeader[style*="background"] {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiDataGrid-row[style*="background"],
+.theme-dark .MuiDataGrid-row[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de date picker com estilos inline sejam escuros */
+[data-theme="dark"] .MuiPickersDay-root[style*="background"],
+.theme-dark .MuiPickersDay-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiPickersCalendarHeader-root[style*="background"],
+.theme-dark .MuiPickersCalendarHeader-root[style*="background"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiPickersCalendar-root[style*="background"],
+.theme-dark .MuiPickersCalendar-root[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos específicos da aplicação com estilos inline sejam escuros */
+[data-theme="dark"] .chat-container[style*="background"],
+.theme-dark .chat-container[style*="background"],
+[data-theme="dark"] .ticket-container[style*="background"],
+.theme-dark .ticket-container[style*="background"],
+[data-theme="dark"] .messages-container[style*="background"],
+.theme-dark .messages-container[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de loading com estilos inline sejam escuros */
+[data-theme="dark"] .loading-container[style*="background"],
+.theme-dark .loading-container[style*="background"] {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de erro com estilos inline sejam escuros */
+[data-theme="dark"] .error-container[style*="background"],
+.theme-dark .error-container[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de sucesso com estilos inline sejam escuros */
+[data-theme="dark"] .success-container[style*="background"],
+.theme-dark .success-container[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de warning com estilos inline sejam escuros */
+[data-theme="dark"] .warning-container[style*="background"],
+.theme-dark .warning-container[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de info com estilos inline sejam escuros */
+[data-theme="dark"] .info-container[style*="background"],
+.theme-dark .info-container[style*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com classes CSS específicas sejam escuros */
+[data-theme="dark"] .white-bg,
+.theme-dark .white-bg,
+[data-theme="dark"] .light-bg,
+.theme-dark .light-bg,
+[data-theme="dark"] .gray-bg,
+.theme-dark .gray-bg,
+[data-theme="dark"] .grey-bg,
+.theme-dark .grey-bg {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .dark-text,
+.theme-dark .dark-text,
+[data-theme="dark"] .black-text,
+.theme-dark .black-text {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com data attributes sejam escuros */
+[data-theme="dark"] [data-background="white"],
+.theme-dark [data-background="white"],
+[data-theme="dark"] [data-background="light"],
+.theme-dark [data-background="light"],
+[data-theme="dark"] [data-background="gray"],
+.theme-dark [data-background="gray"],
+[data-theme="dark"] [data-background="grey"],
+.theme-dark [data-background="grey"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [data-color="dark"],
+.theme-dark [data-color="dark"],
+[data-theme="dark"] [data-color="black"],
+.theme-dark [data-color="black"] {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com aria-label específicos sejam escuros */
+[data-theme="dark"] [aria-label*="background"],
+.theme-dark [aria-label*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com title específicos sejam escuros */
+[data-theme="dark"] [title*="background"],
+.theme-dark [title*="background"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com role específicos sejam escuros */
+[data-theme="dark"] [role="main"],
+.theme-dark [role="main"],
+[data-theme="dark"] [role="content"],
+.theme-dark [role="content"],
+[data-theme="dark"] [role="region"],
+.theme-dark [role="region"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com id específicos sejam escuros */
+[data-theme="dark"] #main,
+.theme-dark #main,
+[data-theme="dark"] #content,
+.theme-dark #content,
+[data-theme="dark"] #container,
+.theme-dark #container,
+[data-theme="dark"] #wrapper,
+.theme-dark #wrapper {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com classes específicas da aplicação sejam escuros */
+[data-theme="dark"] .main-content,
+.theme-dark .main-content,
+[data-theme="dark"] .content-wrapper,
+.theme-dark .content-wrapper,
+[data-theme="dark"] .page-content,
+.theme-dark .page-content,
+[data-theme="dark"] .app-content,
+.theme-dark .app-content {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de formulário específicos sejam escuros */
+[data-theme="dark"] .form-container,
+.theme-dark .form-container,
+[data-theme="dark"] .form-wrapper,
+.theme-dark .form-wrapper,
+[data-theme="dark"] .form-content,
+.theme-dark .form-content {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de card específicos sejam escuros */
+[data-theme="dark"] .card-container,
+.theme-dark .card-container,
+[data-theme="dark"] .card-wrapper,
+.theme-dark .card-wrapper,
+[data-theme="dark"] .card-content,
+.theme-dark .card-content {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de modal específicos sejam escuros */
+[data-theme="dark"] .modal-container,
+.theme-dark .modal-container,
+[data-theme="dark"] .modal-wrapper,
+.theme-dark .modal-wrapper,
+[data-theme="dark"] .modal-content,
+.theme-dark .modal-content {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de sidebar específicos sejam escuros */
+[data-theme="dark"] .sidebar-container,
+.theme-dark .sidebar-container,
+[data-theme="dark"] .sidebar-wrapper,
+.theme-dark .sidebar-wrapper,
+[data-theme="dark"] .sidebar-content,
+.theme-dark .sidebar-content {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de header específicos sejam escuros */
+[data-theme="dark"] .header-container,
+.theme-dark .header-container,
+[data-theme="dark"] .header-wrapper,
+.theme-dark .header-wrapper,
+[data-theme="dark"] .header-content,
+.theme-dark .header-content {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de footer específicos sejam escuros */
+[data-theme="dark"] .footer-container,
+.theme-dark .footer-container,
+[data-theme="dark"] .footer-wrapper,
+.theme-dark .footer-wrapper,
+[data-theme="dark"] .footer-content,
+.theme-dark .footer-content {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de navigation específicos sejam escuros */
+[data-theme="dark"] .nav-container,
+.theme-dark .nav-container,
+[data-theme="dark"] .nav-wrapper,
+.theme-dark .nav-wrapper,
+[data-theme="dark"] .nav-content,
+.theme-dark .nav-content {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de section específicos sejam escuros */
+[data-theme="dark"] .section-container,
+.theme-dark .section-container,
+[data-theme="dark"] .section-wrapper,
+.theme-dark .section-wrapper,
+[data-theme="dark"] .section-content,
+.theme-dark .section-content {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de article específicos sejam escuros */
+[data-theme="dark"] .article-container,
+.theme-dark .article-container,
+[data-theme="dark"] .article-wrapper,
+.theme-dark .article-wrapper,
+[data-theme="dark"] .article-content,
+.theme-dark .article-content {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos de aside específicos sejam escuros */
+[data-theme="dark"] .aside-container,
+.theme-dark .aside-container,
+[data-theme="dark"] .aside-wrapper,
+.theme-dark .aside-wrapper,
+[data-theme="dark"] .aside-content,
+.theme-dark .aside-content {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}

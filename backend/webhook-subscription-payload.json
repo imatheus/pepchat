@@ -1,0 +1,31 @@
+{
+  "id": "evt_subscription_updated_test_456",
+  "event": "SUBSCRIPTION_UPDATED",
+  "dateCreated": "2025-06-23 20:05:00",
+  "subscription": {
+    "object": "subscription",
+    "id": "sub_uxbd112j3gkl3spu",
+    "dateCreated": "2025-06-23",
+    "customer": "cus_000006796775",
+    "paymentLink": null,
+    "value": 20,
+    "nextDueDate": "2025-07-15",
+    "cycle": "MONTHLY",
+    "description": "Assinatura Plano Enterprise",
+    "billingType": "BOLETO",
+    "deleted": false,
+    "status": "ACTIVE",
+    "externalReference": "company_19_subscription",
+    "checkoutSession": null,
+    "sendPaymentByPostalService": false,
+    "fine": {
+      "value": 0,
+      "type": "FIXED"
+    },
+    "interest": {
+      "value": 0,
+      "type": "PERCENTAGE"
+    },
+    "split": null
+  }
+}

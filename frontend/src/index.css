@@ -1,0 +1,159 @@
+/* Fonte Lato para todo o sistema */
+* {
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+body {
+  margin: 0;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: 'Lato', 'Courier New', monospace;
+}
+
+/* Garantir que todos os elementos do Material-UI usem Lato */
+.MuiTypography-root,
+.MuiButton-root,
+.MuiTextField-root,
+.MuiInputBase-root,
+.MuiInputLabel-root,
+.MuiFormLabel-root,
+.MuiTableCell-root,
+.MuiMenuItem-root,
+.MuiListItemText-root,
+.MuiTab-root,
+.MuiChip-root,
+.MuiTooltip-tooltip,
+.MuiDialog-root,
+.MuiDialogTitle-root,
+.MuiDialogContent-root,
+.MuiDialogActions-root,
+.MuiAppBar-root,
+.MuiToolbar-root {
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Aplicar Lato em inputs e selects */
+input, select, textarea, button {
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Aplicar Lato em elementos de formulário */
+.MuiFormControl-root,
+.MuiFormControlLabel-root,
+.MuiFormHelperText-root,
+.MuiSelect-root,
+.MuiAutocomplete-root {
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Aplicar Lato em elementos de navegação */
+.MuiDrawer-root,
+.MuiList-root,
+.MuiListItem-root,
+.MuiListItemText-primary,
+.MuiListItemText-secondary {
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Aplicar Lato em cards e papers */
+.MuiCard-root,
+.MuiCardHeader-root,
+.MuiCardContent-root,
+.MuiCardActions-root,
+.MuiPaper-root {
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Aplicar Lato em tabelas */
+.MuiTable-root,
+.MuiTableHead-root,
+.MuiTableBody-root,
+.MuiTableRow-root,
+.MuiTableCell-root {
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Aplicar Lato em elementos de feedback */
+.MuiAlert-root,
+.MuiSnackbar-root,
+.MuiSnackbarContent-root {
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* ===== TÍTULOS COM MAIS PESO ===== */
+
+/* Títulos das abas com mais peso */
+.MuiTab-root {
+  font-weight: 700 !important;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+  text-transform: none !important;
+}
+
+/* Títulos de páginas e seções com mais peso */
+h1, h2, h3, h4, h5, h6,
+.MuiTypography-h1,
+.MuiTypography-h2,
+.MuiTypography-h3,
+.MuiTypography-h4,
+.MuiTypography-h5,
+.MuiTypography-h6 {
+  font-weight: 700 !important;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Títulos de cards e dialogs */
+.MuiCardHeader-title,
+.MuiDialogTitle-root,
+.MuiAppBar-root .MuiTypography-root {
+  font-weight: 700 !important;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Títulos de seções específicas */
+.MuiAccordionSummary-content .MuiTypography-root,
+.MuiExpansionPanelSummary-content .MuiTypography-root {
+  font-weight: 600 !important;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Labels de formulários importantes */
+.MuiInputLabel-root,
+.MuiFormLabel-root {
+  font-weight: 500 !important;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Botões com mais peso */
+.MuiButton-root {
+  font-weight: 600 !important;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Cabeçalhos de tabela */
+.MuiTableHead-root .MuiTableCell-root {
+  font-weight: 600 !important;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Menu items importantes */
+.MuiListItemText-primary {
+  font-weight: 500 !important;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Chips e badges */
+.MuiChip-root {
+  font-weight: 500 !important;
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;
+}
+
+/* Estilo personalizado para itens do menu lateral */
+.makeStyles-drawerPaper-40 .MuiListItem-root {
+  color: #fff !important;
+  margin: 4px 0px !important;
+  border-radius: 25px !important;
+}

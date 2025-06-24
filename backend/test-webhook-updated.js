@@ -1,0 +1,82 @@
+const axios = require('axios');
+
+const webhookPayload = {
+  "id": "evt_2539587467a5b78191b6e3d954172c68&9593669",
+  "event": "PAYMENT_UPDATED",
+  "dateCreated": "2025-06-23 19:26:46",
+  "payment": {
+    "object": "payment",
+    "id": "pay_mz0q3110g6plpkdr",
+    "dateCreated": "2025-06-23",
+    "customer": "cus_000006796775",
+    "subscription": "sub_uxbd112j3gkl3spu",
+    "checkoutSession": null,
+    "paymentLink": null,
+    "value": 10,
+    "netValue": 8.01,
+    "originalValue": null,
+    "interestValue": null,
+    "description": "Assinatura Plano Lite - Matheus Santos",
+    "billingType": "BOLETO",
+    "canBePaidAfterDueDate": true,
+    "pixTransaction": null,
+    "status": "PENDING",
+    "dueDate": "2025-06-25",
+    "originalDueDate": "2025-06-30",
+    "paymentDate": null,
+    "clientPaymentDate": null,
+    "installmentNumber": null,
+    "invoiceUrl": "https://sandbox.asaas.com/i/mz0q3110g6plpkdr",
+    "invoiceNumber": "09953346",
+    "externalReference": "company_19_plan_4",
+    "deleted": false,
+    "anticipated": false,
+    "anticipable": false,
+    "creditDate": null,
+    "estimatedCreditDate": null,
+    "transactionReceiptUrl": null,
+    "nossoNumero": "11091325",
+    "bankSlipUrl": "https://sandbox.asaas.com/b/pdf/mz0q3110g6plpkdr",
+    "lastInvoiceViewedDate": null,
+    "lastBankSlipViewedDate": null,
+    "discount": {
+      "value": 0,
+      "limitDate": null,
+      "dueDateLimitDays": 0,
+      "type": "FIXED"
+    },
+    "fine": {
+      "value": 0,
+      "type": "FIXED"
+    },
+    "interest": {
+      "value": 0,
+      "type": "PERCENTAGE"
+    },
+    "postalService": false,
+    "custody": null,
+    "escrow": null,
+    "refunds": null
+  }
+};
+
+async function testWebhook() {
+  try {
+    console.log('Enviando webhook PAYMENT_UPDATED...');
+    console.log('Payload:', JSON.stringify(webhookPayload, null, 2));
+    
+    const response = await axios.post('http://localhost:8080/asaas/webhook', webhookPayload, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Resposta do webhook:', response.data);
+    console.log('Status:', response.status);
+    
+  } catch (error) {
+    console.error('Erro ao enviar webhook:', error.response?.data || error.message);
+  }
+}
+
+testWebhook();

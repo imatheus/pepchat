@@ -1,0 +1,275 @@
+/* ===== CORREÇÕES ESPECÍFICAS PARA MODO DARK ===== */
+
+/* Garantir que o body seja sempre aplicado corretamente */
+body.theme-dark,
+[data-theme="dark"] body {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+}
+
+/* Correções para elementos de badge - apenas para badges padrão */
+[data-theme="dark"] .MuiBadge-colorPrimary .MuiBadge-badge,
+.theme-dark .MuiBadge-colorPrimary .MuiBadge-badge {
+  background-color: #66bb6a !important;
+  color: #000000 !important;
+}
+
+[data-theme="dark"] .MuiBadge-colorSecondary .MuiBadge-badge,
+.theme-dark .MuiBadge-colorSecondary .MuiBadge-badge {
+  background-color: #f48fb1 !important;
+  color: #000000 !important;
+}
+
+/* Permitir que badges com cores inline mantenham suas cores */
+[data-theme="dark"] .MuiBadge-badge[style*="background-color"],
+.theme-dark .MuiBadge-badge[style*="background-color"] {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Remover regra que força cor nos badges - permitir cores personalizadas */
+
+/* Chips no tema escuro - apenas para chips sem cor personalizada */
+[data-theme="dark"] .MuiChip-colorDefault,
+.theme-dark .MuiChip-colorDefault {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+
+
+/* Garantir que chips com cores personalizadas mantenham suas cores */
+[data-theme="dark"] .MuiChip-root[style*="background-color"],
+.theme-dark .MuiChip-root[style*="background-color"] {
+  /* Permitir que a cor inline seja mantida */
+  background-color: inherit !important;
+}
+
+/* Correções para AppBar no tema escuro */
+[data-theme="dark"] .MuiAppBar-root,
+.theme-dark .MuiAppBar-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAppBar-root .MuiIconButton-root,
+.theme-dark .MuiAppBar-root .MuiIconButton-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAppBar-root .MuiTypography-root,
+.theme-dark .MuiAppBar-root .MuiTypography-root {
+  color: #ffffff !important;
+}
+
+/* Tabelas no tema escuro */
+[data-theme="dark"] .MuiTableCell-root,
+.theme-dark .MuiTableCell-root {
+  color: #ffffff !important;
+  border-bottom: 1px solid #333333 !important;
+}
+
+[data-theme="dark"] .MuiTableCell-head,
+.theme-dark .MuiTableCell-head {
+  background-color: #2a2a2a !important;
+}
+
+/* Inputs no tema escuro */
+[data-theme="dark"] .MuiInputBase-root,
+.theme-dark .MuiInputBase-root {
+  color: #ffffff !important;
+  background-color: #1e1e1e !important;
+}
+
+[data-theme="dark"] .MuiInputLabel-root,
+.theme-dark .MuiInputLabel-root {
+  color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .MuiOutlinedInput-notchedOutline,
+.theme-dark .MuiOutlinedInput-notchedOutline {
+  border-color: #333333 !important;
+}
+
+/* Menus no tema escuro */
+[data-theme="dark"] .MuiMenu-paper,
+.theme-dark .MuiMenu-paper {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiMenuItem-root,
+.theme-dark .MuiMenuItem-root {
+  color: #ffffff !important;
+  background-color: #1e1e1e !important;
+}
+
+[data-theme="dark"] .MuiMenuItem-root:hover,
+.theme-dark .MuiMenuItem-root:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Dialogs no tema escuro */
+[data-theme="dark"] .MuiDialog-paper,
+.theme-dark .MuiDialog-paper {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Botões no tema escuro */
+[data-theme="dark"] .MuiButton-root,
+.theme-dark .MuiButton-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiButton-outlined,
+.theme-dark .MuiButton-outlined {
+  border-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiButton-outlined:hover,
+.theme-dark .MuiButton-outlined:hover {
+  border-color: #66bb6a !important;
+  background-color: rgba(102, 187, 106, 0.08) !important;
+}
+
+/* Dividers no tema escuro */
+[data-theme="dark"] .MuiDivider-root,
+.theme-dark .MuiDivider-root {
+  background-color: #333333 !important;
+}
+
+/* Typography no tema escuro */
+[data-theme="dark"] .MuiTypography-root,
+.theme-dark .MuiTypography-root {
+  color: #ffffff !important;
+}
+
+/* Lista items no tema escuro */
+[data-theme="dark"] .MuiListItem-root,
+.theme-dark .MuiListItem-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiListItem-root:hover,
+.theme-dark .MuiListItem-root:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .MuiListItemText-primary,
+.theme-dark .MuiListItemText-primary {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiListItemText-secondary,
+.theme-dark .MuiListItemText-secondary {
+  color: #b0b0b0 !important;
+}
+
+/* Ícones no tema escuro */
+[data-theme="dark"] .MuiSvgIcon-root,
+.theme-dark .MuiSvgIcon-root {
+  color: inherit !important;
+}
+
+/* Backdrop no tema escuro */
+[data-theme="dark"] .MuiBackdrop-root,
+.theme-dark .MuiBackdrop-root {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Correções para elementos específicos da aplicação */
+[data-theme="dark"] .userNameTag,
+.theme-dark .userNameTag {
+  background-color: #333333 !important;
+  color: #66bb6a !important;
+}
+
+/* Correções para elementos de loading */
+[data-theme="dark"] .MuiCircularProgress-root,
+.theme-dark .MuiCircularProgress-root {
+  color: #66bb6a !important;
+}
+
+[data-theme="dark"] .MuiLinearProgress-root,
+.theme-dark .MuiLinearProgress-root {
+  background-color: #333333 !important;
+}
+
+[data-theme="dark"] .MuiLinearProgress-bar,
+.theme-dark .MuiLinearProgress-bar {
+  background-color: #66bb6a !important;
+}
+
+/* Transições suaves para mudança de tema */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Garantir que elementos inline também sejam afetados */
+[data-theme="dark"] span,
+.theme-dark span,
+[data-theme="dark"] p,
+.theme-dark p,
+[data-theme="dark"] div,
+.theme-dark div,
+[data-theme="dark"] h1,
+.theme-dark h1,
+[data-theme="dark"] h2,
+.theme-dark h2,
+[data-theme="dark"] h3,
+.theme-dark h3,
+[data-theme="dark"] h4,
+.theme-dark h4,
+[data-theme="dark"] h5,
+.theme-dark h5,
+[data-theme="dark"] h6,
+.theme-dark h6 {
+  color: inherit !important;
+}
+
+/* Correções para elementos que podem ter cores hardcoded */
+[data-theme="dark"] .text-primary,
+.theme-dark .text-primary {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .text-secondary,
+.theme-dark .text-secondary {
+  color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .bg-white,
+.theme-dark .bg-white {
+  background-color: #1e1e1e !important;
+}
+
+[data-theme="dark"] .bg-light,
+.theme-dark .bg-light {
+  background-color: #2a2a2a !important;
+}
+
+[data-theme="dark"] .border,
+.theme-dark .border {
+  border-color: #333333 !important;
+}
+
+/* Correções para elementos de formulário específicos */
+[data-theme="dark"] input,
+.theme-dark input,
+[data-theme="dark"] textarea,
+.theme-dark textarea,
+[data-theme="dark"] select,
+.theme-dark select {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+[data-theme="dark"] input::placeholder,
+.theme-dark input::placeholder,
+[data-theme="dark"] textarea::placeholder,
+.theme-dark textarea::placeholder {
+  color: #b0b0b0 !important;
+}

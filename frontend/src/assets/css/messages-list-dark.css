@@ -1,0 +1,365 @@
+/* ===== CORREÇÕES PARA MESSAGESLIST NO MODO DARK ===== */
+
+/* Corrigir messageRight no modo escuro */
+[data-theme="dark"] .makeStyles-messageRight-110,
+.theme-dark .makeStyles-messageRight-110,
+[data-theme="dark"] [class*="makeStyles-messageRight"],
+.theme-dark [class*="makeStyles-messageRight"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Corrigir messageLeft no modo escuro */
+[data-theme="dark"] [class*="makeStyles-messageLeft"],
+.theme-dark [class*="makeStyles-messageLeft"] {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Corrigir textContentItem no modo escuro */
+[data-theme="dark"] [class*="makeStyles-textContentItem"],
+.theme-dark [class*="makeStyles-textContentItem"] {
+  color: #ffffff !important;
+}
+
+/* Corrigir timestamp no modo escuro */
+[data-theme="dark"] [class*="makeStyles-timestamp"],
+.theme-dark [class*="makeStyles-timestamp"] {
+  color: #b0b0b0 !important;
+}
+
+/* Corrigir messageContactName no modo escuro */
+[data-theme="dark"] [class*="makeStyles-messageContactName"],
+.theme-dark [class*="makeStyles-messageContactName"] {
+  color: #66bb6a !important;
+}
+
+/* Corrigir quotedMsg no modo escuro */
+[data-theme="dark"] [class*="makeStyles-quotedMsg"],
+.theme-dark [class*="makeStyles-quotedMsg"] {
+  color: #ffffff !important;
+}
+
+/* Corrigir quotedContainerLeft no modo escuro */
+[data-theme="dark"] [class*="makeStyles-quotedContainerLeft"],
+.theme-dark [class*="makeStyles-quotedContainerLeft"] {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Corrigir quotedContainerRight no modo escuro */
+[data-theme="dark"] [class*="makeStyles-quotedContainerRight"],
+.theme-dark [class*="makeStyles-quotedContainerRight"] {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Corrigir dailyTimestamp no modo escuro */
+[data-theme="dark"] [class*="makeStyles-dailyTimestamp"],
+.theme-dark [class*="makeStyles-dailyTimestamp"] {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir dailyTimestampText no modo escuro */
+[data-theme="dark"] [class*="makeStyles-dailyTimestampText"],
+.theme-dark [class*="makeStyles-dailyTimestampText"] {
+  color: #b0b0b0 !important;
+}
+
+/* Corrigir documentPreview no modo escuro */
+[data-theme="dark"] [class*="makeStyles-documentPreview"],
+.theme-dark [class*="makeStyles-documentPreview"] {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir documentName no modo escuro */
+[data-theme="dark"] [class*="makeStyles-documentName"],
+.theme-dark [class*="makeStyles-documentName"] {
+  color: #ffffff !important;
+}
+
+/* Corrigir messagesList background no modo escuro */
+[data-theme="dark"] [class*="makeStyles-messagesList"],
+.theme-dark [class*="makeStyles-messagesList"] {
+  background-image: none !important;
+  background-color: #121212 !important;
+}
+
+/* Corrigir messagesListWrapper no modo escuro */
+[data-theme="dark"] [class*="makeStyles-messagesListWrapper"],
+.theme-dark [class*="makeStyles-messagesListWrapper"] {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos específicos das mensagens */
+[data-theme="dark"] .MuiTypography-root,
+.theme-dark .MuiTypography-root {
+  color: inherit !important;
+}
+
+[data-theme="dark"] .MuiButton-root,
+.theme-dark .MuiButton-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiButton-outlined,
+.theme-dark .MuiButton-outlined {
+  border-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiButton-contained,
+.theme-dark .MuiButton-contained {
+  background-color: #66bb6a !important;
+  color: #000000 !important;
+}
+
+/* Corrigir ícones das mensagens */
+[data-theme="dark"] .MuiSvgIcon-root,
+.theme-dark .MuiSvgIcon-root {
+  color: inherit !important;
+}
+
+/* Corrigir elementos de mídia */
+[data-theme="dark"] video,
+.theme-dark video,
+[data-theme="dark"] audio,
+.theme-dark audio {
+  background-color: #1e1e1e !important;
+}
+
+/* Corrigir elementos de avatar */
+[data-theme="dark"] .MuiAvatar-root,
+.theme-dark .MuiAvatar-root {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos de divider */
+[data-theme="dark"] .MuiDivider-root,
+.theme-dark .MuiDivider-root {
+  background-color: #333333 !important;
+}
+
+/* Corrigir elementos de progress */
+[data-theme="dark"] .MuiCircularProgress-root,
+.theme-dark .MuiCircularProgress-root {
+  color: #66bb6a !important;
+}
+
+/* Corrigir elementos de link */
+[data-theme="dark"] a,
+.theme-dark a {
+  color: #66bb6a !important;
+}
+
+[data-theme="dark"] a:hover,
+.theme-dark a:hover {
+  color: #4caf50 !important;
+}
+
+/* Corrigir elementos de texto específicos */
+[data-theme="dark"] span,
+.theme-dark span {
+  color: inherit !important;
+}
+
+[data-theme="dark"] p,
+.theme-dark p {
+  color: inherit !important;
+}
+
+[data-theme="dark"] div,
+.theme-dark div {
+  color: inherit !important;
+}
+
+/* Corrigir elementos de markdown */
+[data-theme="dark"] .markdown-wrapper,
+.theme-dark .markdown-wrapper {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .markdown-wrapper h1,
+.theme-dark .markdown-wrapper h1,
+[data-theme="dark"] .markdown-wrapper h2,
+.theme-dark .markdown-wrapper h2,
+[data-theme="dark"] .markdown-wrapper h3,
+.theme-dark .markdown-wrapper h3,
+[data-theme="dark"] .markdown-wrapper h4,
+.theme-dark .markdown-wrapper h4,
+[data-theme="dark"] .markdown-wrapper h5,
+.theme-dark .markdown-wrapper h5,
+[data-theme="dark"] .markdown-wrapper h6,
+.theme-dark .markdown-wrapper h6 {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .markdown-wrapper p,
+.theme-dark .markdown-wrapper p {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .markdown-wrapper strong,
+.theme-dark .markdown-wrapper strong {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .markdown-wrapper em,
+.theme-dark .markdown-wrapper em {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .markdown-wrapper code,
+.theme-dark .markdown-wrapper code {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .markdown-wrapper pre,
+.theme-dark .markdown-wrapper pre {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .markdown-wrapper blockquote,
+.theme-dark .markdown-wrapper blockquote {
+  border-left-color: #66bb6a !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos de typing indicator */
+[data-theme="dark"] [class*="typing-indicator"],
+.theme-dark [class*="typing-indicator"] {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos de menu de opções */
+[data-theme="dark"] .MuiMenu-paper,
+.theme-dark .MuiMenu-paper {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiMenuItem-root,
+.theme-dark .MuiMenuItem-root {
+  color: #ffffff !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .MuiMenuItem-root:hover,
+.theme-dark .MuiMenuItem-root:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Corrigir elementos de modal de imagem */
+[data-theme="dark"] .MuiDialog-paper,
+.theme-dark .MuiDialog-paper {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiDialogTitle-root,
+.theme-dark .MuiDialogTitle-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiDialogContent-root,
+.theme-dark .MuiDialogContent-root {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiDialogActions-root,
+.theme-dark .MuiDialogActions-root {
+  background-color: #1e1e1e !important;
+}
+
+/* Corrigir elementos de backdrop */
+[data-theme="dark"] .MuiBackdrop-root,
+.theme-dark .MuiBackdrop-root {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Corrigir elementos de tooltip */
+[data-theme="dark"] .MuiTooltip-tooltip,
+.theme-dark .MuiTooltip-tooltip {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos de popover */
+[data-theme="dark"] .MuiPopover-paper,
+.theme-dark .MuiPopover-paper {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos de scrollbar */
+[data-theme="dark"] *::-webkit-scrollbar,
+.theme-dark *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="dark"] *::-webkit-scrollbar-thumb,
+.theme-dark *::-webkit-scrollbar-thumb {
+  background-color: #555555;
+  border-radius: 4px;
+}
+
+[data-theme="dark"] *::-webkit-scrollbar-track,
+.theme-dark *::-webkit-scrollbar-track {
+  background-color: #2a2a2a;
+  border-radius: 4px;
+}
+
+/* Corrigir elementos específicos do vCard */
+[data-theme="dark"] .vcard-container,
+.theme-dark .vcard-container {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos específicos de localização */
+[data-theme="dark"] .location-container,
+.theme-dark .location-container {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos específicos de documento */
+[data-theme="dark"] .document-container,
+.theme-dark .document-container {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos específicos de áudio */
+[data-theme="dark"] .audio-container,
+.theme-dark .audio-container {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos específicos de vídeo */
+[data-theme="dark"] .video-container,
+.theme-dark .video-container {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos específicos de imagem */
+[data-theme="dark"] .image-container,
+.theme-dark .image-container {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}

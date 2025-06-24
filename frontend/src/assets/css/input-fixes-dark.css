@@ -1,0 +1,297 @@
+/* ===== CORREÇÕES ESPECÍFICAS PARA INPUTS NO MODO DARK ===== */
+
+/* Remover background preto dos inputs genéricos */
+[data-theme="dark"] input:not(.MuiInputBase-input),
+.theme-dark input:not(.MuiInputBase-input),
+[data-theme="dark"] textarea:not(.MuiInputBase-input),
+.theme-dark textarea:not(.MuiInputBase-input),
+[data-theme="dark"] select:not(.MuiInputBase-input),
+.theme-dark select:not(.MuiInputBase-input) {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Manter apenas cor e border para inputs Material-UI */
+[data-theme="dark"] .MuiInputBase-input,
+.theme-dark .MuiInputBase-input {
+  color: #ffffff !important;
+  background-color: transparent !important;
+}
+
+/* Garantir que inputs de formulário não tenham background preto */
+[data-theme="dark"] input[type="text"],
+.theme-dark input[type="text"],
+[data-theme="dark"] input[type="email"],
+.theme-dark input[type="email"],
+[data-theme="dark"] input[type="password"],
+.theme-dark input[type="password"],
+[data-theme="dark"] input[type="number"],
+.theme-dark input[type="number"],
+[data-theme="dark"] input[type="search"],
+.theme-dark input[type="search"],
+[data-theme="dark"] input[type="tel"],
+.theme-dark input[type="tel"],
+[data-theme="dark"] input[type="url"],
+.theme-dark input[type="url"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Garantir que textareas não tenham background preto */
+[data-theme="dark"] textarea,
+.theme-dark textarea {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Garantir que selects não tenham background preto */
+[data-theme="dark"] select,
+.theme-dark select {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Placeholders dos inputs */
+[data-theme="dark"] input::placeholder,
+.theme-dark input::placeholder,
+[data-theme="dark"] textarea::placeholder,
+.theme-dark textarea::placeholder {
+  color: #b0b0b0 !important;
+}
+
+/* Inputs específicos do Material-UI */
+[data-theme="dark"] .MuiTextField-root .MuiInputBase-root,
+.theme-dark .MuiTextField-root .MuiInputBase-root {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiOutlinedInput-root,
+.theme-dark .MuiOutlinedInput-root {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiFilledInput-root,
+.theme-dark .MuiFilledInput-root {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiInput-root,
+.theme-dark .MuiInput-root {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs de busca específicos */
+[data-theme="dark"] .MuiInputBase-root.MuiInputBase-adornedStart,
+.theme-dark .MuiInputBase-root.MuiInputBase-adornedStart,
+[data-theme="dark"] .MuiInputBase-root.MuiInputBase-adornedEnd,
+.theme-dark .MuiInputBase-root.MuiInputBase-adornedEnd {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs de autocomplete */
+[data-theme="dark"] .MuiAutocomplete-inputRoot,
+.theme-dark .MuiAutocomplete-inputRoot {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs de data picker */
+[data-theme="dark"] .MuiPickersBasePicker-pickerView input,
+.theme-dark .MuiPickersBasePicker-pickerView input {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs de formulário específicos da aplicação */
+[data-theme="dark"] .form-input,
+.theme-dark .form-input,
+[data-theme="dark"] .search-input,
+.theme-dark .search-input,
+[data-theme="dark"] .filter-input,
+.theme-dark .filter-input {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Garantir que inputs em containers específicos não tenham background preto */
+[data-theme="dark"] .message-input-container input,
+.theme-dark .message-input-container input,
+[data-theme="dark"] .search-container input,
+.theme-dark .search-container input,
+[data-theme="dark"] .filter-container input,
+.theme-dark .filter-container input {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs em modais */
+[data-theme="dark"] .MuiDialog-root input,
+.theme-dark .MuiDialog-root input,
+[data-theme="dark"] .MuiDialog-root textarea,
+.theme-dark .MuiDialog-root textarea {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs em popovers */
+[data-theme="dark"] .MuiPopover-root input,
+.theme-dark .MuiPopover-root input,
+[data-theme="dark"] .MuiPopover-root textarea,
+.theme-dark .MuiPopover-root textarea {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs em menus */
+[data-theme="dark"] .MuiMenu-root input,
+.theme-dark .MuiMenu-root input,
+[data-theme="dark"] .MuiMenu-root textarea,
+.theme-dark .MuiMenu-root textarea {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs em drawers */
+[data-theme="dark"] .MuiDrawer-root input,
+.theme-dark .MuiDrawer-root input,
+[data-theme="dark"] .MuiDrawer-root textarea,
+.theme-dark .MuiDrawer-root textarea {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs em cards */
+[data-theme="dark"] .MuiCard-root input,
+.theme-dark .MuiCard-root input,
+[data-theme="dark"] .MuiCard-root textarea,
+.theme-dark .MuiCard-root textarea {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs em papers */
+[data-theme="dark"] .MuiPaper-root input,
+.theme-dark .MuiPaper-root input,
+[data-theme="dark"] .MuiPaper-root textarea,
+.theme-dark .MuiPaper-root textarea {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que inputs com classes específicas não tenham background preto */
+[data-theme="dark"] input.form-control,
+.theme-dark input.form-control,
+[data-theme="dark"] textarea.form-control,
+.theme-dark textarea.form-control {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Inputs de upload de arquivo */
+[data-theme="dark"] input[type="file"],
+.theme-dark input[type="file"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Inputs de checkbox e radio */
+[data-theme="dark"] input[type="checkbox"],
+.theme-dark input[type="checkbox"],
+[data-theme="dark"] input[type="radio"],
+.theme-dark input[type="radio"] {
+  background-color: transparent !important;
+}
+
+/* Inputs de range */
+[data-theme="dark"] input[type="range"],
+.theme-dark input[type="range"] {
+  background-color: transparent !important;
+}
+
+/* Inputs de color */
+[data-theme="dark"] input[type="color"],
+.theme-dark input[type="color"] {
+  background-color: transparent !important;
+}
+
+/* Inputs de date, time, datetime-local */
+[data-theme="dark"] input[type="date"],
+.theme-dark input[type="date"],
+[data-theme="dark"] input[type="time"],
+.theme-dark input[type="time"],
+[data-theme="dark"] input[type="datetime-local"],
+.theme-dark input[type="datetime-local"],
+[data-theme="dark"] input[type="month"],
+.theme-dark input[type="month"],
+[data-theme="dark"] input[type="week"],
+.theme-dark input[type="week"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Garantir que inputs em formulários específicos não tenham background preto */
+[data-theme="dark"] form input,
+.theme-dark form input,
+[data-theme="dark"] form textarea,
+.theme-dark form textarea,
+[data-theme="dark"] form select,
+.theme-dark form select {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Inputs em fieldsets */
+[data-theme="dark"] fieldset input,
+.theme-dark fieldset input,
+[data-theme="dark"] fieldset textarea,
+.theme-dark fieldset textarea,
+[data-theme="dark"] fieldset select,
+.theme-dark fieldset select {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Garantir que inputs com IDs específicos não tenham background preto */
+[data-theme="dark"] #search-input,
+.theme-dark #search-input,
+[data-theme="dark"] #filter-input,
+.theme-dark #filter-input,
+[data-theme="dark"] #message-input,
+.theme-dark #message-input {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Sobrescrever qualquer regra que force background preto em inputs */
+[data-theme="dark"] input:not([type="submit"]):not([type="button"]):not([type="reset"]),
+.theme-dark input:not([type="submit"]):not([type="button"]):not([type="reset"]) {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] textarea,
+.theme-dark textarea {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] select,
+.theme-dark select {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}

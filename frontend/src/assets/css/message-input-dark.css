@@ -1,0 +1,511 @@
+/* ===== CORREÇÕES PARA MESSAGEINPUT NO MODO DARK ===== */
+
+/* Corrigir mainWrapper no modo escuro */
+[data-theme="dark"] .makeStyles-mainWrapper-704,
+.theme-dark .makeStyles-mainWrapper-704,
+[data-theme="dark"] .makeStyles-mainWrapper-705,
+.theme-dark .makeStyles-mainWrapper-705 {
+  background: #1e1e1e !important;
+  border-top: 1px solid #333333 !important;
+}
+
+/* Corrigir newMessageBox no modo escuro */
+[data-theme="dark"] .makeStyles-newMessageBox-705,
+.theme-dark .makeStyles-newMessageBox-705,
+[data-theme="dark"] .makeStyles-newMessageBox-706,
+.theme-dark .makeStyles-newMessageBox-706 {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir messageInputWrapper no modo escuro */
+[data-theme="dark"] .makeStyles-messageInputWrapper-706,
+.theme-dark .makeStyles-messageInputWrapper-706,
+[data-theme="dark"] .makeStyles-messageInputWrapper-707,
+.theme-dark .makeStyles-messageInputWrapper-707 {
+  background: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir messageInput no modo escuro */
+[data-theme="dark"] .makeStyles-messageInput-707,
+.theme-dark .makeStyles-messageInput-707,
+[data-theme="dark"] .makeStyles-messageInput-708,
+.theme-dark .makeStyles-messageInput-708 {
+  color: #ffffff !important;
+}
+
+/* Corrigir sendMessageIcons no modo escuro */
+[data-theme="dark"] .makeStyles-sendMessageIcons-708,
+.theme-dark .makeStyles-sendMessageIcons-708,
+[data-theme="dark"] .makeStyles-sendMessageIcons-709,
+.theme-dark .makeStyles-sendMessageIcons-709 {
+  color: #b0b0b0 !important;
+}
+
+/* Corrigir viewMediaInputWrapper no modo escuro */
+[data-theme="dark"] .makeStyles-viewMediaInputWrapper-710,
+.theme-dark .makeStyles-viewMediaInputWrapper-710,
+[data-theme="dark"] .makeStyles-viewMediaInputWrapper-711,
+.theme-dark .makeStyles-viewMediaInputWrapper-711 {
+  background-color: #1e1e1e !important;
+  border-top: 1px solid #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir emojiBox no modo escuro */
+[data-theme="dark"] .makeStyles-emojiBox-711,
+.theme-dark .makeStyles-emojiBox-711,
+[data-theme="dark"] .makeStyles-emojiBox-712,
+.theme-dark .makeStyles-emojiBox-712 {
+  border-top: 1px solid #333333 !important;
+}
+
+/* Corrigir replyginMsgWrapper no modo escuro */
+[data-theme="dark"] .makeStyles-replyginMsgWrapper-713,
+.theme-dark .makeStyles-replyginMsgWrapper-713,
+[data-theme="dark"] .makeStyles-replyginMsgWrapper-714,
+.theme-dark .makeStyles-replyginMsgWrapper-714 {
+  color: #ffffff !important;
+}
+
+/* Corrigir replyginMsgContainer no modo escuro */
+[data-theme="dark"] .makeStyles-replyginMsgContainer-714,
+.theme-dark .makeStyles-replyginMsgContainer-714,
+[data-theme="dark"] .makeStyles-replyginMsgContainer-715,
+.theme-dark .makeStyles-replyginMsgContainer-715 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir replyginMsgBody no modo escuro */
+[data-theme="dark"] .makeStyles-replyginMsgBody-715,
+.theme-dark .makeStyles-replyginMsgBody-715,
+[data-theme="dark"] .makeStyles-replyginMsgBody-716,
+.theme-dark .makeStyles-replyginMsgBody-716 {
+  color: #ffffff !important;
+}
+
+/* Corrigir messageContactName no modo escuro */
+[data-theme="dark"] .makeStyles-messageContactName-718,
+.theme-dark .makeStyles-messageContactName-718,
+[data-theme="dark"] .makeStyles-messageContactName-719,
+.theme-dark .makeStyles-messageContactName-719 {
+  color: #66bb6a !important;
+}
+
+/* Corrigir shortcodeChip no modo escuro */
+[data-theme="dark"] .makeStyles-shortcodeChip-719,
+.theme-dark .makeStyles-shortcodeChip-719,
+[data-theme="dark"] .makeStyles-shortcodeChip-720,
+.theme-dark .makeStyles-shortcodeChip-720 {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir autocompletePaper no modo escuro */
+[data-theme="dark"] .makeStyles-autocompletePaper-721,
+.theme-dark .makeStyles-autocompletePaper-721,
+[data-theme="dark"] .makeStyles-autocompletePaper-722,
+.theme-dark .makeStyles-autocompletePaper-722 {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir quickMessagesMenu no modo escuro */
+[data-theme="dark"] .makeStyles-quickMessagesMenu-720,
+.theme-dark .makeStyles-quickMessagesMenu-720,
+[data-theme="dark"] .makeStyles-quickMessagesMenu-721,
+.theme-dark .makeStyles-quickMessagesMenu-721 {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir classes genéricas que podem aparecer */
+[data-theme="dark"] [class*="makeStyles-mainWrapper"],
+.theme-dark [class*="makeStyles-mainWrapper"] {
+  background: #1e1e1e !important;
+  border-top: 1px solid #333333 !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-newMessageBox"],
+.theme-dark [class*="makeStyles-newMessageBox"] {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-messageInputWrapper"],
+.theme-dark [class*="makeStyles-messageInputWrapper"] {
+  background: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-messageInput"],
+.theme-dark [class*="makeStyles-messageInput"] {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-sendMessageIcons"],
+.theme-dark [class*="makeStyles-sendMessageIcons"] {
+  color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-viewMediaInputWrapper"],
+.theme-dark [class*="makeStyles-viewMediaInputWrapper"] {
+  background-color: #1e1e1e !important;
+  border-top: 1px solid #333333 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-emojiBox"],
+.theme-dark [class*="makeStyles-emojiBox"] {
+  border-top: 1px solid #333333 !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-replyginMsgWrapper"],
+.theme-dark [class*="makeStyles-replyginMsgWrapper"] {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-replyginMsgContainer"],
+.theme-dark [class*="makeStyles-replyginMsgContainer"] {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-replyginMsgBody"],
+.theme-dark [class*="makeStyles-replyginMsgBody"] {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-messageContactName"],
+.theme-dark [class*="makeStyles-messageContactName"] {
+  color: #66bb6a !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-shortcodeChip"],
+.theme-dark [class*="makeStyles-shortcodeChip"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-autocompletePaper"],
+.theme-dark [class*="makeStyles-autocompletePaper"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] [class*="makeStyles-quickMessagesMenu"],
+.theme-dark [class*="makeStyles-quickMessagesMenu"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos específicos do MessageInput */
+[data-theme="dark"] .MuiInputBase-root.MuiInputBase-multiline,
+.theme-dark .MuiInputBase-root.MuiInputBase-multiline {
+  color: #ffffff !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .MuiInputBase-input.MuiInputBase-inputMultiline,
+.theme-dark .MuiInputBase-input.MuiInputBase-inputMultiline {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiInputBase-input::placeholder,
+.theme-dark .MuiInputBase-input::placeholder {
+  color: #b0b0b0 !important;
+  opacity: 1 !important;
+}
+
+/* Corrigir FormControlLabel no MessageInput */
+[data-theme="dark"] .MuiFormControlLabel-root,
+.theme-dark .MuiFormControlLabel-root {
+  color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .MuiFormControlLabel-label,
+.theme-dark .MuiFormControlLabel-label {
+  color: #b0b0b0 !important;
+}
+
+/* Corrigir Switch no MessageInput */
+[data-theme="dark"] .MuiSwitch-root,
+.theme-dark .MuiSwitch-root {
+  color: #66bb6a !important;
+}
+
+[data-theme="dark"] .MuiSwitch-track,
+.theme-dark .MuiSwitch-track {
+  background-color: #333333 !important;
+}
+
+[data-theme="dark"] .MuiSwitch-thumb,
+.theme-dark .MuiSwitch-thumb {
+  background-color: #66bb6a !important;
+}
+
+/* Corrigir Paper do MessageInput */
+[data-theme="dark"] .MuiPaper-root.MuiPaper-elevation0,
+.theme-dark .MuiPaper-root.MuiPaper-elevation0 {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir Menu do MessageInput */
+[data-theme="dark"] .MuiMenu-paper,
+.theme-dark .MuiMenu-paper {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiMenuItem-root,
+.theme-dark .MuiMenuItem-root {
+  color: #ffffff !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .MuiMenuItem-root:hover,
+.theme-dark .MuiMenuItem-root:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .MuiMenuItem-root.Mui-selected,
+.theme-dark .MuiMenuItem-root.Mui-selected {
+  background-color: rgba(102, 187, 106, 0.2) !important;
+}
+
+/* Corrigir ListItemText no MessageInput */
+[data-theme="dark"] .MuiListItemText-primary,
+.theme-dark .MuiListItemText-primary {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiListItemText-secondary,
+.theme-dark .MuiListItemText-secondary {
+  color: #b0b0b0 !important;
+}
+
+/* Corrigir Divider no MessageInput */
+[data-theme="dark"] .MuiDivider-root,
+.theme-dark .MuiDivider-root {
+  background-color: #333333 !important;
+}
+
+/* Corrigir Popper no MessageInput */
+[data-theme="dark"] .MuiPopper-root,
+.theme-dark .MuiPopper-root {
+  z-index: 1300 !important;
+}
+
+[data-theme="dark"] .MuiPopper-root .MuiPaper-root,
+.theme-dark .MuiPopper-root .MuiPaper-root {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Corrigir ClickAwayListener no MessageInput */
+[data-theme="dark"] .MuiClickAwayListener-root,
+.theme-dark .MuiClickAwayListener-root {
+  background-color: transparent !important;
+}
+
+/* Corrigir elementos específicos do emoji picker */
+[data-theme="dark"] .emoji-mart,
+.theme-dark .emoji-mart {
+  background-color: #1e1e1e !important;
+  border: 1px solid #333333 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .emoji-mart-bar,
+.theme-dark .emoji-mart-bar {
+  background-color: #2a2a2a !important;
+  border-bottom: 1px solid #333333 !important;
+}
+
+[data-theme="dark"] .emoji-mart-search input,
+.theme-dark .emoji-mart-search input {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+  border: 1px solid #333333 !important;
+}
+
+[data-theme="dark"] .emoji-mart-search input::placeholder,
+.theme-dark .emoji-mart-search input::placeholder {
+  color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .emoji-mart-category-label span,
+.theme-dark .emoji-mart-category-label span {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .emoji-mart-anchor,
+.theme-dark .emoji-mart-anchor {
+  color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .emoji-mart-anchor:hover,
+.theme-dark .emoji-mart-anchor:hover,
+[data-theme="dark"] .emoji-mart-anchor-selected,
+.theme-dark .emoji-mart-anchor-selected {
+  color: #66bb6a !important;
+}
+
+[data-theme="dark"] .emoji-mart-emoji:hover:before,
+.theme-dark .emoji-mart-emoji:hover:before {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Corrigir elementos de progresso no MessageInput */
+[data-theme="dark"] .MuiLinearProgress-root,
+.theme-dark .MuiLinearProgress-root {
+  background-color: #333333 !important;
+}
+
+[data-theme="dark"] .MuiLinearProgress-bar,
+.theme-dark .MuiLinearProgress-bar {
+  background-color: #66bb6a !important;
+}
+
+[data-theme="dark"] .MuiCircularProgress-root,
+.theme-dark .MuiCircularProgress-root {
+  color: #66bb6a !important;
+}
+
+/* Corrigir elementos de upload no MessageInput */
+[data-theme="dark"] input[type="file"],
+.theme-dark input[type="file"] {
+  color: #ffffff !important;
+}
+
+/* Corrigir labels no MessageInput */
+[data-theme="dark"] label,
+.theme-dark label {
+  color: #ffffff !important;
+}
+
+/* Corrigir spans no MessageInput */
+[data-theme="dark"] span,
+.theme-dark span {
+  color: inherit !important;
+}
+
+/* Garantir que elementos com background hardcoded sejam corrigidos */
+[data-theme="dark"] *[style*="background: #eee"],
+.theme-dark *[style*="background: #eee"],
+[data-theme="dark"] *[style*="background-color: #eee"],
+.theme-dark *[style*="background-color: #eee"],
+[data-theme="dark"] *[style*="background: #fff"],
+.theme-dark *[style*="background: #fff"],
+[data-theme="dark"] *[style*="background-color: #fff"],
+.theme-dark *[style*="background-color: #fff"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com cor hardcoded sejam corrigidos */
+[data-theme="dark"] *[style*="color: grey"],
+.theme-dark *[style*="color: grey"],
+[data-theme="dark"] *[style*="color: gray"],
+.theme-dark *[style*="color: gray"] {
+  color: #b0b0b0 !important;
+}
+
+/* Corrigir elementos específicos que podem ter classes dinâmicas */
+[data-theme="dark"] div[class*="mainWrapper"],
+.theme-dark div[class*="mainWrapper"] {
+  background: #1e1e1e !important;
+  border-top: 1px solid #333333 !important;
+}
+
+[data-theme="dark"] div[class*="newMessageBox"],
+.theme-dark div[class*="newMessageBox"] {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] div[class*="messageInputWrapper"],
+.theme-dark div[class*="messageInputWrapper"] {
+  background: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] div[class*="messageInput"],
+.theme-dark div[class*="messageInput"] {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] svg[class*="sendMessageIcons"],
+.theme-dark svg[class*="sendMessageIcons"] {
+  color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] div[class*="viewMediaInputWrapper"],
+.theme-dark div[class*="viewMediaInputWrapper"] {
+  background-color: #1e1e1e !important;
+  border-top: 1px solid #333333 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] div[class*="emojiBox"],
+.theme-dark div[class*="emojiBox"] {
+  border-top: 1px solid #333333 !important;
+}
+
+[data-theme="dark"] div[class*="replyginMsgWrapper"],
+.theme-dark div[class*="replyginMsgWrapper"] {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] div[class*="replyginMsgContainer"],
+.theme-dark div[class*="replyginMsgContainer"] {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] div[class*="replyginMsgBody"],
+.theme-dark div[class*="replyginMsgBody"] {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] span[class*="messageContactName"],
+.theme-dark span[class*="messageContactName"] {
+  color: #66bb6a !important;
+}
+
+[data-theme="dark"] span[class*="shortcodeChip"],
+.theme-dark span[class*="shortcodeChip"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Regra específica para todas as variações de shortcodeChip */
+[data-theme="dark"] .makeStyles-shortcodeChip-667,
+[data-theme="dark"] .makeStyles-shortcodeChip-668,
+[data-theme="dark"] .makeStyles-shortcodeChip-669,
+[data-theme="dark"] .makeStyles-shortcodeChip-670,
+.theme-dark .makeStyles-shortcodeChip-667,
+.theme-dark .makeStyles-shortcodeChip-668,
+.theme-dark .makeStyles-shortcodeChip-669,
+.theme-dark .makeStyles-shortcodeChip-670 {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid #333333 !important;
+}
+
+[data-theme="dark"] div[class*="autocompletePaper"],
+.theme-dark div[class*="autocompletePaper"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] div[class*="quickMessagesMenu"],
+.theme-dark div[class*="quickMessagesMenu"] {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}

@@ -1,0 +1,545 @@
+/* ===== PRESERVAR CORES ORIGINAIS NO MODO DARK ===== */
+
+/* Permitir que badges mantenham suas cores originais */
+[data-theme="dark"] .MuiBadge-badge[style*="background-color"],
+.theme-dark .MuiBadge-badge[style*="background-color"] {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que chips mantenham suas cores originais */
+[data-theme="dark"] .MuiChip-root[style*="background-color"],
+.theme-dark .MuiChip-root[style*="background-color"] {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que avatars mantenham suas cores originais */
+[data-theme="dark"] .MuiAvatar-root[style*="background-color"],
+.theme-dark .MuiAvatar-root[style*="background-color"] {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com cores específicas mantenham suas cores */
+[data-theme="dark"] *[style*="background-color: #f44336"],
+.theme-dark *[style*="background-color: #f44336"],
+[data-theme="dark"] *[style*="background-color: #e91e63"],
+.theme-dark *[style*="background-color: #e91e63"],
+[data-theme="dark"] *[style*="background-color: #9c27b0"],
+.theme-dark *[style*="background-color: #9c27b0"],
+[data-theme="dark"] *[style*="background-color: #673ab7"],
+.theme-dark *[style*="background-color: #673ab7"],
+[data-theme="dark"] *[style*="background-color: #3f51b5"],
+.theme-dark *[style*="background-color: #3f51b5"],
+[data-theme="dark"] *[style*="background-color: #2196f3"],
+.theme-dark *[style*="background-color: #2196f3"],
+[data-theme="dark"] *[style*="background-color: #03a9f4"],
+.theme-dark *[style*="background-color: #03a9f4"],
+[data-theme="dark"] *[style*="background-color: #00bcd4"],
+.theme-dark *[style*="background-color: #00bcd4"],
+[data-theme="dark"] *[style*="background-color: #009688"],
+.theme-dark *[style*="background-color: #009688"],
+[data-theme="dark"] *[style*="background-color: #4caf50"],
+.theme-dark *[style*="background-color: #4caf50"],
+[data-theme="dark"] *[style*="background-color: #8bc34a"],
+.theme-dark *[style*="background-color: #8bc34a"],
+[data-theme="dark"] *[style*="background-color: #cddc39"],
+.theme-dark *[style*="background-color: #cddc39"],
+[data-theme="dark"] *[style*="background-color: #ffeb3b"],
+.theme-dark *[style*="background-color: #ffeb3b"],
+[data-theme="dark"] *[style*="background-color: #ffc107"],
+.theme-dark *[style*="background-color: #ffc107"],
+[data-theme="dark"] *[style*="background-color: #ff9800"],
+.theme-dark *[style*="background-color: #ff9800"],
+[data-theme="dark"] *[style*="background-color: #ff5722"],
+.theme-dark *[style*="background-color: #ff5722"] {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com cores RGB específicas mantenham suas cores */
+[data-theme="dark"] *[style*="background-color: rgb(244, 67, 54)"],
+.theme-dark *[style*="background-color: rgb(244, 67, 54)"],
+[data-theme="dark"] *[style*="background-color: rgb(233, 30, 99)"],
+.theme-dark *[style*="background-color: rgb(233, 30, 99)"],
+[data-theme="dark"] *[style*="background-color: rgb(156, 39, 176)"],
+.theme-dark *[style*="background-color: rgb(156, 39, 176)"],
+[data-theme="dark"] *[style*="background-color: rgb(103, 58, 183)"],
+.theme-dark *[style*="background-color: rgb(103, 58, 183)"],
+[data-theme="dark"] *[style*="background-color: rgb(63, 81, 181)"],
+.theme-dark *[style*="background-color: rgb(63, 81, 181)"],
+[data-theme="dark"] *[style*="background-color: rgb(33, 150, 243)"],
+.theme-dark *[style*="background-color: rgb(33, 150, 243)"],
+[data-theme="dark"] *[style*="background-color: rgb(3, 169, 244)"],
+.theme-dark *[style*="background-color: rgb(3, 169, 244)"],
+[data-theme="dark"] *[style*="background-color: rgb(0, 188, 212)"],
+.theme-dark *[style*="background-color: rgb(0, 188, 212)"],
+[data-theme="dark"] *[style*="background-color: rgb(0, 150, 136)"],
+.theme-dark *[style*="background-color: rgb(0, 150, 136)"],
+[data-theme="dark"] *[style*="background-color: rgb(76, 175, 80)"],
+.theme-dark *[style*="background-color: rgb(76, 175, 80)"],
+[data-theme="dark"] *[style*="background-color: rgb(139, 195, 74)"],
+.theme-dark *[style*="background-color: rgb(139, 195, 74)"],
+[data-theme="dark"] *[style*="background-color: rgb(205, 220, 57)"],
+.theme-dark *[style*="background-color: rgb(205, 220, 57)"],
+[data-theme="dark"] *[style*="background-color: rgb(255, 235, 59)"],
+.theme-dark *[style*="background-color: rgb(255, 235, 59)"],
+[data-theme="dark"] *[style*="background-color: rgb(255, 193, 7)"],
+.theme-dark *[style*="background-color: rgb(255, 193, 7)"],
+[data-theme="dark"] *[style*="background-color: rgb(255, 152, 0)"],
+.theme-dark *[style*="background-color: rgb(255, 152, 0)"],
+[data-theme="dark"] *[style*="background-color: rgb(255, 87, 34)"],
+.theme-dark *[style*="background-color: rgb(255, 87, 34)"] {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com cores personalizadas da aplicação mantenham suas cores */
+[data-theme="dark"] *[style*="background-color: #44b774"],
+.theme-dark *[style*="background-color: #44b774"],
+[data-theme="dark"] *[style*="background-color: #66bb6a"],
+.theme-dark *[style*="background-color: #66bb6a"],
+[data-theme="dark"] *[style*="background-color: #35cd96"],
+.theme-dark *[style*="background-color: #35cd96"],
+[data-theme="dark"] *[style*="background-color: #6bcbef"],
+.theme-dark *[style*="background-color: #6bcbef"] {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com cores de status mantenham suas cores */
+[data-theme="dark"] *[style*="background-color: #28a745"],
+.theme-dark *[style*="background-color: #28a745"],
+[data-theme="dark"] *[style*="background-color: #dc3545"],
+.theme-dark *[style*="background-color: #dc3545"],
+[data-theme="dark"] *[style*="background-color: #ffc107"],
+.theme-dark *[style*="background-color: #ffc107"],
+[data-theme="dark"] *[style*="background-color: #17a2b8"],
+.theme-dark *[style*="background-color: #17a2b8"] {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com cores de prioridade mantenham suas cores */
+[data-theme="dark"] *[style*="background-color: #ff4444"],
+.theme-dark *[style*="background-color: #ff4444"],
+[data-theme="dark"] *[style*="background-color: #ffaa00"],
+.theme-dark *[style*="background-color: #ffaa00"],
+[data-theme="dark"] *[style*="background-color: #00C851"],
+.theme-dark *[style*="background-color: #00C851"],
+[data-theme="dark"] *[style*="background-color: #33b5e5"],
+.theme-dark *[style*="background-color: #33b5e5"] {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que badges com classes específicas mantenham suas cores */
+[data-theme="dark"] .MuiBadge-colorPrimary .MuiBadge-badge,
+.theme-dark .MuiBadge-colorPrimary .MuiBadge-badge,
+[data-theme="dark"] .MuiBadge-colorSecondary .MuiBadge-badge,
+.theme-dark .MuiBadge-colorSecondary .MuiBadge-badge,
+[data-theme="dark"] .MuiBadge-colorError .MuiBadge-badge,
+.theme-dark .MuiBadge-colorError .MuiBadge-badge {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que chips com classes específicas mantenham suas cores */
+[data-theme="dark"] .MuiChip-colorPrimary,
+.theme-dark .MuiChip-colorPrimary,
+[data-theme="dark"] .MuiChip-colorSecondary,
+.theme-dark .MuiChip-colorSecondary {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que avatars com classes específicas mantenham suas cores */
+[data-theme="dark"] .MuiAvatar-colorDefault,
+.theme-dark .MuiAvatar-colorDefault {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com data attributes de cor mantenham suas cores */
+[data-theme="dark"] [data-color]:not([data-color="default"]):not([data-color="inherit"]),
+.theme-dark [data-color]:not([data-color="default"]):not([data-color="inherit"]) {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de cor específicas mantenham suas cores */
+[data-theme="dark"] .color-red,
+.theme-dark .color-red,
+[data-theme="dark"] .color-green,
+.theme-dark .color-green,
+[data-theme="dark"] .color-blue,
+.theme-dark .color-blue,
+[data-theme="dark"] .color-yellow,
+.theme-dark .color-yellow,
+[data-theme="dark"] .color-orange,
+.theme-dark .color-orange,
+[data-theme="dark"] .color-purple,
+.theme-dark .color-purple,
+[data-theme="dark"] .color-pink,
+.theme-dark .color-pink,
+[data-theme="dark"] .color-cyan,
+.theme-dark .color-cyan,
+[data-theme="dark"] .color-teal,
+.theme-dark .color-teal,
+[data-theme="dark"] .color-lime,
+.theme-dark .color-lime,
+[data-theme="dark"] .color-indigo,
+.theme-dark .color-indigo {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de status mantenham suas cores */
+[data-theme="dark"] .status-success,
+.theme-dark .status-success,
+[data-theme="dark"] .status-error,
+.theme-dark .status-error,
+[data-theme="dark"] .status-warning,
+.theme-dark .status-warning,
+[data-theme="dark"] .status-info,
+.theme-dark .status-info,
+[data-theme="dark"] .status-primary,
+.theme-dark .status-primary,
+[data-theme="dark"] .status-secondary,
+.theme-dark .status-secondary {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de prioridade mantenham suas cores */
+[data-theme="dark"] .priority-high,
+.theme-dark .priority-high,
+[data-theme="dark"] .priority-medium,
+.theme-dark .priority-medium,
+[data-theme="dark"] .priority-low,
+.theme-dark .priority-low,
+[data-theme="dark"] .priority-urgent,
+.theme-dark .priority-urgent {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de categoria mantenham suas cores */
+[data-theme="dark"] .category-support,
+.theme-dark .category-support,
+[data-theme="dark"] .category-sales,
+.theme-dark .category-sales,
+[data-theme="dark"] .category-billing,
+.theme-dark .category-billing,
+[data-theme="dark"] .category-technical,
+.theme-dark .category-technical {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de tag mantenham suas cores */
+[data-theme="dark"] .tag-important,
+.theme-dark .tag-important,
+[data-theme="dark"] .tag-urgent,
+.theme-dark .tag-urgent,
+[data-theme="dark"] .tag-new,
+.theme-dark .tag-new,
+[data-theme="dark"] .tag-resolved,
+.theme-dark .tag-resolved,
+[data-theme="dark"] .tag-pending,
+.theme-dark .tag-pending,
+[data-theme="dark"] .tag-closed,
+.theme-dark .tag-closed {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de departamento mantenham suas cores */
+[data-theme="dark"] .dept-sales,
+.theme-dark .dept-sales,
+[data-theme="dark"] .dept-support,
+.theme-dark .dept-support,
+[data-theme="dark"] .dept-technical,
+.theme-dark .dept-technical,
+[data-theme="dark"] .dept-billing,
+.theme-dark .dept-billing {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de usuário mantenham suas cores */
+[data-theme="dark"] .user-online,
+.theme-dark .user-online,
+[data-theme="dark"] .user-offline,
+.theme-dark .user-offline,
+[data-theme="dark"] .user-away,
+.theme-dark .user-away,
+[data-theme="dark"] .user-busy,
+.theme-dark .user-busy {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de ticket mantenham suas cores */
+[data-theme="dark"] .ticket-open,
+.theme-dark .ticket-open,
+[data-theme="dark"] .ticket-closed,
+.theme-dark .ticket-closed,
+[data-theme="dark"] .ticket-pending,
+.theme-dark .ticket-pending,
+[data-theme="dark"] .ticket-resolved,
+.theme-dark .ticket-resolved {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de conexão mantenham suas cores */
+[data-theme="dark"] .connection-connected,
+.theme-dark .connection-connected,
+[data-theme="dark"] .connection-disconnected,
+.theme-dark .connection-disconnected,
+[data-theme="dark"] .connection-connecting,
+.theme-dark .connection-connecting {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de mensagem mantenham suas cores */
+[data-theme="dark"] .message-sent,
+.theme-dark .message-sent,
+[data-theme="dark"] .message-received,
+.theme-dark .message-received,
+[data-theme="dark"] .message-read,
+.theme-dark .message-read,
+[data-theme="dark"] .message-unread,
+.theme-dark .message-unread {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de notificação mantenham suas cores */
+[data-theme="dark"] .notification-success,
+.theme-dark .notification-success,
+[data-theme="dark"] .notification-error,
+.theme-dark .notification-error,
+[data-theme="dark"] .notification-warning,
+.theme-dark .notification-warning,
+[data-theme="dark"] .notification-info,
+.theme-dark .notification-info {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de integração mantenham suas cores */
+[data-theme="dark"] .integration-whatsapp,
+.theme-dark .integration-whatsapp,
+[data-theme="dark"] .integration-telegram,
+.theme-dark .integration-telegram,
+[data-theme="dark"] .integration-facebook,
+.theme-dark .integration-facebook,
+[data-theme="dark"] .integration-instagram,
+.theme-dark .integration-instagram {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de canal mantenham suas cores */
+[data-theme="dark"] .channel-whatsapp,
+.theme-dark .channel-whatsapp,
+[data-theme="dark"] .channel-telegram,
+.theme-dark .channel-telegram,
+[data-theme="dark"] .channel-facebook,
+.theme-dark .channel-facebook,
+[data-theme="dark"] .channel-instagram,
+.theme-dark .channel-instagram,
+[data-theme="dark"] .channel-email,
+.theme-dark .channel-email,
+[data-theme="dark"] .channel-sms,
+.theme-dark .channel-sms {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de campanha mantenham suas cores */
+[data-theme="dark"] .campaign-active,
+.theme-dark .campaign-active,
+[data-theme="dark"] .campaign-inactive,
+.theme-dark .campaign-inactive,
+[data-theme="dark"] .campaign-scheduled,
+.theme-dark .campaign-scheduled,
+[data-theme="dark"] .campaign-completed,
+.theme-dark .campaign-completed {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de contato mantenham suas cores */
+[data-theme="dark"] .contact-vip,
+.theme-dark .contact-vip,
+[data-theme="dark"] .contact-blocked,
+.theme-dark .contact-blocked,
+[data-theme="dark"] .contact-favorite,
+.theme-dark .contact-favorite {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de queue mantenham suas cores */
+[data-theme="dark"] .queue-support,
+.theme-dark .queue-support,
+[data-theme="dark"] .queue-sales,
+.theme-dark .queue-sales,
+[data-theme="dark"] .queue-billing,
+.theme-dark .queue-billing,
+[data-theme="dark"] .queue-technical,
+.theme-dark .queue-technical {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de plan mantenham suas cores */
+[data-theme="dark"] .plan-basic,
+.theme-dark .plan-basic,
+[data-theme="dark"] .plan-premium,
+.theme-dark .plan-premium,
+[data-theme="dark"] .plan-enterprise,
+.theme-dark .plan-enterprise {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de subscription mantenham suas cores */
+[data-theme="dark"] .subscription-active,
+.theme-dark .subscription-active,
+[data-theme="dark"] .subscription-expired,
+.theme-dark .subscription-expired,
+[data-theme="dark"] .subscription-trial,
+.theme-dark .subscription-trial {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de payment mantenham suas cores */
+[data-theme="dark"] .payment-paid,
+.theme-dark .payment-paid,
+[data-theme="dark"] .payment-pending,
+.theme-dark .payment-pending,
+[data-theme="dark"] .payment-failed,
+.theme-dark .payment-failed,
+[data-theme="dark"] .payment-refunded,
+.theme-dark .payment-refunded {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de report mantenham suas cores */
+[data-theme="dark"] .report-positive,
+.theme-dark .report-positive,
+[data-theme="dark"] .report-negative,
+.theme-dark .report-negative,
+[data-theme="dark"] .report-neutral,
+.theme-dark .report-neutral {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de metric mantenham suas cores */
+[data-theme="dark"] .metric-up,
+.theme-dark .metric-up,
+[data-theme="dark"] .metric-down,
+.theme-dark .metric-down,
+[data-theme="dark"] .metric-stable,
+.theme-dark .metric-stable {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de alert mantenham suas cores */
+[data-theme="dark"] .alert-critical,
+.theme-dark .alert-critical,
+[data-theme="dark"] .alert-warning,
+.theme-dark .alert-warning,
+[data-theme="dark"] .alert-info,
+.theme-dark .alert-info {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de badge específicas mantenham suas cores */
+[data-theme="dark"] .badge-new,
+.theme-dark .badge-new,
+[data-theme="dark"] .badge-hot,
+.theme-dark .badge-hot,
+[data-theme="dark"] .badge-sale,
+.theme-dark .badge-sale,
+[data-theme="dark"] .badge-featured,
+.theme-dark .badge-featured {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de label específicas mantenham suas cores */
+[data-theme="dark"] .label-important,
+.theme-dark .label-important,
+[data-theme="dark"] .label-urgent,
+.theme-dark .label-urgent,
+[data-theme="dark"] .label-new,
+.theme-dark .label-new,
+[data-theme="dark"] .label-featured,
+.theme-dark .label-featured {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de indicator específicas mantenham suas cores */
+[data-theme="dark"] .indicator-online,
+.theme-dark .indicator-online,
+[data-theme="dark"] .indicator-offline,
+.theme-dark .indicator-offline,
+[data-theme="dark"] .indicator-away,
+.theme-dark .indicator-away,
+[data-theme="dark"] .indicator-busy,
+.theme-dark .indicator-busy {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de dot específicas mantenham suas cores */
+[data-theme="dark"] .dot-green,
+.theme-dark .dot-green,
+[data-theme="dark"] .dot-red,
+.theme-dark .dot-red,
+[data-theme="dark"] .dot-yellow,
+.theme-dark .dot-yellow,
+[data-theme="dark"] .dot-blue,
+.theme-dark .dot-blue {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de circle específicas mantenham suas cores */
+[data-theme="dark"] .circle-green,
+.theme-dark .circle-green,
+[data-theme="dark"] .circle-red,
+.theme-dark .circle-red,
+[data-theme="dark"] .circle-yellow,
+.theme-dark .circle-yellow,
+[data-theme="dark"] .circle-blue,
+.theme-dark .circle-blue {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Permitir que elementos com classes de square específicas mantenham suas cores */
+[data-theme="dark"] .square-green,
+.theme-dark .square-green,
+[data-theme="dark"] .square-red,
+.theme-dark .square-red,
+[data-theme="dark"] .square-yellow,
+.theme-dark .square-yellow,
+[data-theme="dark"] .square-blue,
+.theme-dark .square-blue {
+  background-color: inherit !important;
+  color: inherit !important;
+}
