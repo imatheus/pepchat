@@ -41,6 +41,26 @@ export const RefreshTokenService = async (
 
     // Verificar status da empresa para informar no refresh
     const company = user.company;
+    
+    // Usar plano personalizado se disponível, senão usar plano base
+    let activePlan = company.plan;
+    if (company.companyPlans && company.companyPlans.length > 0) {
+      const companyPlan = company.companyPlans[0];
+      activePlan = {
+        id: companyPlan.id,
+        name: companyPlan.name,
+        users: companyPlan.users,
+        connections: companyPlan.connections,
+        queues: companyPlan.queues,
+        value: companyPlan.pricePerUser,
+        totalValue: companyPlan.totalValue,
+        useWhatsapp: companyPlan.useWhatsapp,
+        useFacebook: companyPlan.useFacebook,
+        useInstagram: companyPlan.useInstagram,
+        useCampaigns: companyPlan.useCampaigns
+      };
+    }
+    
     let companyStatus = {
       id: company.id,
       name: company.name,
@@ -49,7 +69,7 @@ export const RefreshTokenService = async (
       isExpired: false,
       dueDate: company.dueDate,
       trialExpiration: company.trialExpiration,
-      plan: company.plan // Manter informações do plano
+      plan: activePlan
     };
 
     if (company) {

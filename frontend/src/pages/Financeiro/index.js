@@ -585,11 +585,22 @@ const Invoices = () => {
 
               <Box>
                 <Typography className={classes.planPrice}>
-                  {user?.company?.plan?.value ? formatCurrency(user.company.plan.value) : "R$ 0,00"}
+                  {user?.company?.plan?.totalValue ? 
+                    formatCurrency(user.company.plan.totalValue) :
+                    (user?.company?.plan?.value && user?.company?.plan?.users ?
+                      formatCurrency(user.company.plan.value * user.company.plan.users) :
+                      formatCurrency(user.company.plan?.value || 0)
+                    )
+                  }
                 </Typography>
                 <Typography className={classes.planPriceUnit}>
                   por mês
                 </Typography>
+                {user?.company?.plan?.users && (
+                  <Typography className={classes.planPriceUnit} style={{ fontWeight: 'bold', color: '#4caf50' }}>
+                    {user.company.plan.users} licença{user.company.plan.users > 1 ? 's' : ''} contratada{user.company.plan.users > 1 ? 's' : ''}
+                  </Typography>
+                )}
               </Box>
             </div>
 
