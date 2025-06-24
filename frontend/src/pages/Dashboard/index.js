@@ -24,9 +24,11 @@ import ButtonWithSpinner from "../../components/ButtonWithSpinner";
 
 import CardCounter from "../../components/Dashboard/CardCounter";
 import TableAttendantsStatus from "../../components/Dashboard/TableAttendantsStatus";
+import TrialStatusCard from "../../components/TrialStatusCard";
 import { isArray } from "lodash";
 
 import useDashboard from "../../hooks/useDashboard";
+import useCompanyStatus from "../../hooks/useCompanyStatus";
 
 import { isEmpty } from "lodash";
 import moment from "moment";
@@ -107,6 +109,7 @@ const Dashboard = () => {
   const [dateTo, setDateTo] = useState(moment().format("YYYY-MM-DD"));
   const [loading, setLoading] = useState(false);
   const { find } = useDashboard();
+  const { companyStatus } = useCompanyStatus();
 
   useEffect(() => {
     async function firstLoad() {
@@ -321,6 +324,11 @@ const Dashboard = () => {
   return (
     <div>
       <Container maxWidth="lg" className={classes.container}>
+        {/* Card de Status do Trial - aparece apenas durante período de teste */}
+        {companyStatus.isInTrial && (
+          <TrialStatusCard />
+        )}
+        
         <Grid container spacing={3} justifyContent="flex-end">
           <Grid item xs={12} sm={6} md={4}>
             <FormControl className={`${classes.selectContainer} ${classes.filterField}`} variant="outlined">

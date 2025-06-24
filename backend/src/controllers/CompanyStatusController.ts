@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import SyncCompanyStatusService from "../services/CompanyService/SyncCompanyStatusService";
 import AppError from "../errors/AppError";
 
-export const syncStatus = async (req: Request, res: Response): Promise<Response> => {
+export const syncStatus = async (req: Request, res: Response): Promise<void> => {
   const { companyId } = req.params;
   const { forceUpdate = false } = req.body;
 
@@ -16,7 +16,7 @@ export const syncStatus = async (req: Request, res: Response): Promise<Response>
       forceUpdate
     });
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: {
         company: {
@@ -39,7 +39,7 @@ export const syncStatus = async (req: Request, res: Response): Promise<Response>
   }
 };
 
-export const getStatus = async (req: Request, res: Response): Promise<Response> => {
+export const getStatus = async (req: Request, res: Response): Promise<void> => {
   const companyId = req.user?.companyId;
 
   if (!companyId) {
@@ -52,7 +52,7 @@ export const getStatus = async (req: Request, res: Response): Promise<Response> 
       forceUpdate: false
     });
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: {
         company: {

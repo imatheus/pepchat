@@ -44,7 +44,9 @@ const useCompanyStatus = () => {
       if (isInTrial) {
         isActive = true;
         isExpired = false;
-        daysRemaining = Math.ceil(trialExpiration.diff(now, 'days', true));
+        // Calcular dias restantes de forma mais precisa
+        const diffInHours = trialExpiration.diff(now, 'hours', true);
+        daysRemaining = Math.max(0, Math.ceil(diffInHours / 24));
         message = `Período de avaliação - ${daysRemaining} ${daysRemaining === 1 ? 'dia restante' : 'dias restantes'}`;
       } else {
         // Trial expirou, verificar data de vencimento

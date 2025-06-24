@@ -1,4 +1,5 @@
 import * as Yup from "yup";
+import moment from "moment";
 import AppError from "../../errors/AppError";
 import Company from "../../models/Company";
 import User from "../../models/User";
@@ -101,6 +102,7 @@ const CreateCompanyService = async (
     trialExpiration: trialExpiration ? new Date(trialExpiration) : undefined
   });
 
+  
   // Se uma dueDate foi fornecida, usar o serviço de sincronização
   if (dueDate) {
     try {
@@ -115,6 +117,11 @@ const CreateCompanyService = async (
       console.error(`Erro ao sincronizar data de vencimento para empresa ${company.id}:`, error);
       throw new AppError(`Erro ao configurar período de avaliação: ${error.message}`);
     }
+  } else if (trialExpiration) {
+    // Se só foi fornecido trialExpiration sem dueDate, definir dueDate igual ao trialExpiration
+    const trialDate = moment(trialExpiration).format('YYYY-MM-DD');
+    await company.update({ dueDate: trialDate });
+    await company.reload();
   }
 
   // Criar o plano personalizado da empresa

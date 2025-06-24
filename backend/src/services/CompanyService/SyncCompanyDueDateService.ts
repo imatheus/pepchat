@@ -75,11 +75,9 @@ const SyncCompanyDueDateService = async ({
         result.trialUpdated = true;
       }
     } else {
-      // Se não deve atualizar trial (caso do webhook de pagamento confirmado)
-      // Sempre ativar a empresa e remover trial quando há pagamento
+      // Se não deve atualizar trial, apenas ativar a empresa sem mexer no trialExpiration
       updateData.status = true; // Ativar empresa
-      updateData.trialExpiration = null; // Remover trial se existir
-      logger.info(`Company ${companyId} activated due to payment confirmation with due date: ${dueDate}`);
+      logger.info(`Company ${companyId} due date updated without changing trial expiration`);
     }
 
     // Atualizar empresa no banco

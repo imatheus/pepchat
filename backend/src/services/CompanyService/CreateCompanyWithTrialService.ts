@@ -22,26 +22,36 @@ const CreateCompanyWithTrialService = async (
 ) => {
   const trialDays = companyData.trialDays || 7;
   
-  // Calcular data de vencimento (hoje + dias de trial)
-  const dueDate = moment().add(trialDays, 'days').format('YYYY-MM-DD');
+  // Se trialExpiration já foi fornecido pelo frontend, usar ele
+  // Senão, calcular baseado nos dias de trial
+  let finalTrialExpiration;
+  let finalDueDate;
   
-  // Calcular data de expiração do trial (hoje + dias de trial)
-  const trialExpiration = moment().add(trialDays, 'days').format('YYYY-MM-DD');
+  if (companyData.trialExpiration) {
+    // Frontend já enviou trialExpiration
+    finalTrialExpiration = companyData.trialExpiration;
+    finalDueDate = companyData.dueDate || moment().add(trialDays, 'days').format('YYYY-MM-DD');
+  } else {
+    // Calcular data de vencimento (hoje + dias de trial)
+    finalDueDate = moment().add(trialDays, 'days').format('YYYY-MM-DD');
+    // Calcular data de expiração do trial (hoje + dias de trial)
+    finalTrialExpiration = moment().add(trialDays, 'days').toISOString();
+  }
 
   // Criar empresa com as datas calculadas
   const company = await CreateCompanyService({
     ...companyData,
-    dueDate,
-    trialExpiration,
+    dueDate: finalDueDate,
+    trialExpiration: finalTrialExpiration,
     status: true // Ativar empresa durante o período de trial
   });
 
   return {
     company,
     trialDays,
-    dueDate,
-    trialExpiration,
-    message: `Empresa criada com ${trialDays} dias de avaliação. Vencimento: ${moment(dueDate).format('DD/MM/YYYY')}`
+    dueDate: finalDueDate,
+    trialExpiration: finalTrialExpiration,
+    message: `Empresa criada com ${trialDays} dias de avaliação. Vencimento: ${moment(finalDueDate).format('DD/MM/YYYY')}`
   };
 };
 

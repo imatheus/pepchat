@@ -28,6 +28,7 @@ import { toast } from "react-toastify";
 import { showUniqueError, showUniqueSuccess, showUniqueWarning, showUniqueInfo } from "../../utils/toastManager";
 import { socketConnection } from "../../services/socket";
 import useCompanyStatus from "../../hooks/useCompanyStatus";
+import TrialUpgradePrompt from "../../components/TrialUpgradePrompt";
 
 import moment from "moment";
 
@@ -555,6 +556,10 @@ const Invoices = () => {
 
   return (
     <MainContainer>
+      {/* Prompt de Upgrade para usuários em período de teste */}
+      {companyStatus.isInTrial && (
+        <TrialUpgradePrompt />
+      )}
       <SubscriptionModal
         open={contactModalOpen}
         onClose={handleCloseContactModal}

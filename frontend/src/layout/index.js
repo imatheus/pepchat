@@ -34,6 +34,8 @@ import logo from "../assets/logo.png";
 import { socketConnection } from "../services/socket";
 import moment from "moment";
 import useCompanyStatus from "../hooks/useCompanyStatus";
+import TrialNotifications from "../components/TrialNotifications";
+import SimpleTrialBanner from "../components/SimpleTrialBanner";
 
 const drawerWidth = 300;
 const drawerCollapsedWidth = 100;
@@ -355,32 +357,63 @@ const useStyles = makeStyles((theme) => ({
     left: "0",
     right: "0",
     zIndex: theme.zIndex.appBar + 1,
-    padding: "8px 16px",
-    fontSize: "14px",
-    fontWeight: 600,
+    padding: "10px 16px",
+    fontSize: "15px",
+    fontWeight: 700,
     color: "#fff",
-    backgroundColor: "#ff9800",
+    background: "linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)",
     textAlign: "center",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-    animation: "$pulse 2s infinite",
+    boxShadow: "0 4px 12px rgba(255, 107, 53, 0.4)",
+    animation: "$trialPulse 3s ease-in-out infinite",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "6px",
-    minHeight: "40px",
+    gap: "8px",
+    minHeight: "45px",
+    borderBottom: "2px solid rgba(255, 255, 255, 0.3)",
+    backdropFilter: "blur(10px)",
+    "& .trial-icon": {
+      fontSize: "18px",
+      animation: "$bounce 2s infinite",
+    },
+    "& .trial-text": {
+      textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+      letterSpacing: "0.5px",
+    },
+    "& .trial-days": {
+      backgroundColor: "rgba(255, 255, 255, 0.2)",
+      padding: "2px 8px",
+      borderRadius: "12px",
+      fontWeight: 800,
+      border: "1px solid rgba(255, 255, 255, 0.3)",
+    },
   },
   contentWithBanner: {
-    top: "40px !important",
+    top: "45px !important",
   },
-  "@keyframes pulse": {
+  "@keyframes trialPulse": {
     "0%": {
+      boxShadow: "0 4px 12px rgba(255, 107, 53, 0.4)",
       transform: "scale(1)",
     },
     "50%": {
-      transform: "scale(1.05)",
+      boxShadow: "0 6px 20px rgba(255, 107, 53, 0.6)",
+      transform: "scale(1.02)",
     },
     "100%": {
+      boxShadow: "0 4px 12px rgba(255, 107, 53, 0.4)",
       transform: "scale(1)",
+    },
+  },
+  "@keyframes bounce": {
+    "0%, 20%, 50%, 80%, 100%": {
+      transform: "translateY(0)",
+    },
+    "40%": {
+      transform: "translateY(-3px)",
+    },
+    "60%": {
+      transform: "translateY(-2px)",
     },
   },
 }));
@@ -519,42 +552,25 @@ const LoggedInLayout = ({ children }) => {
       .substring(0, 2);
   };
 
-  // Usar o status da empresa do hook
-  const isInTrialPeriod = () => {
-    console.log('isInTrialPeriod check:', companyStatus);
-    return companyStatus.isInTrial;
-  };
-
-  const getDaysRemaining = () => {
-    console.log('getDaysRemaining:', companyStatus.daysRemaining);
-    return companyStatus.daysRemaining;
-  };
-
-  // Debug: Log do status da empresa
-  useEffect(() => {
-    console.log('Company Status Updated:', companyStatus);
-    console.log('User Company:', user?.company);
-  }, [companyStatus, user?.company]);
-
+  
   if (loading) {
     return <BackdropLoading />;
   }
 
   return (
     <div className={classes.root}>
-      {/* Tarja de Período de Testes */}
-      {isInTrialPeriod() && (
-        <Box className={classes.trialBanner}>
-          <span role="img" aria-label="fogo">🔥</span> Avaliação: {getDaysRemaining()} {getDaysRemaining() === 1 ? 'dia restante' : 'dias restantes'}
-        </Box>
-      )}
+      {/* Componente de Notificações do Trial */}
+      <TrialNotifications />
+      
+      {/* Tarja de Período de Avaliação */}
+      <SimpleTrialBanner />
       
       <AppBar
         position="fixed"
         className={clsx(classes.appBar, {
-          [classes.contentWithBanner]: isInTrialPeriod()
+          [classes.contentWithBanner]: companyStatus.isInTrial && companyStatus.daysRemaining > 0
         })}
-        style={{ top: isInTrialPeriod() ? '40px' : '0' }}
+        style={{ top: (companyStatus.isInTrial && companyStatus.daysRemaining > 0) ? '40px' : '0' }}
       >
         <Toolbar variant="dense" className={classes.toolbar}>
           <IconButton
@@ -657,8 +673,8 @@ const LoggedInLayout = ({ children }) => {
         }}
         PaperProps={{
           style: {
-            height: isInTrialPeriod() ? "calc(100vh - 136px)" : "calc(100vh - 96px)",
-            marginTop: isInTrialPeriod() ? "128px" : "70px",
+            height: (companyStatus.isInTrial && companyStatus.daysRemaining > 0) ? "calc(100vh - 128px)" : "calc(100vh - 96px)",
+            marginTop: (companyStatus.isInTrial && companyStatus.daysRemaining > 0) ? "110px" : "70px",
           }
         }}
         open={drawerOpen}
@@ -688,7 +704,7 @@ const LoggedInLayout = ({ children }) => {
       />
       
       <main className={classes.content} style={{ 
-        paddingTop: isInTrialPeriod() ? '128px' : '48px' 
+        paddingTop: (companyStatus.isInTrial && companyStatus.daysRemaining > 0) ? '110px' : '48px' 
       }}>
         {children ? children : null}
       </main>

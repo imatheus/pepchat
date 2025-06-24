@@ -169,7 +169,7 @@ const SignUp = () => {
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 	const [formValues, setFormValues] = useState(initialState); // Estado para manter os valores entre etapas
 	const dueDate = moment().add(7, "day").format('YYYY-MM-DD');
-	const trialExpiration = moment().add(7, "day").format('YYYY-MM-DD'); // Período de teste de 7 dias
+	const trialExpiration = moment().add(7, "day").toISOString(); // Período de teste de 7 dias
 
 	const steps = ['Cadastro', 'Plano'];
 

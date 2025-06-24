@@ -94,12 +94,11 @@ const AuthUserService = async ({
       connections: companyPlan.connections,
       queues: companyPlan.queues,
       value: companyPlan.pricePerUser,
-      totalValue: companyPlan.totalValue,
       useWhatsapp: companyPlan.useWhatsapp,
       useFacebook: companyPlan.useFacebook,
       useInstagram: companyPlan.useInstagram,
       useCampaigns: companyPlan.useCampaigns
-    };
+    } as any;
   }
   
   let companyStatus = {
