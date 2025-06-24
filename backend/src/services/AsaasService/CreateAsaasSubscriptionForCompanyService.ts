@@ -85,8 +85,11 @@ const CreateAsaasSubscriptionForCompanyService = async ({
     let subscriptionName = "Personalizado";
     
     if (!subscriptionValue && companyPlan) {
-      subscriptionValue = companyPlan.totalValue; // Usar valor total do plano personalizado
+      // CORREÇÃO: Usar valor total do plano personalizado (valor base * número de usuários)
+      subscriptionValue = companyPlan.totalValue;
       subscriptionName = companyPlan.name;
+      
+      logger.info(`Usando plano personalizado da empresa ${companyId}: ${subscriptionName} - Valor: R$ ${subscriptionValue} (${companyPlan.users} usuários x R$ ${companyPlan.pricePerUser})`);
     } else if (!subscriptionValue) {
       // Fallback: buscar plano base da empresa
       const companyWithPlan = await Company.findByPk(companyId, {
@@ -94,10 +97,14 @@ const CreateAsaasSubscriptionForCompanyService = async ({
       });
       
       if (companyWithPlan && companyWithPlan.plan) {
-        subscriptionValue = companyWithPlan.plan.value; // Valor base do plano
+        // CORREÇÃO: Se não há plano personalizado, usar valor base do plano (assumindo 1 usuário)
+        subscriptionValue = companyWithPlan.plan.value;
         subscriptionName = companyWithPlan.plan.name;
+        
+        logger.warn(`Empresa ${companyId} sem plano personalizado, usando plano base: ${subscriptionName} - Valor: R$ ${subscriptionValue}`);
       } else {
         subscriptionValue = 50; // Valor padrão
+        logger.warn(`Empresa ${companyId} sem plano definido, usando valor padrão: R$ ${subscriptionValue}`);
       }
     }
 

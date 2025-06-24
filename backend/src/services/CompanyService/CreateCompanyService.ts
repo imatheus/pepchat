@@ -120,11 +120,13 @@ const CreateCompanyService = async (
   // Criar o plano personalizado da empresa
   if (planId) {
     try {
-      await CreateCompanyPlanService({
+      const companyPlan = await CreateCompanyPlanService({
         companyId: company.id,
         basePlanId: planId,
         users
       });
+      
+      console.log(`Plano personalizado criado para empresa ${company.id}: ${companyPlan.name} - ${users} usuários - Valor total: R$ ${companyPlan.totalValue}`);
     } catch (error) {
       console.error("Erro ao criar plano da empresa:", error);
       // Não falha a criação da empresa se houver erro no plano
