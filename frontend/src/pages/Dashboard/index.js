@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 
 import Paper from "@material-ui/core/Paper";
 import Container from "@material-ui/core/Container";
@@ -29,6 +29,7 @@ import { isArray } from "lodash";
 
 import useDashboard from "../../hooks/useDashboard";
 import useCompanyStatus from "../../hooks/useCompanyStatus";
+import { AuthContext } from "../../context/Auth/AuthContext";
 
 import { isEmpty } from "lodash";
 import moment from "moment";
@@ -110,6 +111,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const { find } = useDashboard();
   const { companyStatus } = useCompanyStatus();
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     async function firstLoad() {
@@ -324,8 +326,8 @@ const Dashboard = () => {
   return (
     <div>
       <Container maxWidth="lg" className={classes.container}>
-        {/* Card de Status do Trial - aparece apenas durante período de teste */}
-        {companyStatus.isInTrial && (
+        {/* Card de Status do Trial - aparece apenas durante período de teste e não para usuários "user" */}
+        {companyStatus.isInTrial && user?.profile !== 'user' && (
           <TrialStatusCard />
         )}
         

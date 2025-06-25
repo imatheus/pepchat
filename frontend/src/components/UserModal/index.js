@@ -30,10 +30,6 @@ import toastError from "../../errors/toastError";
 import QueueSelect from "../QueueSelect";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { Can } from "../Can";
-import StandardToggleSwitch from "../StandardToggleSwitch";
-import { useCustomTheme } from "../../context/Theme/ThemeContext";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import Divider from "@material-ui/core/Divider";
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -80,17 +76,6 @@ const useStyles = makeStyles(theme => ({
 	uploadButton: {
 		marginTop: theme.spacing(1),
 	},
-	themeSection: {
-		marginTop: theme.spacing(2),
-		marginBottom: theme.spacing(2),
-	},
-	toggleContainer: {
-		width: "100%",
-		textAlign: "left",
-		display: "flex",
-		flexDirection: "column",
-		marginBottom: theme.spacing(1),
-	},
 }));
 
 const UserSchema = Yup.object().shape({
@@ -114,7 +99,6 @@ const UserModal = ({ open, onClose, userId }) => {
 	};
 
 	const { user: loggedInUser, refreshUserData } = useContext(AuthContext);
-	const { darkMode, toggleDarkMode, drawerCollapsed, toggleDrawerCollapse } = useCustomTheme();
 
 	const [user, setUser] = useState(initialState);
 	const [selectedQueueIds, setSelectedQueueIds] = useState([]);
@@ -320,38 +304,7 @@ const UserModal = ({ open, onClose, userId }) => {
 									)}
 								/>
 
-								{/* Seção de Configurações de Tema */}
-								<Box className={classes.themeSection}>
-									<Divider />
-									<Typography variant="h6" style={{ marginTop: 16, marginBottom: 16 }}>
-										Configurações de Interface
-									</Typography>
-									
-									<FormControl className={classes.toggleContainer}>
-										<StandardToggleSwitch
-											label="Modo Escuro"
-											checked={darkMode}
-											onChange={toggleDarkMode}
-											name="darkMode"
-										/>
-										<FormHelperText>
-											Ativar/desativar o tema escuro da interface
-										</FormHelperText>
-									</FormControl>
-
-									<FormControl className={classes.toggleContainer}>
-										<StandardToggleSwitch
-											label="Menu Recolhido"
-											checked={drawerCollapsed}
-											onChange={toggleDrawerCollapse}
-											name="drawerCollapsed"
-										/>
-										<FormHelperText>
-											Recolher o menu lateral mostrando apenas os ícones
-										</FormHelperText>
-									</FormControl>
-								</Box>
-							</DialogContent>
+															</DialogContent>
 							<DialogActions>
 								<Button
 									onClick={handleClose}

@@ -157,43 +157,6 @@ const AsaasManager = () => {
       <div className={classes.paper}>
         
         <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
-            <TextField
-              fullWidth
-              label="Chave de API do Asaas"
-              type="password"
-              value={config.apiKey}
-              onChange={(e) => handleInputChange("apiKey", e.target.value)}
-              className={classes.formField}
-              placeholder={config.hasApiKey ? "Digite uma nova API Key para alterar" : "Insira sua chave de API"}
-              helperText={config.apiKey === '***' ? "API Key já configurada. Digite uma nova para alterar ou mantenha as bolinhas para não alterar." : "Sua chave de API do Asaas (encontrada no painel do Asaas)"}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth className={classes.formField}>
-              <InputLabel>Ambiente</InputLabel>
-              <Select
-                value={config.environment}
-                onChange={(e) => handleInputChange("environment", e.target.value)}
-              >
-                <MenuItem value="sandbox">Sandbox (Teste)</MenuItem>
-                <MenuItem value="production">Produção</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="URL do Webhook"
-              value={config.webhookUrl}
-              onChange={(e) => handleInputChange("webhookUrl", e.target.value)}
-              className={classes.formField}
-              helperText="URL que receberá as notificações do Asaas (opcional)"
-            />
-          </Grid>
-
           <Grid item xs={12}>
             <FormControlLabel
               control={
@@ -206,26 +169,69 @@ const AsaasManager = () => {
               label="Integração Ativa"
             />
           </Grid>
+
+          {config.enabled && (
+            <>
+              <Grid item xs={12} md={8}>
+                <TextField
+                  fullWidth
+                  label="Chave de API do Asaas"
+                  type="password"
+                  value={config.apiKey}
+                  onChange={(e) => handleInputChange("apiKey", e.target.value)}
+                  className={classes.formField}
+                  placeholder={config.hasApiKey ? "Digite uma nova API Key para alterar" : "Insira sua chave de API"}
+                  helperText={config.apiKey === '***' ? "API Key já configurada. Digite uma nova para alterar ou mantenha as bolinhas para não alterar." : "Sua chave de API do Asaas (encontrada no painel do Asaas)"}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <FormControl fullWidth className={classes.formField}>
+                  <InputLabel>Ambiente</InputLabel>
+                  <Select
+                    value={config.environment}
+                    onChange={(e) => handleInputChange("environment", e.target.value)}
+                  >
+                    <MenuItem value="sandbox">Sandbox (Teste)</MenuItem>
+                    <MenuItem value="production">Produção</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="URL do Webhook"
+                  value={config.webhookUrl}
+                  onChange={(e) => handleInputChange("webhookUrl", e.target.value)}
+                  className={classes.formField}
+                  helperText="URL que receberá as notificações do Asaas (opcional)"
+                />
+              </Grid>
+            </>
+          )}
         </Grid>
 
-        <Box className={classes.buttonContainer}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : "Salvar Configurações"}
-          </Button>
+        {config.enabled && (
+          <Box className={classes.buttonContainer}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : "Salvar Configurações"}
+            </Button>
 
-          <Button
-            variant="outlined"
-            onClick={handleTestConnection}
-            disabled={testingConnection || (!config.apiKey && !config.hasApiKey)}
-          >
-            {testingConnection ? <CircularProgress size={24} /> : "Testar Conexão"}
-          </Button>
-        </Box>
+            <Button
+              variant="outlined"
+              onClick={handleTestConnection}
+              disabled={testingConnection || (!config.apiKey && !config.hasApiKey)}
+            >
+              {testingConnection ? <CircularProgress size={24} /> : "Testar Conexão"}
+            </Button>
+          </Box>
+        )}
       </div>
       
     </div>

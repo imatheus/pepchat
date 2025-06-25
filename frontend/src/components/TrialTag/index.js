@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Chip, Button, makeStyles } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import useCompanyStatus from '../../hooks/useCompanyStatus';
+import { AuthContext } from '../../context/Auth/AuthContext';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -96,6 +97,12 @@ const TrialTag = () => {
   const classes = useStyles();
   const { companyStatus } = useCompanyStatus();
   const history = useHistory();
+  const { user } = useContext(AuthContext);
+
+  // Não mostrar avisos de vencimento para usuários de nível "user"
+  if (user?.profile === 'user') {
+    return null;
+  }
 
   // Só mostrar se estiver em período de avaliação
   if (!companyStatus.isInTrial || companyStatus.daysRemaining <= 0) {

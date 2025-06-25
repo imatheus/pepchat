@@ -236,12 +236,7 @@ const SignUp = () => {
 			if (values.confirmPassword && values.password !== values.confirmPassword) {
 				errors.confirmPassword = "As senhas devem coincidir";
 			}
-		} else if (step === 1) {
-			// Validações da segunda etapa
-			if (!values.planId) errors.planId = "Plano é obrigatório";
-			if (!values.users || values.users < 1) errors.users = "Número de usuários é obrigatório";
-		}
-		
+		} 
 		return errors;
 	};
 

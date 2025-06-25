@@ -53,10 +53,14 @@ const useAuth = () => {
         setIsAuth(false);
       }
       if (error?.response?.status === 402) {
-        // Empresa vencida tentando acessar rota restrita
-        // Verificar se não é super admin antes de redirecionar
-        if (user.profile !== 'super' && !user.super) {
-          toast.warn("Acesso restrito. Redirecionando para o financeiro...");
+        // Licença expirada tentando acessar rota restrita
+        // Verificar se o usuário está carregado e não é super admin
+        if (user && user.profile && user.profile !== 'super' && !user.super) {
+          console.log('useAuth 402 - Perfil do usuário:', user.profile);
+          // Não mostrar avisos de vencimento para usuários de nível "user"
+          if (user.profile !== 'user') {
+            toast.warn("Acesso restrito. Redirecionando para o financeiro...");
+          }
           history.push("/financeiro");
         }
         return Promise.reject(error);
@@ -115,9 +119,13 @@ const useAuth = () => {
         });
       } else if (data.action === "company_blocked") {
         // Empresa foi bloqueada por vencimento
-        // Verificar se não é super admin antes de bloquear
-        if (user.profile !== 'super' && !user.super) {
-          showUniqueError(`🚫 Empresa bloqueada por falta de pagamento. Redirecionando para o financeiro...`);
+        // Verificar se o usuário está carregado e não é super admin antes de bloquear
+        if (user && user.profile && user.profile !== 'super' && !user.super) {
+          console.log('useAuth socket company_blocked - Perfil do usuário:', user.profile);
+          // Não mostrar avisos de vencimento para usuários de nível "user"
+          if (user.profile !== 'user') {
+            showUniqueError(`🚫 Empresa bloqueada por falta de pagamento. Redirecionando para o financeiro...`);
+          }
           
           // Recarregar dados do usuário
           refreshUserData().then(() => {
@@ -176,12 +184,22 @@ const useAuth = () => {
         // Empresa em período de avaliação
         const trialExpiration = moment(companyData.trialExpiration).format("DD/MM/yyyy");
         toast.success(i18n.t("auth.toasts.success"));
-        toast.info(`Período de avaliação até ${trialExpiration}`);
+        
+        // Não mostrar avisos de vencimento para usuários de nível "user"
+        if (data.user.profile !== 'user') {
+          toast.info(`Período de avaliação até ${trialExpiration}`);
+        }
+        
         history.push("/tickets");
       } else if ((companyData.isExpired || !companyData.status) && !isSuperAdmin) {
-        // Empresa vencida - redirecionar para financeiro (exceto super admins)
+        // Licença expirada - redirecionar para financeiro (exceto super admins)
         toast.success("Login realizado com sucesso");
-        toast.warn(`Empresa vencida em ${vencimento}. Acesso restrito ao financeiro para regularização.`);
+        
+        // Não mostrar avisos de vencimento para usuários de nível "user"
+        if (data.user.profile !== 'user') {
+          toast.warn(`Licença expirada em ${vencimento}. Acesso restrito ao financeiro para regularização.`);
+        }
+        
         history.push("/financeiro");
       } else {
         // Empresa ativa OU super admin
@@ -190,8 +208,8 @@ const useAuth = () => {
         
         toast.success(i18n.t("auth.toasts.success"));
         
-        // Avisar se está próximo do vencimento (apenas para não-super-admins)
-        if (!isSuperAdmin && Math.round(dias) < 5 && Math.round(dias) > 0) {
+        // Avisar se está próximo do vencimento (apenas para não-super-admins e não-users)
+        if (!isSuperAdmin && data.user.profile !== 'user' && Math.round(dias) < 5 && Math.round(dias) > 0) {
           toast.warn(`Sua assinatura vence em ${Math.round(dias)} ${Math.round(dias) === 1 ? 'dia' : 'dias'}`);
         }
         

@@ -21,6 +21,8 @@ import {
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import MenuIcon from "@material-ui/icons/Menu";
+import Brightness4Icon from "@material-ui/icons/Brightness4";
+import Brightness7Icon from "@material-ui/icons/Brightness7";
 
 import MainListItems from "./MainListItems";
 import NotificationsPopOver from "../components/NotificationsPopOver";
@@ -350,7 +352,7 @@ const useStyles = makeStyles((theme) => ({
     color: "#fff !important",
     margin: "8px",
   },
-  }));
+}));
 
 const LoggedInLayout = ({ children }) => {
   const classes = useStyles();
@@ -361,7 +363,7 @@ const LoggedInLayout = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [drawerVariant, setDrawerVariant] = useState("permanent");
   const { user } = useContext(AuthContext);
-  const { drawerCollapsed, toggleDrawerCollapse } = useCustomTheme();
+  const { drawerCollapsed, toggleDrawerCollapse, darkMode, toggleDarkMode } = useCustomTheme();
   const { companyStatus } = useCompanyStatus();
 
   const theme = useTheme();
@@ -539,6 +541,14 @@ const LoggedInLayout = ({ children }) => {
 
           <div className={classes.rightSection}>
             {user.id && <NotificationsPopOver />}
+            
+            <IconButton
+              color="inherit"
+              onClick={toggleDarkMode}
+              aria-label="toggle dark mode"
+            >
+              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
             
             {user.profileImage ? (
               <Avatar

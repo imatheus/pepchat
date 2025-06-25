@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   Card,
   CardContent,
@@ -18,6 +18,7 @@ import {
 import { useHistory } from 'react-router-dom';
 import moment from 'moment';
 import useCompanyStatus from '../../hooks/useCompanyStatus';
+import { AuthContext } from '../../context/Auth/AuthContext';
 
 const useStyles = makeStyles((theme) => ({
   trialCard: {
@@ -124,6 +125,12 @@ const TrialStatusCard = () => {
   const classes = useStyles();
   const history = useHistory();
   const { companyStatus } = useCompanyStatus();
+  const { user } = useContext(AuthContext);
+
+  // Não mostrar avisos de vencimento para usuários de nível "user"
+  if (user?.profile === 'user') {
+    return null;
+  }
 
   if (!companyStatus.isInTrial) {
     return null;

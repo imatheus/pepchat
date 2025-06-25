@@ -57,16 +57,16 @@ const useCompanyStatus = () => {
           
           if (isExpired) {
             const daysExpired = Math.ceil(now.diff(dueDate, 'days', true));
-            message = `Empresa vencida há ${daysExpired} ${daysExpired === 1 ? 'dia' : 'dias'}`;
+            message = `Licença expirada há ${daysExpired} ${daysExpired === 1 ? 'dia' : 'dias'}`;
           } else {
             daysRemaining = Math.ceil(dueDate.diff(now, 'days', true));
-            message = `Empresa ativa - vence em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`;
+            message = `Licença ativa - vence em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`;
           }
         } else {
           // Sem data de vencimento e trial expirado
           isExpired = true;
           isActive = false;
-          message = "Período de avaliaç��o expirado";
+          message = "Período de avaliação expirado";
         }
       }
     } else if (company.dueDate) {
@@ -77,15 +77,15 @@ const useCompanyStatus = () => {
       
       if (isExpired) {
         const daysExpired = Math.ceil(now.diff(dueDate, 'days', true));
-        message = `Empresa vencida há ${daysExpired} ${daysExpired === 1 ? 'dia' : 'dias'}`;
+        message = `Licença expirada há ${daysExpired} ${daysExpired === 1 ? 'dia' : 'dias'}`;
       } else {
         daysRemaining = Math.ceil(dueDate.diff(now, 'days', true));
-        message = `Empresa ativa - vence em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`;
+        message = `Licença ativa - vence em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`;
       }
     } else {
       // Sem trial e sem data de vencimento - considerar ativa por padrão
       isActive = company.status;
-      message = isActive ? "Empresa ativa" : "Empresa inativa";
+      message = isActive ? "Licença ativa" : "Licença inativa";
     }
 
     return {

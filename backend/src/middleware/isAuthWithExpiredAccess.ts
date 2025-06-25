@@ -64,8 +64,8 @@ const isAuthWithExpiredAccess = async (req: Request, res: Response, next: NextFu
       if (!isAllowedRoute) {
         // Adicionar informações sobre o status da empresa na resposta
         const errorMessage = isExpired 
-          ? `Acesso restrito: Empresa vencida em ${moment(company.dueDate).format('DD/MM/YYYY')}. Acesse apenas o financeiro para regularizar.`
-          : "Acesso restrito: Empresa inativa. Acesse apenas o financeiro para regularizar.";
+          ? `Acesso restrito: Licença vencida em ${moment(company.dueDate).format('DD/MM/YYYY')}.`
+          : "Acesso restrito: licença vencida. Acesse o financeiro para regularizar.";
           
         throw new AppError(errorMessage, 402); // 402 Payment Required
       }

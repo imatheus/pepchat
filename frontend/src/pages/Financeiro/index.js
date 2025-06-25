@@ -384,15 +384,20 @@ const Invoices = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchParam, pageNumber]);
 
-  // Mostrar toast de trial expirado apenas uma vez
+  // Mostrar toast de trial expirado apenas uma vez (não para usuários "user")
   useEffect(() => {
-    if (isTrialExpired()) {
+    // Só executar se o usuário estiver carregado
+    if (!user || !user.profile) return;
+    
+    console.log('Financeiro - Perfil do usuário:', user?.profile);
+    console.log('Financeiro - Trial expirado:', isTrialExpired());
+    if (user?.profile !== 'user' && isTrialExpired()) {
       showUniqueWarning(
         'Seu período de teste expirou! Para continuar utilizando o sistema, regularize o pagamento.',
         { autoClose: 8000 }
       );
     }
-  }, [companyStatus.isExpired, companyStatus.isInTrial]);
+  }, [companyStatus.isExpired, companyStatus.isInTrial, user?.profile]);
 
   // Socket.IO listener para atualizações de pagamento em tempo real
   useEffect(() => {
@@ -448,8 +453,11 @@ const Invoices = () => {
             }
           });
 
-          // Mostrar notificação de vencimento
-          showUniqueWarning(`Fatura #${data.invoice.id} está vencida.`);
+          // Mostrar notificação de vencimento (não para usuários "user")
+          console.log('Financeiro socket payment_overdue - Perfil do usuário:', user?.profile);
+          if (user?.profile !== 'user') {
+            showUniqueWarning(`Fatura #${data.invoice.id} está vencida.`);
+          }
         }
       });
 
@@ -556,8 +564,8 @@ const Invoices = () => {
 
   return (
     <MainContainer>
-      {/* Prompt de Upgrade para usuários em período de teste */}
-      {companyStatus.isInTrial && (
+      {/* Prompt de Upgrade para usuários em período de teste e não para usuários "user" */}
+      {companyStatus.isInTrial && user?.profile !== 'user' && (
         <TrialUpgradePrompt />
       )}
       <SubscriptionModal

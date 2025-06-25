@@ -56,7 +56,7 @@ const SyncCompanyStatusService = async ({
         
         if (isExpired) {
           const daysExpired = Math.ceil(now.diff(dueDate, 'days', true));
-          message = `Empresa vencida há ${daysExpired} ${daysExpired === 1 ? 'dia' : 'dias'}`;
+          message = `Licença expirada há ${daysExpired} ${daysExpired === 1 ? 'dia' : 'dias'}`;
         } else {
           const daysRemaining = Math.ceil(dueDate.diff(now, 'days', true));
           message = `Empresa ativa - vence em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`;
@@ -82,7 +82,7 @@ const SyncCompanyStatusService = async ({
     
     if (isExpired) {
       const daysExpired = Math.ceil(now.diff(dueDate, 'days', true));
-      message = `Empresa vencida há ${daysExpired} ${daysExpired === 1 ? 'dia' : 'dias'}`;
+      message = `Licença expirada há ${daysExpired} ${daysExpired === 1 ? 'dia' : 'dias'}`;
     } else {
       const daysRemaining = Math.ceil(dueDate.diff(now, 'days', true));
       message = `Empresa ativa - vence em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`;

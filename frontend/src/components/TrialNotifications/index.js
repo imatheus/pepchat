@@ -1,11 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { toast } from 'react-toastify';
 import useCompanyStatus from '../../hooks/useCompanyStatus';
+import { AuthContext } from '../../context/Auth/AuthContext';
 
 const TrialNotifications = () => {
   const { companyStatus } = useCompanyStatus();
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
+    // Não mostrar avisos de vencimento para usuários de nível "user"
+    if (user?.profile === 'user') return;
+    
     if (!companyStatus.isInTrial) return;
 
     const daysRemaining = companyStatus.daysRemaining;
@@ -59,7 +64,7 @@ const TrialNotifications = () => {
       localStorage.setItem(`trial-notification-${daysRemaining}`, 'true');
     }
 
-  }, [companyStatus.isInTrial, companyStatus.daysRemaining]);
+  }, [companyStatus.isInTrial, companyStatus.daysRemaining, user?.profile]);
 
   // Limpar notificações antigas quando sair do período de trial
   useEffect(() => {

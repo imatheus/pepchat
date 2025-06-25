@@ -72,8 +72,16 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     fontFamily: theme.typography.fontFamily,
+    display: 'block',
+    width: '100%',
+    boxSizing: 'border-box',
+    minHeight: '56px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     '&:hover': {
-      backgroundColor: theme.palette.primary.light + '10',
+      backgroundColor: theme.palette.action.hover,
+      borderColor: theme.palette.primary.dark,
     },
   },
   statusDot: {
@@ -362,12 +370,10 @@ const MessagesAPITab = () => {
                         accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
                       />
                       <label htmlFor="medias" className={classes.fileInputLabel}>
-                        <Box display="flex" alignItems="center" justifyContent="center">
-                          <ImageIcon color="primary" style={{ marginRight: 8 }} />
-                          <Typography variant="body2" color="primary">
-                            {selectedFileName || 'Selecionar arquivo'}
-                          </Typography>
-                        </Box>
+                        <ImageIcon color="primary" style={{ marginRight: 8 }} />
+                        <Typography variant="body2" color="primary">
+                          {selectedFileName || 'Selecionar arquivo'}
+                        </Typography>
                       </label>
                     </Grid>
                     <Grid item xs={12}>
