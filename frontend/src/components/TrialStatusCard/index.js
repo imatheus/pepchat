@@ -50,7 +50,12 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     gap: theme.spacing(1),
     fontWeight: 700,
-    fontSize: '1.2rem',
+    backgroundColor: '#fff',
+    color: '#667eea',
+    padding: theme.spacing(0.3, 1.5),
+    borderRadius: '38px',
+    fontSize: '1rem',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
   },
   trialChip: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -103,9 +108,15 @@ const useStyles = makeStyles((theme) => ({
   },
   warningCard: {
     background: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
+    '& $trialTitle': {
+      color: '#ff6b35',
+    },
   },
   criticalCard: {
     background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+    '& $trialTitle': {
+      color: '#e74c3c',
+    },
   },
 }));
 
@@ -141,7 +152,7 @@ const TrialStatusCard = () => {
     return 'ATIVO';
   };
 
-  const handleUpgrade = () => {
+  const handleActivateAccount = () => {
     history.push('/financeiro');
   };
 
@@ -150,8 +161,7 @@ const TrialStatusCard = () => {
       <CardContent>
         <div className={classes.trialHeader}>
           <div className={classes.trialTitle}>
-            {getStatusIcon()}
-            <Typography variant="h6" component="div">
+            <Typography component="div">
               Período de Avaliação
             </Typography>
           </div>
@@ -193,12 +203,12 @@ const TrialStatusCard = () => {
 
         <Box display="flex" justifyContent="center" mt={2}>
           <Button
-            variant="contained"
+            variant="contained rounded"
             className={classes.actionButton}
-            onClick={handleUpgrade}
+            onClick={handleActivateAccount}
             startIcon={<PaymentIcon />}
           >
-            {daysRemaining <= 3 ? 'Ativar Agora' : 'Ver Planos'}
+            Ativar minha conta
           </Button>
         </Box>
       </CardContent>

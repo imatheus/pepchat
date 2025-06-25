@@ -154,23 +154,7 @@ const AsaasManager = () => {
 
   return (
     <div className={classes.root}>
-      <Typography variant="h4" gutterBottom>
-        Configurações do Asaas
-      </Typography>
-
-      <Paper className={classes.paper}>
-        <Typography variant="h6" gutterBottom>
-          Configurações Básicas
-        </Typography>
-
-        <Box className={classes.infoBox}>
-          <Typography variant="body2" color="textSecondary">
-            <strong>Configuração Global do Sistema:</strong> Configure a integração com o Asaas para automatizar 
-            a cobrança e gestão de faturas de todas as empresas do sistema. Esta configuração será aplicada 
-            globalmente para todas as empresas que se cadastrarem.
-          </Typography>
-        </Box>
-
+      <div className={classes.paper}>
         
         <Grid container spacing={2}>
           <Grid item xs={12} md={8}>
@@ -242,50 +226,8 @@ const AsaasManager = () => {
             {testingConnection ? <CircularProgress size={24} /> : "Testar Conexão"}
           </Button>
         </Box>
-      </Paper>
-
+      </div>
       
-      <Paper className={classes.paper}>
-        <Typography variant="h6" gutterBottom>
-          Informações Importantes
-        </Typography>
-
-        <Alert severity="info" style={{ marginBottom: 16 }}>
-          <Typography variant="body2">
-            <strong>Webhook URL:</strong> Configure esta URL no painel do Asaas para receber notificações automáticas de pagamento.
-          </Typography>
-        </Alert>
-
-        <Alert severity="warning" style={{ marginBottom: 16 }}>
-          <Typography variant="body2">
-            <strong>Ambiente Sandbox:</strong> Use o ambiente de teste para desenvolvimento. 
-            Mude para produção apenas quando estiver pronto para receber pagamentos reais.
-          </Typography>
-        </Alert>
-
-        <Alert severity="success">
-          <Typography variant="body2">
-            <strong>Automação Completa:</strong> O sistema agora funciona 100% automaticamente! 
-            Quando configurado, criará clientes e assinaturas no Asaas para novas empresas, 
-            processará pagamentos via webhook e atualizará faturas em tempo real.
-          </Typography>
-        </Alert>
-
-        <Alert severity="info" style={{ marginTop: 16 }}>
-          <Typography variant="body2">
-            <strong>Sincronização Automática:</strong> Não é mais necessário sincronizar manualmente. 
-            O sistema detecta automaticamente novas faturas e pagamentos através dos webhooks do Asaas, 
-            mantendo tudo sempre atualizado.
-          </Typography>
-        </Alert>
-
-        <Alert severity="success" style={{ marginTop: 16 }}>
-          <Typography variant="body2">
-            <strong>Prevenção de Duplicação:</strong> O sistema agora possui validação para evitar 
-            a criação de empresas duplicadas no Asaas, garantindo integridade dos dados.
-          </Typography>
-        </Alert>
-      </Paper>
     </div>
   );
 };

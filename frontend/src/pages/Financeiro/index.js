@@ -598,14 +598,6 @@ const Invoices = () => {
                     )
                   }
                 </Typography>
-                <Typography className={classes.planPriceUnit}>
-                  por mês
-                </Typography>
-                {user?.company?.plan?.users && (
-                  <Typography className={classes.planPriceUnit} style={{ fontWeight: 'bold', color: '#4caf50' }}>
-                    {user.company.plan.users} licença{user.company.plan.users > 1 ? 's' : ''} contratada{user.company.plan.users > 1 ? 's' : ''}
-                  </Typography>
-                )}
               </Box>
             </div>
 

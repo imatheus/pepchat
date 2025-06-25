@@ -35,7 +35,6 @@ import { socketConnection } from "../services/socket";
 import moment from "moment";
 import useCompanyStatus from "../hooks/useCompanyStatus";
 import TrialNotifications from "../components/TrialNotifications";
-import SimpleTrialBanner from "../components/SimpleTrialBanner";
 
 const drawerWidth = 300;
 const drawerCollapsedWidth = 100;
@@ -351,72 +350,7 @@ const useStyles = makeStyles((theme) => ({
     color: "#fff !important",
     margin: "8px",
   },
-  trialBanner: {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    right: "0",
-    zIndex: theme.zIndex.appBar + 1,
-    padding: "10px 16px",
-    fontSize: "15px",
-    fontWeight: 700,
-    color: "#fff",
-    background: "linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)",
-    textAlign: "center",
-    boxShadow: "0 4px 12px rgba(255, 107, 53, 0.4)",
-    animation: "$trialPulse 3s ease-in-out infinite",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    minHeight: "45px",
-    borderBottom: "2px solid rgba(255, 255, 255, 0.3)",
-    backdropFilter: "blur(10px)",
-    "& .trial-icon": {
-      fontSize: "18px",
-      animation: "$bounce 2s infinite",
-    },
-    "& .trial-text": {
-      textShadow: "0 1px 2px rgba(0,0,0,0.3)",
-      letterSpacing: "0.5px",
-    },
-    "& .trial-days": {
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
-      padding: "2px 8px",
-      borderRadius: "12px",
-      fontWeight: 800,
-      border: "1px solid rgba(255, 255, 255, 0.3)",
-    },
-  },
-  contentWithBanner: {
-    top: "45px !important",
-  },
-  "@keyframes trialPulse": {
-    "0%": {
-      boxShadow: "0 4px 12px rgba(255, 107, 53, 0.4)",
-      transform: "scale(1)",
-    },
-    "50%": {
-      boxShadow: "0 6px 20px rgba(255, 107, 53, 0.6)",
-      transform: "scale(1.02)",
-    },
-    "100%": {
-      boxShadow: "0 4px 12px rgba(255, 107, 53, 0.4)",
-      transform: "scale(1)",
-    },
-  },
-  "@keyframes bounce": {
-    "0%, 20%, 50%, 80%, 100%": {
-      transform: "translateY(0)",
-    },
-    "40%": {
-      transform: "translateY(-3px)",
-    },
-    "60%": {
-      transform: "translateY(-2px)",
-    },
-  },
-}));
+  }));
 
 const LoggedInLayout = ({ children }) => {
   const classes = useStyles();
@@ -562,15 +496,9 @@ const LoggedInLayout = ({ children }) => {
       {/* Componente de Notificações do Trial */}
       <TrialNotifications />
       
-      {/* Tarja de Período de Avaliação */}
-      <SimpleTrialBanner />
-      
       <AppBar
         position="fixed"
-        className={clsx(classes.appBar, {
-          [classes.contentWithBanner]: companyStatus.isInTrial && companyStatus.daysRemaining > 0
-        })}
-        style={{ top: (companyStatus.isInTrial && companyStatus.daysRemaining > 0) ? '40px' : '0' }}
+        className={classes.appBar}
       >
         <Toolbar variant="dense" className={classes.toolbar}>
           <IconButton
@@ -673,8 +601,8 @@ const LoggedInLayout = ({ children }) => {
         }}
         PaperProps={{
           style: {
-            height: (companyStatus.isInTrial && companyStatus.daysRemaining > 0) ? "calc(100vh - 128px)" : "calc(100vh - 96px)",
-            marginTop: (companyStatus.isInTrial && companyStatus.daysRemaining > 0) ? "110px" : "70px",
+            height: "calc(100vh - 96px)",
+            marginTop: "70px",
           }
         }}
         open={drawerOpen}
@@ -704,7 +632,7 @@ const LoggedInLayout = ({ children }) => {
       />
       
       <main className={classes.content} style={{ 
-        paddingTop: (companyStatus.isInTrial && companyStatus.daysRemaining > 0) ? '110px' : '48px' 
+        paddingTop: '48px' 
       }}>
         {children ? children : null}
       </main>
