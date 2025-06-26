@@ -15,11 +15,11 @@ import PeopleAltOutlinedIcon from "@material-ui/icons/PeopleAltOutlined";
 import ContactPhoneOutlinedIcon from "@material-ui/icons/ContactPhoneOutlined";
 import AccountTreeOutlinedIcon from "@material-ui/icons/AccountTreeOutlined";
 import OfflineBoltOutlinedIcon from "@material-ui/icons/OfflineBoltOutlined";
-import AndroidOutlinedIcon from "@material-ui/icons/AndroidOutlined";
+import AndroidIcon from "@material-ui/icons/Android";
 import AccountBalanceOutlinedIcon from "@material-ui/icons/AccountBalanceOutlined";
 import PowerOutlinedIcon from "@material-ui/icons/PowerOutlined";
 import LocalOfferOutlinedIcon from "@material-ui/icons/LocalOfferOutlined";
-import VolumeUpOutlinedIcon from "@material-ui/icons/VolumeUpOutlined";
+import WhatshotIconIcon from "@material-ui/icons/Whatshot";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PeopleIcon from "@material-ui/icons/People";
@@ -204,7 +204,7 @@ const MainListItems = (props) => {
                     opacity: isCompanyBlocked ? 0.5 : 1,
                     position: 'relative'
                   }}>
-                    <VolumeUpOutlinedIcon />
+                    <WhatshotIconIcon />
 
                   </ListItemIcon>
                   <ListItemText
@@ -295,7 +295,7 @@ const MainListItems = (props) => {
                     opacity: isCompanyBlocked ? 0.5 : 1,
                     position: 'relative'
                   }}>
-                    <VolumeUpOutlinedIcon />
+                    <WhatshotIconIcon />
                   </ListItemIcon>
                 </ListItem>
                 <Popover
@@ -359,7 +359,7 @@ const MainListItems = (props) => {
               primary={i18n.t("mainDrawer.listItems.connections")}
               icon={
                 <Badge badgeContent={connectionWarning ? "!" : 0} color="error">
-                  <SyncAltIcon />
+                  <PowerOutlinedIcon />
                 </Badge>
               }
               drawerCollapsed={drawerCollapsed}
@@ -368,7 +368,7 @@ const MainListItems = (props) => {
             <ListItemLink
               to="/queues"
               primary={i18n.t("mainDrawer.listItems.queues")}
-              icon={<AndroidOutlinedIcon />}
+              icon={<AndroidIcon />}
               drawerCollapsed={drawerCollapsed}
               disabled={isCompanyBlocked}
             />
@@ -382,7 +382,7 @@ const MainListItems = (props) => {
             <ListItemLink
               to="/integrations"
               primary={i18n.t("mainDrawer.listItems.integrations")}
-              icon={<PowerOutlinedIcon />}
+              icon={<SyncAltIcon />}
               drawerCollapsed={drawerCollapsed}
               disabled={isCompanyBlocked}
             />

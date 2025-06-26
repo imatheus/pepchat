@@ -137,6 +137,10 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
         await api.put(`/whatsapp/${whatsAppId}`, whatsappData);
       } else {
         await api.post("/whatsapp", whatsappData);
+        // Aguardar um pouco para a conexão ser criada e processada
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       }
       toast.success(i18n.t("whatsappModal.success"));
       handleClose();

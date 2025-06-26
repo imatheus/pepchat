@@ -38,17 +38,45 @@ const remove = async (req: Request, res: Response): Promise<void> => {
   console.log("remove");
   const { whatsappId } = req.params;
   const { companyId } = req.user;
+  const { getIO } = require("../libs/socket");
+  const io = getIO();
 
   const whatsapp = await ShowWhatsAppService(whatsappId, companyId );
 
   if(whatsapp.channel === "whatsapp"){
-    const wbot = getWbot(whatsapp.id);
-    wbot.logout();
-    wbot.ws.close();
+    try {
+      const wbot = getWbot(whatsapp.id);
+      wbot.logout();
+      wbot.ws.close();
+    } catch (err) {
+      console.log("Erro ao desconectar wbot:", err);
+    }
+    
+    // Atualizar status no banco e notificar frontend
+    await whatsapp.update({ status: "DISCONNECTED", qrcode: "" });
+    const updatedWhatsapp = await whatsapp.reload();
+    
+    io.emit(`company-${companyId}-whatsapp`, {
+      action: "update",
+      whatsapp: updatedWhatsapp
+    });
+    
+    io.emit(`company-${companyId}-whatsappSession`, {
+      action: "update",
+      session: updatedWhatsapp
+    });
+    
+    removeWbot(whatsapp.id);
   }
 
   if(whatsapp.channel === "facebook" || whatsapp.channel === "instagram") {
-    whatsapp.destroy();
+    await whatsapp.update({ status: "DISCONNECTED" });
+    const updatedWhatsapp = await whatsapp.reload();
+    
+    io.emit(`company-${companyId}-whatsapp`, {
+      action: "update",
+      whatsapp: updatedWhatsapp
+    });
   }
 
   res.status(200).json({ message: "Session disconnected." });

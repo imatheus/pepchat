@@ -68,28 +68,40 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
       // O QR Code é salvo no banco e enviado para o frontend.
       // A impressão no terminal foi removida.
       await whatsapp.update({ qrcode: qr, status: "qrcode" });
-      io.emit(`whatsappSession${companyId}`, { action: "update", session: whatsapp });
+      const updatedWhatsapp = await whatsapp.reload();
+      io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
+      io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
     }
 
     if (connection === 'open') {
         await whatsapp.update({ status: "CONNECTED", qrcode: "" });
-        io.emit(`whatsappSession${companyId}`, { action: "update", session: whatsapp });
+        const updatedWhatsapp = await whatsapp.reload();
+        io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
+        io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
         console.log(`-> CONEXÃO ABERTA PARA ${name} <-`);
         wbotMessageListener(wbot as any, companyId);
     }
 
     if (connection === 'close') {
         const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
-        let status = "CLOSED";
+        let status = "DISCONNECTED";
         if (statusCode === DisconnectReason.loggedOut) {
           await removeBaileysState(id);
+          status = "DISCONNECTED";
         } else {
           // Se não for deslogado, tenta reconectar
           setTimeout(() => initWbot(whatsapp), 5000);
           status = "OPENING";
         }
         await whatsapp.update({ status, qrcode: "" });
-        io.emit(`whatsappSession${companyId}`, { action: "update", session: whatsapp });
+        const updatedWhatsapp = await whatsapp.reload();
+        io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
+        io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
+        
+        // Remover a sessão da lista quando desconectada
+        if (status === "DISCONNECTED") {
+          removeWbot(id);
+        }
     }
   });
 

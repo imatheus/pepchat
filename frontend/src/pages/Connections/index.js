@@ -139,6 +139,10 @@ const Connections = () => {
 	const handleStartWhatsAppSession = async whatsAppId => {
 		try {
 			await api.post(`/whatsappsession/${whatsAppId}`);
+			// Forçar atualização da lista após iniciar sessão
+			setTimeout(() => {
+				window.location.reload();
+			}, 1000);
 		} catch (err) {
 			toastError(err);
 		}
@@ -147,6 +151,17 @@ const Connections = () => {
 	const handleRequestNewQrCode = async whatsAppId => {
 		try {
 			await api.put(`/whatsappsession/${whatsAppId}`);
+			// Aguardar um pouco para o QR code ser gerado
+			setTimeout(() => {
+				// Forçar re-render do componente
+				setQrModalOpen(false);
+				setTimeout(() => {
+					const whatsapp = whatsApps.find(w => w.id === whatsAppId);
+					if (whatsapp) {
+						handleOpenQrModal(whatsapp);
+					}
+				}, 500);
+			}, 1000);
 		} catch (err) {
 			toastError(err);
 		}
@@ -217,6 +232,10 @@ const Connections = () => {
 		if (confirmModalInfo.action === "disconnect") {
 			try {
 				await api.delete(`/whatsappsession/${confirmModalInfo.whatsAppId}`);
+				// Aguardar um pouco para a desconexão ser processada
+				setTimeout(() => {
+					window.location.reload();
+				}, 1500);
 			} catch (err) {
 				toastError(err);
 			}
@@ -226,6 +245,10 @@ const Connections = () => {
 			try {
 				await api.delete(`/whatsapp/${confirmModalInfo.whatsAppId}`);
 				toast.success(i18n.t("connections.toasts.deleted"));
+				// Aguardar um pouco para a exclusão ser processada
+				setTimeout(() => {
+					window.location.reload();
+				}, 1000);
 			} catch (err) {
 				toastError(err);
 			}

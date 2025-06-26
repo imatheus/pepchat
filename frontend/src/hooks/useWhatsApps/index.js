@@ -28,10 +28,13 @@ const reducer = (state, action) => {
     const whatsAppIndex = state.findIndex((s) => s.id === whatsApp.id);
 
     if (whatsAppIndex !== -1) {
-      state[whatsAppIndex].status = whatsApp.status;
-      state[whatsAppIndex].updatedAt = whatsApp.updatedAt;
-      state[whatsAppIndex].qrcode = whatsApp.qrcode;
-      state[whatsAppIndex].retries = whatsApp.retries;
+      state[whatsAppIndex] = {
+        ...state[whatsAppIndex],
+        status: whatsApp.status,
+        updatedAt: whatsApp.updatedAt,
+        qrcode: whatsApp.qrcode,
+        retries: whatsApp.retries
+      };
       return [...state];
     } else {
       return [...state];
@@ -76,25 +79,27 @@ const useWhatsApps = () => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
 
-    socket.on(`company-${companyId}-whatsapp`, (data) => {
+    const handleWhatsappUpdate = (data) => {
       if (data.action === "update") {
         dispatch({ type: "UPDATE_WHATSAPPS", payload: data.whatsapp });
       }
-    });
-
-    socket.on(`company-${companyId}-whatsapp`, (data) => {
       if (data.action === "delete") {
         dispatch({ type: "DELETE_WHATSAPPS", payload: data.whatsappId });
       }
-    });
+    };
 
-    socket.on(`company-${companyId}-whatsappSession`, (data) => {
+    const handleSessionUpdate = (data) => {
       if (data.action === "update") {
         dispatch({ type: "UPDATE_SESSION", payload: data.session });
       }
-    });
+    };
+
+    socket.on(`company-${companyId}-whatsapp`, handleWhatsappUpdate);
+    socket.on(`company-${companyId}-whatsappSession`, handleSessionUpdate);
 
     return () => {
+      socket.off(`company-${companyId}-whatsapp`, handleWhatsappUpdate);
+      socket.off(`company-${companyId}-whatsappSession`, handleSessionUpdate);
       socket.disconnect();
     };
   }, []);

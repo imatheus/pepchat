@@ -362,26 +362,55 @@ export const remove = async (
 
   const whatsapp = await ShowWhatsAppService(whatsappId, companyId);
 
-  if (whatsapp.channel === "whatsapp") {
-    await DeleteBaileysService(whatsappId);
-    await DeleteWhatsAppService(whatsappId);
-    await cacheLayer.delFromPattern(`sessions:${whatsappId}:*`);
-    removeWbot(+whatsappId);
+  console.log(`Removendo conexão: ${whatsapp.name} (ID: ${whatsappId})`);
 
-    io.emit(`company-${companyId}-whatsapp`, {
-      action: "delete",
-      whatsappId: +whatsappId
-    });
+  if (whatsapp.channel === "whatsapp") {
+    try {
+      // Tentar desconectar o wbot se existir
+      try {
+        const wbot = getWbot(+whatsappId);
+        if (wbot) {
+          wbot.logout();
+          wbot.ws.close();
+        }
+      } catch (err) {
+        console.log("Wbot não encontrado ou já desconectado:", err.message);
+      }
+
+      // Remover da lista de sessões
+      removeWbot(+whatsappId);
+      
+      // Limpar dados do Baileys
+      await DeleteBaileysService(whatsappId);
+      
+      // Limpar cache
+      await cacheLayer.delFromPattern(`sessions:${whatsappId}:*`);
+      
+      // Deletar do banco
+      await DeleteWhatsAppService(whatsappId);
+
+      console.log(`Conexão ${whatsapp.name} removida com sucesso`);
+
+      io.emit(`company-${companyId}-whatsapp`, {
+        action: "delete",
+        whatsappId: +whatsappId
+      });
+    } catch (err) {
+      console.error(`Erro ao remover conexão ${whatsapp.name}:`, err);
+      throw err;
+    }
   }
 
   if (whatsapp.channel === "facebook" || whatsapp.channel === "instagram" || whatsapp.channel === "webchat") {
     await DeleteWhatsAppService(whatsappId);
 
+    console.log(`Conexão ${whatsapp.name} (${whatsapp.channel}) removida com sucesso`);
+
     io.emit(`company-${companyId}-whatsapp`, {
       action: "delete",
       whatsappId: +whatsappId
     });
   }
 
-  res.status(200).json({ message: "Session disconnected." });
+  res.status(200).json({ message: "Connection deleted successfully." });
 };
