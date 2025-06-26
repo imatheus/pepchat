@@ -524,98 +524,181 @@ const handleChatbot = async (
   wbot: Session, 
   dontReadTheFirstQuestion: boolean = false
 ): Promise<void> => {  
-  // Buscar a fila sem filtro de parentId para evitar problemas
   const queue = await Queue.findByPk(ticket.queueId);
   
-  if (!queue) {    return;
+  if (!queue) {
+    return;
   }
-  // A verificação de horário de funcionamento foi movida para verifyQueue
-  // para ser executada imediatamente após a seleção do setor
 
   const messageBody = getBodyMessage(msg);
+  
   // Voltar para o menu inicial
-  if (messageBody == "#") {    await ticket.update({ queueOptionId: null, chatbot: false, queueId: null });
-    
-    // Recarregar o ticket para garantir que as mudanças foram aplicadas
-    await ticket.reload();    
+  if (messageBody == "#") {
+    await ticket.update({ queueOptionId: null, chatbot: false, queueId: null });
+    await ticket.reload();
     await verifyQueue(wbot, msg, ticket, ticket.contact);
     return;
   }
 
   // Se o ticket não tem queueOptionId, é a primeira interação com o chatbot
-  if (isNil(ticket.queueOptionId)) {    
-    // Buscar opções principais (parentId = null)
+  if (isNil(ticket.queueOptionId)) {
     const queueOptions = await QueueOption.findAll({
       where: { queueId: ticket.queueId, parentId: null },
-      order: [
-        ["option", "ASC"],
-        ["createdAt", "ASC"],
-      ],
-    });    queueOptions.forEach(option => {    });
+      order: [["option", "ASC"], ["createdAt", "ASC"]],
+    });
 
     // Se o usuário enviou uma mensagem, verificar se corresponde a uma opção
     if (messageBody && !dontReadTheFirstQuestion) {
       const selectedOption = queueOptions.find((o) => o.option == messageBody);
-      if (selectedOption) {        await ticket.update({ queueOptionId: selectedOption.id });
+      if (selectedOption) {
+        await ticket.update({ queueOptionId: selectedOption.id });
         
-        // Enviar mensagem de confirmação da opç��o selecionada
-        const confirmationBody = formatBody(`\u200e${selectedOption.message}\n\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
-        await SendWhatsAppMessage({ body: confirmationBody, ticket });
+        // Verificar se esta opção tem sub-opções
+        const hasSubOptions = await QueueOption.count({
+          where: { parentId: selectedOption.id }
+        });
+
+        if (hasSubOptions > 0) {
+          // Se tem sub-opções, mostrar elas
+          const subOptions = await QueueOption.findAll({
+            where: { parentId: selectedOption.id },
+            order: [["option", "ASC"], ["createdAt", "ASC"]]
+          });
+
+          let options = "";
+          subOptions.forEach((option) => {
+            options += `*[ ${option.option} ]* - ${option.title}\n`;
+          });
+          options += `\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`;
+
+          const body = formatBody(`\u200e${selectedOption.message}\n\n${options}`, ticket.contact);
+          await SendWhatsAppMessage({ body, ticket });
+        } else {
+          // Se não tem sub-opções, enviar apenas a mensagem
+          const body = formatBody(`\u200e${selectedOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
+          await SendWhatsAppMessage({ body, ticket });
+        }
         return;
-      } else {      }
+      }
     }
 
-    // Mostrar opções principais
+    // Mostrar opções principais se não selecionou nenhuma válida
     if (queueOptions.length > 0) {
       let options = "";
-      queueOptions.forEach((option, i) => {
+      queueOptions.forEach((option) => {
         options += `*[ ${option.option} ]* - ${option.title}\n`;
       });
       options += `\n*[ # ]* - Voltar ao Menu Principal`;
 
-      const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${options}`, ticket.contact);      await SendWhatsAppMessage({ body: textMessage, ticket });
-    } else {      // Se não há opções, desabilitar chatbot
+      const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${options}`, ticket.contact);
+      await SendWhatsAppMessage({ body: textMessage, ticket });
+    } else {
       await ticket.update({ chatbot: false });
     }
 
-  } else {    
-    // Verificar se há sub-opções
+  } else {
+    // Usuário já está em uma opção, verificar sub-opções
     const subOptions = await QueueOption.findAll({
       where: { parentId: ticket.queueOptionId },
-      order: [
-        ["option", "ASC"],
-        ["createdAt", "ASC"],
-      ],
+      order: [["option", "ASC"], ["createdAt", "ASC"]],
     });
-    if (subOptions.length > 0) {
-      // Se o usuário enviou uma mensagem, verificar se corresponde a uma sub-opção
-      if (messageBody) {
-        const selectedSubOption = subOptions.find((o) => o.option == messageBody);
-        if (selectedSubOption) {          await ticket.update({ queueOptionId: selectedSubOption.id });
+
+    if (messageBody) {
+      if (messageBody == "0") {
+        // Voltar para o menu anterior
+        const currentOption = await QueueOption.findByPk(ticket.queueOptionId);
+        if (currentOption && currentOption.parentId) {
+          await ticket.update({ queueOptionId: currentOption.parentId });
           
-          // Enviar mensagem de confirmação da sub-opção
-          const confirmationBody = formatBody(`\u200e${selectedSubOption.message}\n\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
-          await SendWhatsAppMessage({ body: confirmationBody, ticket });
-          return;
-        } else if (messageBody == "#") {
-          // Voltar para o menu anterior
-          const currentOption = await QueueOption.findByPk(ticket.queueOptionId);
-          await ticket.update({ queueOptionId: currentOption?.parentId });
-          return;
+          // Mostrar opções do nível anterior
+          const parentOptions = await QueueOption.findAll({
+            where: { parentId: currentOption.parentId },
+            order: [["option", "ASC"], ["createdAt", "ASC"]]
+          });
+
+          if (parentOptions.length > 0) {
+            let options = "";
+            parentOptions.forEach((option) => {
+              options += `*[ ${option.option} ]* - ${option.title}\n`;
+            });
+            options += `\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`;
+
+            const parentOption = await QueueOption.findByPk(currentOption.parentId);
+            const body = formatBody(`\u200e${parentOption?.message || queue.greetingMessage}\n\n${options}`, ticket.contact);
+            await SendWhatsAppMessage({ body, ticket });
+          }
+        } else {
+          // Voltar para as opções principais
+          await ticket.update({ queueOptionId: null });
+          const mainOptions = await QueueOption.findAll({
+            where: { queueId: ticket.queueId, parentId: null },
+            order: [["option", "ASC"], ["createdAt", "ASC"]]
+          });
+
+          let options = "";
+          mainOptions.forEach((option) => {
+            options += `*[ ${option.option} ]* - ${option.title}\n`;
+          });
+          options += `\n*[ # ]* - Voltar ao Menu Principal`;
+
+          const body = formatBody(`\u200e${queue.greetingMessage}\n\n${options}`, ticket.contact);
+          await SendWhatsAppMessage({ body, ticket });
         }
+        return;
       }
 
-      // Mostrar sub-opções
+      // Verificar se selecionou uma sub-opção válida
+      const selectedSubOption = subOptions.find((o) => o.option == messageBody);
+      if (selectedSubOption) {
+        await ticket.update({ queueOptionId: selectedSubOption.id });
+        
+        // Verificar se esta sub-opção tem filhos
+        const hasChildren = await QueueOption.count({
+          where: { parentId: selectedSubOption.id }
+        });
+
+        if (hasChildren > 0) {
+          // Mostrar as opções filhas
+          const childOptions = await QueueOption.findAll({
+            where: { parentId: selectedSubOption.id },
+            order: [["option", "ASC"], ["createdAt", "ASC"]]
+          });
+
+          let childOptionsText = "";
+          childOptions.forEach((option) => {
+            childOptionsText += `*[ ${option.option} ]* - ${option.title}\n`;
+          });
+          childOptionsText += `\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`;
+
+          const body = formatBody(`\u200e${selectedSubOption.message}\n\n${childOptionsText}`, ticket.contact);
+          await SendWhatsAppMessage({ body, ticket });
+        } else {
+          // Opção final, sem filhos
+          const body = formatBody(`\u200e${selectedSubOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
+          await SendWhatsAppMessage({ body, ticket });
+        }
+        return;
+      }
+    }
+
+    // Se chegou aqui e tem sub-opções, mostrar elas
+    if (subOptions.length > 0) {
       const currentOption = await QueueOption.findByPk(ticket.queueOptionId);
       let options = "";
-      subOptions.forEach((option, i) => {
+      subOptions.forEach((option) => {
         options += `*[ ${option.option} ]* - ${option.title}\n`;
       });
-      options += `\n*[ # ]* - Voltar ao Menu Principal`;
+      options += `\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`;
 
-      const body = formatBody(`\u200e${currentOption?.message || 'Escolha uma opção:'}\n\n${options}`, ticket.contact);      await SendWhatsAppMessage({ body, ticket });
-    } else {      // Se não há sub-opções, o chatbot terminou sua função
-      // Manter o ticket na fila para atendimento humano
+      const body = formatBody(`\u200e${currentOption?.message || 'Escolha uma opção:'}\n\n${options}`, ticket.contact);
+      await SendWhatsAppMessage({ body, ticket });
+    } else {
+      // Opção final sem sub-opções
+      const currentOption = await QueueOption.findByPk(ticket.queueOptionId);
+      if (currentOption) {
+        const body = formatBody(`\u200e${currentOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
+        await SendWhatsAppMessage({ body, ticket });
+      }
     }
   }
 };
