@@ -19,7 +19,7 @@ import {
   WAMessageStubType,
   WAMessageUpdate,
   WASocket,
-} from "@adiwajshing/baileys";
+} from "@whiskeysockets/baileys";
 import Contact from "../../models/Contact";
 import Ticket from "../../models/Ticket";
 import Message from "../../models/Message";
@@ -45,6 +45,19 @@ import Setting from "../../models/Setting";
 import { cacheLayer } from "../../libs/cache";
 import { debounce } from "../../helpers/Debounce";
 import { provider } from "./providers";
+
+// Função para obter o tipo de chatbot das configurações da empresa
+const getChatbotType = async (companyId: number): Promise<string> => {
+  try {
+    const setting = await Setting.findOne({
+      where: { key: "chatBotType", companyId }
+    });
+    return setting?.value || 'text';
+  } catch (error) {
+    logger.error(error, "Error getting chatbot type setting");
+    return 'text';
+  }
+};
 
 type Session = AnyWASocket & {
   id?: number;
@@ -439,6 +452,144 @@ const isValidMsg = (msg: proto.IWebMessageInfo): boolean => {
   }
 };
 
+// Função para criar mensagem com botões (formato correto para Baileys 6.x)
+const createButtonMessage = (body: string, buttons: Array<{id: string, text: string}>) => {
+  return {
+    text: body,
+    footer: "Escolha uma opção:",
+    interactiveButtons: buttons.map((btn) => ({
+      name: "quick_reply",
+      buttonParamsJson: JSON.stringify({
+        display_text: btn.text,
+        id: btn.id
+      })
+    }))
+  };
+};
+
+// Função para criar mensagem com lista (formato correto para Baileys 6.x)
+const createListMessage = (body: string, title: string, options: Array<{id: string, title: string, description?: string}>) => {
+  return {
+    text: body,
+    footer: "Escolha uma opção:",
+    title: title,
+    buttonText: "📋 Ver opções",
+    sections: [{
+      title: title,
+      rows: options.map(opt => ({
+        rowId: opt.id,
+        title: opt.title,
+        description: opt.description || ""
+      }))
+    }]
+  };
+};
+
+// Função para enviar mensagem baseada no tipo de chatbot
+const sendChatbotMessage = async (
+  ticket: Ticket, 
+  body: string, 
+  options: Array<{option: string, title: string}>,
+  chatbotType: string = 'text'
+) => {
+  try {
+    // Adicionar opções de navegação
+    const allOptions = [
+      ...options,
+      { option: '0', title: 'Voltar ao menu anterior' },
+      { option: '#', title: 'Voltar ao Menu Principal' }
+    ];
+
+    // Log para debug
+    logger.info(`Sending chatbot message - Type: ${chatbotType}, Options: ${allOptions.length}`);
+
+    // Por enquanto, forçar uso de texto até resolver o problema das mensagens interativas
+    logger.info("Using text format (interactive messages temporarily disabled)");
+    
+    // Formato texto padrão
+    let textOptions = "";
+    allOptions.forEach((option) => {
+      textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+    });
+    
+    const textMessage = formatBody(`${body}\n\n${textOptions}`, ticket.contact);
+    await SendWhatsAppMessage({ body: textMessage, ticket });
+
+    // Código comentado para mensagens interativas (para debug futuro)
+    /*
+    switch (chatbotType.toLowerCase()) {
+      case 'button':
+        // Máximo 3 botões no WhatsApp
+        if (allOptions.length <= 3) {
+          logger.info("Sending button message");
+          const buttons = allOptions.map(opt => ({
+            id: opt.option,
+            text: opt.title
+          }));
+          
+          const buttonMessage = createButtonMessage(body, buttons);
+          await SendWhatsAppMessage({ 
+            body: JSON.stringify(buttonMessage), 
+            ticket,
+            isButton: true 
+          });
+          return;
+        }
+        logger.info("Too many options for buttons, falling back to list");
+        // fall through
+      
+      case 'list':
+        if (allOptions.length > 1) {
+          logger.info("Sending list message");
+          const listOptions = allOptions.map(opt => ({
+            id: opt.option,
+            title: opt.title,
+            description: `Opção ${opt.option}`
+          }));
+          
+          const listMessage = createListMessage(body, "Escolha uma opção:", listOptions);
+          await SendWhatsAppMessage({ 
+            body: JSON.stringify(listMessage), 
+            ticket,
+            isList: true 
+          });
+          return;
+        }
+        logger.info("Not enough options for list, falling back to text");
+        // fall through
+      
+      default:
+        logger.info("Sending text message");
+        // Formato texto padrão
+        let textOptions = "";
+        allOptions.forEach((option) => {
+          textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+        });
+        
+        const textMessage = formatBody(`${body}\n\n${textOptions}`, ticket.contact);
+        await SendWhatsAppMessage({ body: textMessage, ticket });
+        break;
+    }
+    */
+  } catch (error) {
+    logger.error(error, "Error sending chatbot message, falling back to text");
+    // Fallback para texto em caso de erro
+    let textOptions = "";
+    const allOptions = [
+      ...options,
+      { option: '0', title: 'Voltar ao menu anterior' },
+      { option: '#', title: 'Voltar ao Menu Principal' }
+    ];
+    
+    allOptions.forEach((option) => {
+      textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+    });
+    
+    const textMessage = formatBody(`${body}\n\n${textOptions}`, ticket.contact);
+    await SendWhatsAppMessage({ body: textMessage, ticket });
+  }
+};
+
 const verifyQueue = async (wbot: Session, msg: proto.IWebMessageInfo, ticket: Ticket, contact: Contact) => {
   const { queues, greetingMessage } = await ShowWhatsAppService(wbot.id!, ticket.companyId);
 
@@ -509,13 +660,15 @@ const verifyQueue = async (wbot: Session, msg: proto.IWebMessageInfo, ticket: Ti
   }
   
   // Se chegou aqui, é primeira mensagem ou opção inválida - mostrar opções de setores
-  let options = "";
-  queues.forEach((queue, index) => {
-    options += `*[ ${index + 1} ]* - ${queue.name}\n`;
-  });
+  const queueOptions = queues.map((queue, index) => ({
+    option: (index + 1).toString(),
+    title: queue.name
+  }));
   
-  const body = formatBody(`\u200e${greetingMessage}\n\n${options}`, contact);
-  await SendWhatsAppMessage({ body, ticket });
+  // Usar o tipo de chatbot configurado nas configurações da empresa
+  const chatbotType = await getChatbotType(ticket.companyId);
+  
+  await sendChatbotMessage(ticket, greetingMessage, queueOptions, chatbotType);
 };
 
 const handleChatbot = async (
@@ -565,14 +718,15 @@ const handleChatbot = async (
             order: [["option", "ASC"], ["createdAt", "ASC"]]
           });
 
-          let options = "";
-          subOptions.forEach((option) => {
-            options += `*[ ${option.option} ]* - ${option.title}\n`;
-          });
-          options += `\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`;
+          const subOptionsFormatted = subOptions.map(option => ({
+            option: option.option,
+            title: option.title
+          }));
 
-          const body = formatBody(`\u200e${selectedOption.message}\n\n${options}`, ticket.contact);
-          await SendWhatsAppMessage({ body, ticket });
+          // Usar o tipo de chatbot configurado
+          const chatbotType = await getChatbotType(ticket.companyId);
+          
+          await sendChatbotMessage(ticket, selectedOption.message, subOptionsFormatted, chatbotType);
         } else {
           // Se não tem sub-opções, enviar apenas a mensagem
           const body = formatBody(`\u200e${selectedOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
@@ -584,14 +738,74 @@ const handleChatbot = async (
 
     // Mostrar opções principais se não selecionou nenhuma válida
     if (queueOptions.length > 0) {
-      let options = "";
-      queueOptions.forEach((option) => {
-        options += `*[ ${option.option} ]* - ${option.title}\n`;
-      });
-      options += `\n*[ # ]* - Voltar ao Menu Principal`;
+      const optionsFormatted = queueOptions.map(option => ({
+        option: option.option,
+        title: option.title
+      }));
 
-      const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${options}`, ticket.contact);
-      await SendWhatsAppMessage({ body: textMessage, ticket });
+      // Usar o tipo de chatbot configurado
+      const chatbotType = await getChatbotType(ticket.companyId);
+      
+      // Para opções principais, não incluir "voltar ao menu anterior"
+      const mainOptions = [...optionsFormatted, { option: '#', title: 'Voltar ao Menu Principal' }];
+      
+      try {
+        switch (chatbotType.toLowerCase()) {
+          case 'button':
+            if (mainOptions.length <= 3) {
+              const buttons = mainOptions.map(opt => ({
+                id: opt.option,
+                text: opt.title
+              }));
+              
+              const buttonMessage = createButtonMessage(queue.greetingMessage, buttons);
+              await SendWhatsAppMessage({ 
+                body: JSON.stringify(buttonMessage), 
+                ticket,
+                isButton: true 
+              });
+              return;
+            }
+            // fall through
+          
+          case 'list':
+            if (mainOptions.length > 1) {
+              const listOptions = mainOptions.map(opt => ({
+                id: opt.option,
+                title: opt.title,
+                description: `Opção ${opt.option}`
+              }));
+              
+              const listMessage = createListMessage(queue.greetingMessage, "Escolha uma opção:", listOptions);
+              await SendWhatsAppMessage({ 
+                body: JSON.stringify(listMessage), 
+                ticket,
+                isList: true 
+              });
+              return;
+            }
+            // fall through
+          
+          default:
+            let textOptions = "";
+            mainOptions.forEach((option) => {
+              textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+            });
+            
+            const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
+            await SendWhatsAppMessage({ body: textMessage, ticket });
+            break;
+        }
+      } catch (error) {
+        logger.error(error, "Error sending main chatbot options, falling back to text");
+        let textOptions = "";
+        mainOptions.forEach((option) => {
+          textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+        });
+        
+        const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
+        await SendWhatsAppMessage({ body: textMessage, ticket });
+      }
     } else {
       await ticket.update({ chatbot: false });
     }
@@ -617,15 +831,15 @@ const handleChatbot = async (
           });
 
           if (parentOptions.length > 0) {
-            let options = "";
-            parentOptions.forEach((option) => {
-              options += `*[ ${option.option} ]* - ${option.title}\n`;
-            });
-            options += `\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`;
+            const parentOptionsFormatted = parentOptions.map(option => ({
+              option: option.option,
+              title: option.title
+            }));
 
             const parentOption = await QueueOption.findByPk(currentOption.parentId);
-            const body = formatBody(`\u200e${parentOption?.message || queue.greetingMessage}\n\n${options}`, ticket.contact);
-            await SendWhatsAppMessage({ body, ticket });
+            const chatbotType = await getChatbotType(ticket.companyId);
+            
+            await sendChatbotMessage(ticket, parentOption?.message || queue.greetingMessage, parentOptionsFormatted, chatbotType);
           }
         } else {
           // Voltar para as opções principais
@@ -635,14 +849,73 @@ const handleChatbot = async (
             order: [["option", "ASC"], ["createdAt", "ASC"]]
           });
 
-          let options = "";
-          mainOptions.forEach((option) => {
-            options += `*[ ${option.option} ]* - ${option.title}\n`;
-          });
-          options += `\n*[ # ]* - Voltar ao Menu Principal`;
+          const mainOptionsFormatted = mainOptions.map(option => ({
+            option: option.option,
+            title: option.title
+          }));
 
-          const body = formatBody(`\u200e${queue.greetingMessage}\n\n${options}`, ticket.contact);
-          await SendWhatsAppMessage({ body, ticket });
+          const chatbotType = await getChatbotType(ticket.companyId);
+          
+          // Para opções principais, não incluir "voltar ao menu anterior"
+          const finalOptions = [...mainOptionsFormatted, { option: '#', title: 'Voltar ao Menu Principal' }];
+          
+          try {
+            switch (chatbotType.toLowerCase()) {
+              case 'button':
+                if (finalOptions.length <= 3) {
+                  const buttons = finalOptions.map(opt => ({
+                    id: opt.option,
+                    text: opt.title
+                  }));
+                  
+                  const buttonMessage = createButtonMessage(queue.greetingMessage, buttons);
+                  await SendWhatsAppMessage({ 
+                    body: JSON.stringify(buttonMessage), 
+                    ticket,
+                    isButton: true 
+                  });
+                  return;
+                }
+                // fall through
+              
+              case 'list':
+                if (finalOptions.length > 1) {
+                  const listOptions = finalOptions.map(opt => ({
+                    id: opt.option,
+                    title: opt.title,
+                    description: `Opção ${opt.option}`
+                  }));
+                  
+                  const listMessage = createListMessage(queue.greetingMessage, "Escolha uma opção:", listOptions);
+                  await SendWhatsAppMessage({ 
+                    body: JSON.stringify(listMessage), 
+                    ticket,
+                    isList: true 
+                  });
+                  return;
+                }
+                // fall through
+              
+              default:
+                let textOptions = "";
+                finalOptions.forEach((option) => {
+                  textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+                });
+                
+                const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
+                await SendWhatsAppMessage({ body: textMessage, ticket });
+                break;
+            }
+          } catch (error) {
+            logger.error(error, "Error sending main options, falling back to text");
+            let textOptions = "";
+            finalOptions.forEach((option) => {
+              textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+            });
+            
+            const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
+            await SendWhatsAppMessage({ body: textMessage, ticket });
+          }
         }
         return;
       }
@@ -664,14 +937,14 @@ const handleChatbot = async (
             order: [["option", "ASC"], ["createdAt", "ASC"]]
           });
 
-          let childOptionsText = "";
-          childOptions.forEach((option) => {
-            childOptionsText += `*[ ${option.option} ]* - ${option.title}\n`;
-          });
-          childOptionsText += `\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`;
+          const childOptionsFormatted = childOptions.map(option => ({
+            option: option.option,
+            title: option.title
+          }));
 
-          const body = formatBody(`\u200e${selectedSubOption.message}\n\n${childOptionsText}`, ticket.contact);
-          await SendWhatsAppMessage({ body, ticket });
+          const chatbotType = await getChatbotType(ticket.companyId);
+          
+          await sendChatbotMessage(ticket, selectedSubOption.message, childOptionsFormatted, chatbotType);
         } else {
           // Opção final, sem filhos
           const body = formatBody(`\u200e${selectedSubOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
@@ -684,14 +957,14 @@ const handleChatbot = async (
     // Se chegou aqui e tem sub-opções, mostrar elas
     if (subOptions.length > 0) {
       const currentOption = await QueueOption.findByPk(ticket.queueOptionId);
-      let options = "";
-      subOptions.forEach((option) => {
-        options += `*[ ${option.option} ]* - ${option.title}\n`;
-      });
-      options += `\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`;
+      const subOptionsFormatted = subOptions.map(option => ({
+        option: option.option,
+        title: option.title
+      }));
 
-      const body = formatBody(`\u200e${currentOption?.message || 'Escolha uma opção:'}\n\n${options}`, ticket.contact);
-      await SendWhatsAppMessage({ body, ticket });
+      const chatbotType = await getChatbotType(ticket.companyId);
+      
+      await sendChatbotMessage(ticket, currentOption?.message || 'Escolha uma opção:', subOptionsFormatted, chatbotType);
     } else {
       // Opção final sem sub-opções
       const currentOption = await QueueOption.findByPk(ticket.queueOptionId);

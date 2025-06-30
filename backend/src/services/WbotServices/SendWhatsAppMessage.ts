@@ -1,4 +1,4 @@
-import { WASocket } from "@adiwajshing/baileys";
+import { WASocket } from "@whiskeysockets/baileys";
 import { getWbot } from "../../libs/wbot";
 import AppError from "../../errors/AppError";
 import GetTicketWbot from "../../helpers/GetTicketWbot";
@@ -10,12 +10,16 @@ interface Request {
   body: string;
   ticket: Ticket;
   quotedMsg?: Message;
+  isButton?: boolean;
+  isList?: boolean;
 }
 
 const SendWhatsAppMessage = async ({
   body,
   ticket,
-  quotedMsg
+  quotedMsg,
+  isButton = false,
+  isList = false
 }: Request): Promise<Message> => {
   try {
     const wbot = await GetTicketWbot(ticket);
@@ -35,30 +39,96 @@ const SendWhatsAppMessage = async ({
       };
     }
 
-    const sentMessage = await wbot.sendMessage(
-      `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
-      {
-        text: body
-      },
-      quotedMsgData ? { quoted: quotedMsgData } : {}
-    );
+    let messageContent: any;
+    let sentMessage: any;
+
+    // Determine message type and content
+    if (isButton || isList) {
+      console.log(`Sending interactive message - isButton: ${isButton}, isList: ${isList}`);
+      try {
+        // Parse the JSON message for buttons/lists
+        const parsedMessage = JSON.parse(body);
+        console.log("Parsed message:", JSON.stringify(parsedMessage, null, 2));
+        
+        if (isButton && parsedMessage.interactiveButtons) {
+          console.log("Sending button message with interactiveButtons:", parsedMessage.interactiveButtons);
+          // Send button message using correct Baileys 6.x format
+          sentMessage = await wbot.sendMessage(
+            `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
+            {
+              text: parsedMessage.text,
+              footer: parsedMessage.footer || "Escolha uma opção:",
+              interactiveButtons: parsedMessage.interactiveButtons
+            },
+            quotedMsgData ? { quoted: quotedMsgData } : {}
+          );
+        } else if (isList && parsedMessage.sections) {
+          console.log("Sending list message with sections:", parsedMessage.sections);
+          // Send list message using correct Baileys 6.x format
+          sentMessage = await wbot.sendMessage(
+            `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
+            {
+              text: parsedMessage.text,
+              footer: parsedMessage.footer || "Escolha uma opção:",
+              title: parsedMessage.title || "Menu",
+              buttonText: parsedMessage.buttonText || "📋 Ver opções",
+              sections: parsedMessage.sections
+            },
+            quotedMsgData ? { quoted: quotedMsgData } : {}
+          );
+        } else {
+          // Fallback to text if parsing fails
+          sentMessage = await wbot.sendMessage(
+            `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
+            { text: body },
+            quotedMsgData ? { quoted: quotedMsgData } : {}
+          );
+        }
+      } catch (parseError) {
+        console.log("Error parsing interactive message, falling back to text:", parseError);
+        // Fallback to text message
+        sentMessage = await wbot.sendMessage(
+          `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
+          { text: body },
+          quotedMsgData ? { quoted: quotedMsgData } : {}
+        );
+      }
+    } else {
+      // Regular text message
+      sentMessage = await wbot.sendMessage(
+        `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
+        { text: body },
+        quotedMsgData ? { quoted: quotedMsgData } : {}
+      );
+    }
+
+    // Extract text content for database storage
+    let messageBody = body;
+    if (isButton || isList) {
+      try {
+        const parsedMessage = JSON.parse(body);
+        messageBody = parsedMessage.text || body;
+      } catch {
+        messageBody = body;
+      }
+    }
 
     // Create message record in database
     const messageData = {
       id: sentMessage.key.id,
       ticketId: ticket.id,
       contactId: undefined, // fromMe messages don't have contactId
-      body,
+      body: messageBody,
       fromMe: true,
       read: true,
-      mediaType: "chat",
+      mediaType: isButton ? "button" : isList ? "list" : "chat",
       quotedMsgId: quotedMsg?.id,
       ack: 1, // sent
       dataJson: JSON.stringify(sentMessage)
     };
 
     // Update ticket's last message
-    await ticket.update({ lastMessage: body });
+    await ticket.update({ lastMessage: messageBody });
 
     // Create message and emit socket event
     const newMessage = await CreateMessageService({ 
