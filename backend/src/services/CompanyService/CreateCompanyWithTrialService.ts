@@ -15,6 +15,8 @@ interface CompanyData {
   campaignsEnabled?: boolean;
   recurrence?: string;
   trialDays?: number; // Número de dias de trial (padrão: 7)
+  trialExpiration?: string;
+  dueDate?: string;
 }
 
 const CreateCompanyWithTrialService = async (

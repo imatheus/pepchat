@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { Link as RouterLink, useHistory } from "react-router-dom";
 
 import ListItem from "@material-ui/core/ListItem";
@@ -28,8 +28,12 @@ import ListIcon from "@material-ui/icons/ListAlt";
 import { i18n } from "../translate/i18n";
 import { WhatsAppsContext } from "../context/WhatsApp/WhatsAppsContext";
 import { AuthContext } from "../context/Auth/AuthContext";
+import { TutorialContext } from "../context/Tutorial/TutorialContext";
+import { useCustomTheme } from "../context/Theme/ThemeContext";
 import { Can } from "../components/Can";
 import useCompanyStatus from "../hooks/useCompanyStatus";
+import TutorialTooltip from "../components/TutorialTooltip";
+import TutorialOverlay from "../components/TutorialOverlay";
 
 function ListItemLink(props) {
   const { icon, primary, to, className, drawerCollapsed, disabled = false } = props;
@@ -87,12 +91,15 @@ const MainListItems = (props) => {
   const { drawerClose, drawerCollapsed } = props;
   const { whatsApps } = useContext(WhatsAppsContext);
   const { user } = useContext(AuthContext);
+  const { showQueuesTutorial, dismissTutorial } = useContext(TutorialContext);
+  const { colors, darkMode } = useCustomTheme();
   const [connectionWarning, setConnectionWarning] = useState(false);
   const [openCampaignSubmenu, setOpenCampaignSubmenu] = useState(false);
   const [showCampaigns, setShowCampaigns] = useState(false);
   const [campaignPopoverAnchor, setCampaignPopoverAnchor] = useState(null);
   const history = useHistory();
   const { isCompanyBlocked } = useCompanyStatus();
+  const queuesMenuRef = useRef(null);
 
   
   useEffect(() => {
@@ -128,6 +135,11 @@ const MainListItems = (props) => {
 
   const handleCampaignPopoverClose = () => {
     setCampaignPopoverAnchor(null);
+  };
+
+  const handleTutorialNext = () => {
+    dismissTutorial();
+    history.push("/queues");
   };
 
   return (
@@ -365,13 +377,33 @@ const MainListItems = (props) => {
               drawerCollapsed={drawerCollapsed}
               disabled={isCompanyBlocked}
             />
-            <ListItemLink
-              to="/queues"
-              primary={i18n.t("mainDrawer.listItems.queues")}
-              icon={<AndroidIcon />}
-              drawerCollapsed={drawerCollapsed}
-              disabled={isCompanyBlocked}
-            />
+            <div 
+              ref={queuesMenuRef}
+              className={showQueuesTutorial ? 'tutorial-highlight' : ''}
+              style={{
+                position: 'relative',
+                borderRadius: showQueuesTutorial ? '12px' : '0px',
+                background: showQueuesTutorial 
+                  ? `linear-gradient(135deg, ${colors.primary}20, ${colors.primary}10)` 
+                  : 'transparent',
+                border: showQueuesTutorial ? `3px solid ${colors.primary}` : 'none',
+                boxShadow: showQueuesTutorial 
+                  ? `0 0 20px ${colors.primary}40, 0 0 40px ${colors.primary}20` 
+                  : 'none',
+                transform: showQueuesTutorial ? 'scale(1.05)' : 'scale(1)',
+                zIndex: showQueuesTutorial ? 1302 : 'auto',
+                transition: 'all 0.3s ease',
+                margin: showQueuesTutorial ? '4px' : '0px',
+              }}
+            >
+              <ListItemLink
+                to="/queues"
+                primary={i18n.t("mainDrawer.listItems.queues")}
+                icon={<AndroidIcon />}
+                drawerCollapsed={drawerCollapsed}
+                disabled={isCompanyBlocked}
+              />
+            </div>
             <ListItemLink
               to="/users"
               primary={i18n.t("mainDrawer.listItems.users")}
@@ -404,7 +436,25 @@ const MainListItems = (props) => {
           </>
         )}
       />
-    </div>
+      
+      {/* Overlay para diminuir opacidade do background - Setores */}
+      <TutorialOverlay 
+        show={showQueuesTutorial}
+        targetElement={queuesMenuRef.current}
+      />
+      
+      {/* Tutorial Tooltip para Setores */}
+      <TutorialTooltip
+        open={showQueuesTutorial}
+        anchorEl={queuesMenuRef.current}
+        onClose={dismissTutorial}
+        onNext={handleTutorialNext}
+        title="Configure seus Setores"
+        content="Para começar a usar o sistema, você precisa configurar pelo menos um setor. Os setores organizam seu atendimento e permitem direcionar conversas para equipes específicas."
+        placement="right"
+      />
+
+          </div>
   );
 };
 

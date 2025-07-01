@@ -1,4 +1,4 @@
-import { useEffect, useContext } from 'react';
+import { useEffect, useContext, useRef } from 'react';
 import { toast } from 'react-toastify';
 import useCompanyStatus from '../../hooks/useCompanyStatus';
 import { AuthContext } from '../../context/Auth/AuthContext';
@@ -6,34 +6,42 @@ import { AuthContext } from '../../context/Auth/AuthContext';
 const TrialNotifications = () => {
   const { companyStatus } = useCompanyStatus();
   const { user } = useContext(AuthContext);
+  const hasShownNotifications = useRef(new Set());
 
   useEffect(() => {
     // Não mostrar avisos de vencimento para usuários de nível "user"
     if (user?.profile === 'user') return;
     
-    if (!companyStatus.isInTrial) return;
+    if (!companyStatus.isInTrial || !user?.id) return;
 
     const daysRemaining = companyStatus.daysRemaining;
-    const hasShownNotification = localStorage.getItem(`trial-notification-${daysRemaining}`);
-
-    // Evitar mostrar a mesma notificação múltiplas vezes no mesmo dia
-    if (hasShownNotification) return;
-
+    
     let message = '';
     let toastType = 'info';
+    let storageKey = '';
 
     if (daysRemaining === 1) {
       message = '🚨 ÚLTIMO DIA do seu período de avaliação! Ative sua conta hoje para não perder o acesso.';
-      toastType = 'error';  
+      toastType = 'error';
+      storageKey = `trial-notification-day-${daysRemaining}-${user.id}`;
     } else if (daysRemaining === 2) {
       message = '⚠️ Restam apenas 2 dias do seu período de avaliação.';
       toastType = 'warning';
+      storageKey = `trial-notification-day-${daysRemaining}-${user.id}`;
     } else if (daysRemaining === 3) {
       message = '⏰ Restam 3 dias do seu período de avaliação.';
       toastType = 'warning';
+      storageKey = `trial-notification-day-${daysRemaining}-${user.id}`;
     } else if (daysRemaining === 7) {
       message = 'Você tem 7 dias para testar todas as funcionalidades gratuitamente.';
       toastType = 'success';
+      // Para a notificação de 7 dias, usar uma chave única que aparece apenas uma vez
+      storageKey = `trial-welcome-shown-${user.id}`;
+    }
+
+    // Verificar se já mostrou esta notificação específica
+    if (!storageKey || localStorage.getItem(storageKey) || hasShownNotifications.current.has(storageKey)) {
+      return;
     }
 
     if (message) {
@@ -60,21 +68,29 @@ const TrialNotifications = () => {
           toast.info(message, toastOptions);
       }
 
-      // Marcar que a notificação foi mostrada para este dia
-      localStorage.setItem(`trial-notification-${daysRemaining}`, 'true');
+      // Marcar que a notificação foi mostrada
+      if (storageKey) {
+        localStorage.setItem(storageKey, 'true');
+        hasShownNotifications.current.add(storageKey);
+      }
     }
 
-  }, [companyStatus.isInTrial, companyStatus.daysRemaining, user?.profile]);
+  }, [companyStatus.isInTrial, companyStatus.daysRemaining, user?.profile, user?.id]);
 
   // Limpar notificações antigas quando sair do período de trial
   useEffect(() => {
-    if (!companyStatus.isInTrial) {
-      // Limpar todas as notificações de trial do localStorage
+    if (!companyStatus.isInTrial && user?.id) {
+      // Limpar todas as notificações de trial do localStorage para este usuário
       for (let i = 1; i <= 7; i++) {
-        localStorage.removeItem(`trial-notification-${i}`);
+        localStorage.removeItem(`trial-notification-day-${i}-${user.id}`);
       }
+      // Limpar também a notificação de boas-vindas
+      localStorage.removeItem(`trial-welcome-shown-${user.id}`);
+      
+      // Limpar o cache de notificações mostradas
+      hasShownNotifications.current.clear();
     }
-  }, [companyStatus.isInTrial]);
+  }, [companyStatus.isInTrial, user?.id]);
 
   return null; // Este componente não renderiza nada visualmente
 };

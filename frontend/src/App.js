@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider as MuiThemeProvider } from "@material-ui/core/styles";
 import { CssBaseline } from "@material-ui/core";
 import { ThemeProvider, useCustomTheme } from "./context/Theme/ThemeContext";
+import { TutorialProvider } from "./context/Tutorial/TutorialContext";
 
 // Import custom CSS after Material-UI components to ensure proper override
 import "./assets/css/custom-paper-styles.css";
@@ -17,6 +18,7 @@ import "./assets/css/messages-list-dark.css";
 import "./assets/css/preserve-colors-dark.css";
 import "./assets/css/input-fixes-dark.css";
 import "./assets/css/toast-dark-theme.css";
+import "./assets/css/tutorial-styles.css";
 
 const AppContent = () => {
 	const { theme } = useCustomTheme();
@@ -24,7 +26,9 @@ const AppContent = () => {
 	return (
 		<MuiThemeProvider theme={theme}>
 			<CssBaseline />
-			<Routes />
+			<TutorialProvider>
+				<Routes />
+			</TutorialProvider>
 		</MuiThemeProvider>
 	);
 };

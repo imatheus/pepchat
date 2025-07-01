@@ -6,7 +6,6 @@ import { isNil, head, isNull } from "lodash";
 import UploadHelper from "../../helpers/UploadHelper";
 
 import {
-  AnyWASocket,
   downloadContentFromMessage,
   extractMessageContent,
   getContentType,
@@ -14,7 +13,6 @@ import {
   MediaType,
   MessageUpsertType,
   proto,
-  WALegacySocket,
   WAMessage,
   WAMessageStubType,
   WAMessageUpdate,
@@ -59,7 +57,7 @@ const getChatbotType = async (companyId: number): Promise<string> => {
   }
 };
 
-type Session = AnyWASocket & {
+type Session = WASocket & {
   id?: number;
 };
 
@@ -261,9 +259,7 @@ const getQuotedMessageId = (msg: proto.IWebMessageInfo): string | null => {
 };
 
 const getMeSocket = (wbot: Session): IMe => {
-  return wbot.type === "legacy"
-    ? { id: jidNormalizedUser((wbot as WALegacySocket).state.legacy.user.id), name: (wbot as WALegacySocket).state.legacy.user.name }
-    : { id: jidNormalizedUser((wbot as WASocket).user.id), name: (wbot as WASocket).user.name };
+  return { id: jidNormalizedUser(wbot.user.id), name: wbot.user.name };
 };
 
 const getSenderMessage = (msg: proto.IWebMessageInfo, wbot: Session): string => {
@@ -1067,7 +1063,7 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
     msgContact = await getContactMessage(msg, wbot);
 
     if (isGroup) {
-      const grupoMeta = await wbot.groupMetadata(msg.key.remoteJid, false);
+      const grupoMeta = await wbot.groupMetadata(msg.key.remoteJid);
       const msgGroupContact = { id: grupoMeta.id, name: grupoMeta.subject };
       groupContact = await verifyContact(msgGroupContact, wbot, companyId);
     }
@@ -1132,7 +1128,7 @@ const filterMessages = (msg: WAMessage): boolean => {
     WAMessageStubType.E2E_IDENTITY_CHANGED,
     WAMessageStubType.CIPHERTEXT
   ];
-  if (stubTypes.includes(msg.messageStubType as WAMessageStubType)) return false;
+  if (stubTypes.includes(msg.messageStubType as typeof WAMessageStubType[keyof typeof WAMessageStubType])) return false;
   return true;
 };
 

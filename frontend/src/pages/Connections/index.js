@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useContext } from "react";
+import React, { useState, useCallback, useContext, useRef } from "react";
 import { toast } from "react-toastify";
 import { format, parseISO } from "date-fns";
 
@@ -46,6 +46,10 @@ import FacebookModal from "../../components/FacebookModal";
 import { i18n } from "../../translate/i18n";
 import { WhatsAppsContext } from "../../context/WhatsApp/WhatsAppsContext";
 import { AuthContext } from "../../context/Auth/AuthContext";
+import { TutorialContext } from "../../context/Tutorial/TutorialContext";
+import { useCustomTheme } from "../../context/Theme/ThemeContext";
+import TutorialOverlay from "../../components/TutorialOverlay";
+import TutorialTooltip from "../../components/TutorialTooltip";
 import toastError from "../../errors/toastError";
 
 const useStyles = makeStyles(theme => ({
@@ -112,6 +116,9 @@ const Connections = () => {
 
 	const { whatsApps, loading } = useContext(WhatsAppsContext);
 	const { user } = useContext(AuthContext);
+	const { showConnectionsTutorial, dismissTutorial } = useContext(TutorialContext);
+	const { colors } = useCustomTheme();
+	const whatsappButtonRef = useRef(null);
 	
 	// Verificar quais canais estão permitidos no plano
 	const planChannels = user?.company?.plan || {};
@@ -170,6 +177,10 @@ const Connections = () => {
 	const handleOpenWhatsAppModal = () => {
 		setSelectedWhatsApp(null);
 		setWhatsAppModalOpen(true);
+		// Esconder tutorial quando usuário clicar no botão
+		if (showConnectionsTutorial) {
+			dismissTutorial();
+		}
 	};
 
 	const handleOpenFacebookModal = () => {
@@ -408,14 +419,35 @@ const Connections = () => {
 				<MainHeaderButtonsWrapper>
 					<Box className={classes.connectionButtons}>
 						{canUseWhatsapp && (
-							<Button
-								variant="contained"
-								color="primary"
-								startIcon={<WhatsAppIcon />}
-								onClick={handleOpenWhatsAppModal}
+							<div
+								ref={whatsappButtonRef}
+								className={showConnectionsTutorial ? 'tutorial-highlight' : ''}
+								style={{
+									position: 'relative',
+									borderRadius: showConnectionsTutorial ? '12px' : '0px',
+									background: showConnectionsTutorial 
+										? `linear-gradient(135deg, ${colors.primary}20, ${colors.primary}10)` 
+										: 'transparent',
+									border: showConnectionsTutorial ? `3px solid ${colors.primary}` : 'none',
+									boxShadow: showConnectionsTutorial 
+										? `0 0 20px ${colors.primary}40, 0 0 40px ${colors.primary}20` 
+										: 'none',
+									transform: showConnectionsTutorial ? 'scale(1.05)' : 'scale(1)',
+									zIndex: showConnectionsTutorial ? 1302 : 'auto',
+									transition: 'all 0.3s ease',
+									margin: showConnectionsTutorial ? '4px' : '0px',
+									display: 'inline-block',
+								}}
 							>
-								WhatsApp
-							</Button>
+								<Button
+									variant="contained"
+									color="primary"
+									startIcon={<WhatsAppIcon />}
+									onClick={handleOpenWhatsAppModal}
+								>
+									WhatsApp
+								</Button>
+							</div>
 						)}
 						{canUseFacebook && (
 							<Button
@@ -542,6 +574,24 @@ const Connections = () => {
 					</TableBody>
 				</Table>
 			</Paper>
+
+			{/* Overlay para diminuir opacidade do background */}
+			<TutorialOverlay 
+				show={showConnectionsTutorial}
+				targetElement={whatsappButtonRef.current}
+			/>
+			
+			{/* Tutorial Tooltip para Botão WhatsApp */}
+			<TutorialTooltip
+				open={showConnectionsTutorial}
+				anchorEl={whatsappButtonRef.current}
+				onClose={dismissTutorial}
+				title="Conecte seu WhatsApp"
+				content="Clique neste botão para adicionar sua primeira conexão WhatsApp e começar a receber mensagens dos seus clientes."
+				placement="bottom"
+				showNext={false}
+				showClose={true}
+			/>
 		</MainContainer>
 	);
 };

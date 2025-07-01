@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useContext, useEffect, useReducer, useState } from "react";
 
 import {
   Button,
@@ -27,6 +27,7 @@ import { toast } from "react-toastify";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { socketConnection } from "../../services/socket";
 import { getContrastColor } from "../../utils/colorGenerator";
+import { TutorialContext } from "../../context/Tutorial/TutorialContext";
 
 const useStyles = makeStyles((theme) => ({
   mainPaper: {
@@ -97,6 +98,7 @@ const reducer = (state, action) => {
 
 const Queues = () => {
   const classes = useStyles();
+  const { completeTutorial } = useContext(TutorialContext);
 
   const [queues, dispatch] = useReducer(reducer, []);
   const [loading, setLoading] = useState(false);

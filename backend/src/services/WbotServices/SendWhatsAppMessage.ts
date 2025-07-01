@@ -52,27 +52,21 @@ const SendWhatsAppMessage = async ({
         
         if (isButton && parsedMessage.interactiveButtons) {
           console.log("Sending button message with interactiveButtons:", parsedMessage.interactiveButtons);
-          // Send button message using correct Baileys 6.x format
+          // Send button message using text fallback (interactive buttons not supported in current Baileys)
           sentMessage = await wbot.sendMessage(
             `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
             {
-              text: parsedMessage.text,
-              footer: parsedMessage.footer || "Escolha uma opção:",
-              interactiveButtons: parsedMessage.interactiveButtons
+              text: parsedMessage.text + "\n\n" + (parsedMessage.footer || "Escolha uma opção:")
             },
             quotedMsgData ? { quoted: quotedMsgData } : {}
           );
         } else if (isList && parsedMessage.sections) {
           console.log("Sending list message with sections:", parsedMessage.sections);
-          // Send list message using correct Baileys 6.x format
+          // Send list message using text fallback (interactive lists not supported in current Baileys)
           sentMessage = await wbot.sendMessage(
             `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
             {
-              text: parsedMessage.text,
-              footer: parsedMessage.footer || "Escolha uma opção:",
-              title: parsedMessage.title || "Menu",
-              buttonText: parsedMessage.buttonText || "📋 Ver opções",
-              sections: parsedMessage.sections
+              text: parsedMessage.text + "\n\n" + (parsedMessage.footer || "Escolha uma opção:")
             },
             quotedMsgData ? { quoted: quotedMsgData } : {}
           );
