@@ -137,9 +137,34 @@ const TrialStatusCard = () => {
   }
 
   const daysRemaining = companyStatus.daysRemaining;
-  const totalTrialDays = 7; // Assumindo 7 dias de trial
-  const daysUsed = totalTrialDays - daysRemaining;
-  const progressPercentage = (daysUsed / totalTrialDays) * 100;
+  
+  // Calcular o total de dias de trial baseado na data de expiração
+  const calculateTotalTrialDays = () => {
+    if (user?.company?.trialExpiration && user?.company?.createdAt) {
+      const trialStart = moment(user.company.createdAt);
+      const trialEnd = moment(user.company.trialExpiration);
+      const totalDays = Math.ceil(trialEnd.diff(trialStart, 'days', true));
+      console.log('Trial calculation:', {
+        trialStart: trialStart.format('DD/MM/YYYY'),
+        trialEnd: trialEnd.format('DD/MM/YYYY'),
+        totalDays,
+        daysRemaining
+      });
+      return totalDays;
+    }
+    return 7; // Fallback para 7 dias se não conseguir calcular
+  };
+  
+  const totalTrialDays = calculateTotalTrialDays();
+  const daysUsed = Math.max(1, totalTrialDays - daysRemaining + 1); // Garantir que comece do dia 1
+  const progressPercentage = ((daysUsed - 1) / totalTrialDays) * 100; // Ajustar progresso para começar do 0%
+  
+  console.log('TrialStatusCard values:', {
+    daysRemaining,
+    totalTrialDays,
+    daysUsed,
+    progressPercentage
+  });
 
   const getCardClass = () => {
     if (daysRemaining <= 1) return classes.criticalCard;
@@ -195,7 +220,7 @@ const TrialStatusCard = () => {
           <div className={classes.infoRow}>
             <ScheduleIcon fontSize="small" />
             <span>
-              Expira em: {moment().add(daysRemaining, 'days').format('DD/MM/YYYY')}
+              Expira em: {user?.company?.trialExpiration ? moment(user.company.trialExpiration).format('DD/MM/YYYY') : moment().add(daysRemaining, 'days').format('DD/MM/YYYY')}
             </span>
           </div>
           <div className={classes.infoRow}>
