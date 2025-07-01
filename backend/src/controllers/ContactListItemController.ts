@@ -173,3 +173,74 @@ export const importContacts = async (
     throw new AppError(err.message);
   }
 };
+
+export const bulkDelete = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { companyId } = req.user;
+  const { contactIds } = req.body; // Array de IDs para excluir
+
+  if (!contactIds || !Array.isArray(contactIds) || contactIds.length === 0) {
+    throw new AppError("Lista de contatos para exclusão é obrigatória", 400);
+  }
+
+  try {
+    let deletedCount = 0;
+    let errorCount = 0;
+    const errors: string[] = [];
+
+    // Processar exclusões em lotes para evitar sobrecarga
+    const batchSize = 10;
+    for (let i = 0; i < contactIds.length; i += batchSize) {
+      const batch = contactIds.slice(i, i + batchSize);
+      
+      try {
+        // Verificar se os contatos pertencem à empresa
+        const contactsToDelete = await ContactListItem.findAll({
+          where: {
+            id: batch,
+            companyId: companyId
+          }
+        });
+
+        if (contactsToDelete.length !== batch.length) {
+          const foundIds = contactsToDelete.map(c => c.id);
+          const notFoundIds = batch.filter(id => !foundIds.includes(id));
+          errors.push(`Contatos não encontrados ou sem permissão: ${notFoundIds.join(', ')}`);
+        }
+
+        // Excluir contatos encontrados
+        for (const contact of contactsToDelete) {
+          await DeleteService(contact.id.toString());
+          deletedCount++;
+        }
+
+      } catch (err) {
+        console.error(`Erro ao excluir lote ${i}-${i + batchSize}:`, err);
+        errorCount += batch.length;
+        errors.push(`Erro ao excluir lote: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
+      }
+    }
+
+    // Emitir evento para atualizar interface
+    const io = getIO();
+    io.emit(`company-${companyId}-ContactListItem`, {
+      action: "bulk-delete",
+      deletedIds: contactIds.slice(0, deletedCount)
+    });
+
+    res.status(200).json({
+      message: `Exclusão em massa concluída`,
+      result: {
+        total: contactIds.length,
+        deleted: deletedCount,
+        errors: errorCount,
+        errorMessages: errors
+      }
+    });
+
+  } catch (err: any) {
+    throw new AppError(`Erro na exclusão em massa: ${err.message}`);
+  }
+};

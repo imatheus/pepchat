@@ -24,11 +24,10 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import IconButton from "@material-ui/core/IconButton";
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import EditIcon from "@material-ui/icons/Edit";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import BlockIcon from "@material-ui/icons/Block";
 import ContactsIcon from "@material-ui/icons/Contacts";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import DeleteSweepIcon from "@material-ui/icons/DeleteSweep";
 
 import api from "../../services/api";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
@@ -57,7 +56,9 @@ import {
   CircularProgress,
   Typography,
   Menu,
-  MenuItem
+  MenuItem,
+  Toolbar,
+  Chip
 } from "@material-ui/core";
 
 import planilhaExemplo from "../../assets/planilha.xlsx";
@@ -102,6 +103,11 @@ const reducer = (state, action) => {
     return [...state];
   }
 
+  if (action.type === "DELETE_MULTIPLE_CONTACTS") {
+    const contactIds = action.payload;
+    return state.filter(contact => !contactIds.includes(contact.id));
+  }
+
   if (action.type === "RESET") {
     return [];
   }
@@ -113,6 +119,21 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(1),
     overflowY: "scroll",
     ...theme.scrollbarStyles,
+  },
+  bulkActionsToolbar: {
+    backgroundColor: theme.palette.primary.light,
+    color: theme.palette.primary.contrastText,
+    padding: theme.spacing(1, 2),
+    borderRadius: theme.spacing(1),
+    margin: theme.spacing(1, 0),
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectedInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
   },
 }));
 
@@ -140,6 +161,12 @@ const ContactListItems = () => {
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [loadingContacts, setLoadingContacts] = useState(false);
   const [importMenuAnchor, setImportMenuAnchor] = useState(null);
+  
+  // Estados para exclusão em massa
+  const [selectedContactsForDeletion, setSelectedContactsForDeletion] = useState([]);
+  const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
+  const [selectAllChecked, setSelectAllChecked] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const { findById: findContactList } = useContactLists();
 
@@ -153,6 +180,9 @@ const ContactListItems = () => {
   useEffect(() => {
     dispatch({ type: "RESET" });
     setPageNumber(1);
+    // Limpar seleções ao mudar busca
+    setSelectedContactsForDeletion([]);
+    setSelectAllChecked(false);
   }, [searchParam]);
 
   useEffect(() => {
@@ -207,6 +237,16 @@ const ContactListItems = () => {
     };
   }, [contactListId]);
 
+  // Atualizar estado do "Selecionar Todos" baseado nas seleções individuais
+  useEffect(() => {
+    if (contacts.length > 0) {
+      const allSelected = contacts.every(contact => 
+        selectedContactsForDeletion.includes(contact.id)
+      );
+      setSelectAllChecked(allSelected);
+    }
+  }, [selectedContactsForDeletion, contacts]);
+
   const handleSearch = (event) => {
     setSearchParam(event.target.value.toLowerCase());
   };
@@ -238,15 +278,126 @@ const ContactListItems = () => {
     setPageNumber(1);
   };
 
+  // Funções para exclusão em massa
+  const handleSelectContact = (contactId) => {
+    setSelectedContactsForDeletion(prev => {
+      if (prev.includes(contactId)) {
+        return prev.filter(id => id !== contactId);
+      } else {
+        return [...prev, contactId];
+      }
+    });
+  };
+
+  const handleSelectAllContacts = () => {
+    if (selectAllChecked) {
+      setSelectedContactsForDeletion([]);
+    } else {
+      setSelectedContactsForDeletion(contacts.map(contact => contact.id));
+    }
+  };
+
+  const handleOpenBulkDeleteModal = () => {
+    if (selectedContactsForDeletion.length === 0) {
+      toast.warning("Selecione pelo menos um contato para excluir");
+      return;
+    }
+    setBulkDeleteModalOpen(true);
+  };
+
+  const handleCloseBulkDeleteModal = () => {
+    setBulkDeleteModalOpen(false);
+  };
+
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    try {
+      // Excluir contatos em lotes para evitar sobrecarga
+      const batchSize = 10;
+      const batches = [];
+      
+      for (let i = 0; i < selectedContactsForDeletion.length; i += batchSize) {
+        batches.push(selectedContactsForDeletion.slice(i, i + batchSize));
+      }
+
+      let deletedCount = 0;
+      let errorCount = 0;
+
+      for (const batch of batches) {
+        try {
+          await Promise.all(
+            batch.map(contactId => api.delete(`/contact-list-items/${contactId}`))
+          );
+          deletedCount += batch.length;
+        } catch (err) {
+          console.error("Erro ao excluir lote:", err);
+          errorCount += batch.length;
+        }
+      }
+
+      // Atualizar estado local
+      dispatch({ 
+        type: "DELETE_MULTIPLE_CONTACTS", 
+        payload: selectedContactsForDeletion 
+      });
+
+      // Limpar seleções
+      setSelectedContactsForDeletion([]);
+      setSelectAllChecked(false);
+
+      // Mostrar resultado
+      if (deletedCount > 0) {
+        toast.success(`${deletedCount} contatos excluídos com sucesso!`);
+      }
+      if (errorCount > 0) {
+        toast.error(`Erro ao excluir ${errorCount} contatos`);
+      }
+
+      setBulkDeleteModalOpen(false);
+    } catch (err) {
+      toastError(err);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedContactsForDeletion([]);
+    setSelectAllChecked(false);
+  };
+
   const handleImportContacts = async () => {
     try {
       const formData = new FormData();
       formData.append("file", fileUploadRef.current.files[0]);
-      await api.request({
+      const response = await api.request({
         url: `contact-lists/${contactListId}/upload`,
         method: "POST",
         data: formData,
       });
+
+      // Mostrar informações detalhadas da importação
+      const { data } = response;
+      if (data.success) {
+        toast.success(data.message);
+        
+        // Mostrar informações adicionais se houver contatos descartados
+        if (data.data.discarded > 0) {
+          toast.info(`${data.data.discarded} contatos foram descartados (números inválidos ou duplicados)`);
+        }
+        
+        // Avisar se o limite foi excedido
+        if (data.data.limitExceeded) {
+          toast.warning(`Limite de contatos atingido! Seu plano permite até ${data.data.maxContactsAllowed} contatos por campanha.`);
+        }
+        
+        // Mostrar números inválidos se houver poucos
+        if (data.data.invalidNumbers && data.data.invalidNumbers.length > 0 && data.data.invalidNumbers.length <= 5) {
+          toast.error(`Números inválidos descartados: ${data.data.invalidNumbers.join(', ')}`);
+        } else if (data.data.invalidNumbers && data.data.invalidNumbers.length > 5) {
+          toast.error(`${data.data.invalidNumbers.length} números inválidos foram descartados`);
+        }
+      }
     } catch (err) {
       toastError(err);
     }
@@ -278,7 +429,7 @@ const ContactListItems = () => {
     setSelectedContacts([]);
   };
 
-  const handleSelectContact = (contactId) => {
+  const handleSelectContactForImport = (contactId) => {
     setSelectedContacts(prev => {
       if (prev.includes(contactId)) {
         return prev.filter(id => id !== contactId);
@@ -288,7 +439,7 @@ const ContactListItems = () => {
     });
   };
 
-  const handleSelectAllContacts = () => {
+  const handleSelectAllContactsForImport = () => {
     if (selectedContacts.length === availableContacts.length) {
       setSelectedContacts([]);
     } else {
@@ -389,7 +540,7 @@ const ContactListItems = () => {
             <>
               <div style={{ marginBottom: '10px' }}>
                 <Button
-                  onClick={handleSelectAllContacts}
+                  onClick={handleSelectAllContactsForImport}
                   color="primary"
                   variant="outlined"
                   size="small"
@@ -408,11 +559,11 @@ const ContactListItems = () => {
                   <ListItem 
                     key={contact.id} 
                     button 
-                    onClick={() => handleSelectContact(contact.id)}
+                    onClick={() => handleSelectContactForImport(contact.id)}
                   >
                     <Checkbox
                       checked={selectedContacts.includes(contact.id)}
-                      onChange={() => handleSelectContact(contact.id)}
+                      onChange={() => handleSelectContactForImport(contact.id)}
                     />
                     <ListItemText
                       primary={contact.name}
@@ -443,23 +594,57 @@ const ContactListItems = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modal de confirmação para exclusão em massa */}
       <ConfirmationModal
         title={
-          deletingContact
+          selectedContactsForDeletion.length > 0
+            ? `Excluir ${selectedContactsForDeletion.length} contatos selecionados?`
+            : deletingContact
             ? `${i18n.t("contactListItems.confirmationModal.deleteTitle")} ${
                 deletingContact.name
               }?`
             : `${i18n.t("contactListItems.confirmationModal.importTitlte")}`
         }
-        open={confirmOpen}
-        onClose={setConfirmOpen}
-        onConfirm={() =>
-          deletingContact
-            ? handleDeleteContact(deletingContact.id)
-            : handleImportContacts()
-        }
+        open={bulkDeleteModalOpen || confirmOpen}
+        onClose={() => {
+          setBulkDeleteModalOpen(false);
+          setConfirmOpen(false);
+        }}
+        onConfirm={() => {
+          if (selectedContactsForDeletion.length > 0) {
+            handleBulkDelete();
+          } else if (deletingContact) {
+            handleDeleteContact(deletingContact.id);
+          } else {
+            handleImportContacts();
+          }
+        }}
+        loading={bulkDeleting}
       >
-        {deletingContact ? (
+        {selectedContactsForDeletion.length > 0 ? (
+          <>
+            <Typography variant="body1" gutterBottom>
+              Esta ação não pode ser revertida. Todos os {selectedContactsForDeletion.length} contatos selecionados serão excluídos permanentemente.
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              Contatos que serão excluídos:
+            </Typography>
+            <div style={{ maxHeight: '200px', overflow: 'auto', marginTop: '10px' }}>
+              {contacts
+                .filter(contact => selectedContactsForDeletion.includes(contact.id))
+                .map(contact => (
+                  <Chip
+                    key={contact.id}
+                    label={contact.name}
+                    size="small"
+                    style={{ margin: '2px' }}
+                  />
+                ))
+              }
+            </div>
+          </>
+        ) : deletingContact ? (
           `${i18n.t("contactListItems.confirmationModal.deleteMessage")}`
         ) : (
           <>
@@ -470,6 +655,7 @@ const ContactListItems = () => {
           </>
         )}
       </ConfirmationModal>
+
       <MainHeader>
         <Grid style={{ width: "99.6%" }} container>
           <Grid xs={12} sm={5} item>
@@ -542,6 +728,36 @@ const ContactListItems = () => {
           </Grid>
         </Grid>
       </MainHeader>
+
+      {/* Barra de ações em massa */}
+      {selectedContactsForDeletion.length > 0 && (
+        <div className={classes.bulkActionsToolbar}>
+          <div className={classes.selectedInfo}>
+            <Typography variant="body1">
+              {selectedContactsForDeletion.length} contatos selecionados
+            </Typography>
+          </div>
+          <div>
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={clearSelection}
+              style={{ marginRight: 8 }}
+            >
+              Limpar Seleção
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<DeleteSweepIcon />}
+              onClick={handleOpenBulkDeleteModal}
+            >
+              Excluir Selecionados
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Paper
         className={classes.mainPaper}
         variant="outlined"
@@ -563,8 +779,16 @@ const ContactListItems = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell align="center" style={{ width: "0%" }}>
-                #
+              <TableCell padding="checkbox">
+                <Checkbox
+                  indeterminate={
+                    selectedContactsForDeletion.length > 0 && 
+                    selectedContactsForDeletion.length < contacts.length
+                  }
+                  checked={selectAllChecked && contacts.length > 0}
+                  onChange={handleSelectAllContacts}
+                  disabled={contacts.length === 0}
+                />
               </TableCell>
               <TableCell>{i18n.t("contactListItems.table.name")}</TableCell>
               <TableCell align="center">
@@ -581,21 +805,15 @@ const ContactListItems = () => {
           <TableBody>
             <>
               {contacts.map((contact) => (
-                <TableRow key={contact.id}>
-                  <TableCell align="center" style={{ width: "0%" }}>
-                    <IconButton>
-                      {contact.isWhatsappValid ? (
-                        <CheckCircleIcon
-                          titleAccess="Whatsapp Válido"
-                          htmlColor="green"
-                        />
-                      ) : (
-                        <BlockIcon
-                          titleAccess="Whatsapp Inválido"
-                          htmlColor="grey"
-                        />
-                      )}
-                    </IconButton>
+                <TableRow 
+                  key={contact.id}
+                  selected={selectedContactsForDeletion.includes(contact.id)}
+                >
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedContactsForDeletion.includes(contact.id)}
+                      onChange={() => handleSelectContact(contact.id)}
+                    />
                   </TableCell>
                   <TableCell>{contact.name}</TableCell>
                   <TableCell align="center">{contact.number}</TableCell>
@@ -625,7 +843,7 @@ const ContactListItems = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {loading && <TableRowSkeleton columns={4} />}
+              {loading && <TableRowSkeleton columns={5} />}
             </>
           </TableBody>
         </Table>

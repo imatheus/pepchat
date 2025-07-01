@@ -21,6 +21,8 @@ routes.put("/contact-list-items/:id", isAuth, ContactListItemController.update);
 
 routes.post("/contact-list-items/:contactListId/import-contacts", isAuth, ContactListItemController.importContacts);
 
+routes.post("/contact-list-items/bulk-delete", isAuth, ContactListItemController.bulkDelete);
+
 routes.delete(
   "/contact-list-items/:id",
   isAuth,

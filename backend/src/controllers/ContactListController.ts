@@ -152,8 +152,20 @@ export const upload = async (req: Request, res: Response) => {
 
   io.emit(`company-${companyId}-ContactListItem-${+id}`, {
     action: "reload",
-    records: response
+    records: response.imported
   });
 
-  res.status(200).json(response);
+  // Resposta detalhada com informações sobre a importação
+  res.status(200).json({
+    success: true,
+    message: `Importação concluída: ${response.imported.length} contatos importados, ${response.discarded} descartados`,
+    data: {
+      imported: response.imported.length,
+      discarded: response.discarded,
+      invalidNumbers: response.invalidNumbers,
+      limitExceeded: response.limitExceeded,
+      maxContactsAllowed: response.maxContactsAllowed,
+      contacts: response.imported
+    }
+  });
 };
