@@ -30,6 +30,7 @@ import migrationRoutes from "./migrationRoutes";
 import webHookMetaRoutes from "./WebHookMetaRoutes";
 import webChatRoutes from "./webChatRoutes";
 import asaasRoutes from "./asaasRoutes";
+import autoRatingRoutes from "./autoRatingRoutes";
 
 const routes = Router();
 
@@ -63,5 +64,6 @@ routes.use(invoiceRoutes);
 routes.use("/webhook/meta", webHookMetaRoutes);
 routes.use(webChatRoutes);
 routes.use(asaasRoutes);
+routes.use(autoRatingRoutes);
 
 export default routes;

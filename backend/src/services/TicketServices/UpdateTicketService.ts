@@ -14,6 +14,7 @@ import GetTicketWbot from "../../helpers/GetTicketWbot";
 import { verifyMessage } from "../WbotServices/wbotMessageListener";
 import { isNil } from "lodash";
 import sendFaceMessage from "../FacebookServices/sendFacebookMessage";
+import AutoRatingService from "./AutoRatingService";
 import AppError from "../../errors/AppError";
 
 interface TicketData {
@@ -85,32 +86,29 @@ const UpdateTicketService = async ({
     }
 
     if (status !== undefined && ["closed"].indexOf(status) > -1) {
-      const { complationMessage, ratingMessage } = await ShowWhatsAppService(
+      console.log(`🎯 Closing ticket ${ticketId} for company ${companyId}, justClose: ${justClose}`);
+      
+      const { complationMessage } = await ShowWhatsAppService(
         ticket.whatsappId,
         companyId
       );
 
-      if (setting?.value === "enabled") {
-        if (ticketTraking.ratingAt == null && !justClose) {
+      // Tentar enviar avaliação automática se não foi enviada ainda e não é fechamento forçado
+      if (!justClose) {
+        console.log(`📝 Attempting to send auto rating for ticket ${ticketId}`);
+        
+        const ratingWasSent = await AutoRatingService({
+          ticket,
+          ticketTraking,
+          companyId
+        });
 
-          const ratingTxt = ratingMessage || "";
-          let bodyRatingMessage = `\u200e${ratingTxt}\n\n`;
-          bodyRatingMessage +=
-            "Digite de 1 à 3 para qualificar nosso atendimento:\n*1* - 😡 Insatisfeito\n*2* - 🙄 Satisfeito\n*3* - 😁 Muito Satisfeito\n\n";
+        console.log(`📊 Auto rating result for ticket ${ticketId}: ${ratingWasSent}`);
 
-          if (ticket.channel === "whatsapp") {
-            await SendWhatsAppMessage({ body: bodyRatingMessage, ticket });
-          }
-
-          if (["facebook", "instagram"].includes(ticket.channel)) {
-            console.log(`Checking if ${ticket.contact.number} is a valid ${ticket.channel} contact`)
-            await sendFaceMessage({ body: bodyRatingMessage, ticket });
-          }
-
-          await ticketTraking.update({
-            ratingAt: moment().toDate()
-          });
-
+        // Se a avaliação foi enviada, retornar para aguardar resposta
+        if (ratingWasSent) {
+          console.log(`✅ Auto rating sent for ticket ${ticketId}, returning early`);
+          
           io.to("status:open")
             .to(`ticket:${ticketId}`)
             .emit(`company-${ticket.companyId}-ticket`, {
@@ -120,12 +118,11 @@ const UpdateTicketService = async ({
 
           return { ticket, oldStatus, oldUserId };
         }
-        await ticketTraking.update({
-          ratingAt: moment().toDate(),
-          rated: false
-        });
+      } else {
+        console.log(`⏭️ Skipping auto rating for ticket ${ticketId} (justClose: true)`);
       }
 
+      // Enviar mensagem de finalização se configurada
       if (!isNil(complationMessage) && complationMessage !== "") {
         const body = `\u200e${complationMessage}`;
         if (ticket.channel === "whatsapp") {
@@ -138,10 +135,8 @@ const UpdateTicketService = async ({
         }
       }
 
-      // Só definir finishedAt se não há avaliação habilitada ou se já foi avaliado
-      if (setting?.value !== "enabled" || ticketTraking.rated) {
-        ticketTraking.finishedAt = moment().toDate();
-      }
+      // Finalizar o tracking
+      ticketTraking.finishedAt = moment().toDate();
       ticketTraking.whatsappId = ticket.whatsappId;
       ticketTraking.userId = ticket.userId;
 

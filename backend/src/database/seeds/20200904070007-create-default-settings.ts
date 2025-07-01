@@ -23,6 +23,13 @@ module.exports = {
                             updatedAt: new Date()
                         },
                         {
+                            key: "autoRating",
+                            value: "enabled",
+                            companyId: 1,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        },
+                        {
                             key: "scheduleType",
                             value: "queue",
                             companyId: 1,

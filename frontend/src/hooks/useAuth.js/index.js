@@ -185,9 +185,11 @@ const useAuth = () => {
         const trialExpiration = moment(companyData.trialExpiration).format("DD/MM/yyyy");
         toast.success(i18n.t("auth.toasts.success"));
         
-        // Não mostrar avisos de vencimento para usuários de nível "user"
-        if (data.user.profile !== 'user') {
+        // Exibir aviso de avaliação apenas uma vez por login
+        const trialNoticeKey = `trialNoticeShown_${data.user.id}`;
+        if (data.user.profile !== 'user' && !localStorage.getItem(trialNoticeKey)) {
           toast.info(`Período de avaliação até ${trialExpiration}`);
+          localStorage.setItem(trialNoticeKey, 'true');
         }
         
         history.push("/tickets");
@@ -237,6 +239,8 @@ const useAuth = () => {
       const userId = user.id;
       if (userId) {
         localStorage.removeItem(`selectedQueueIds_${userId}`);
+        // Limpar aviso de trial ao fazer logout
+        localStorage.removeItem(`trialNoticeShown_${userId}`);
       }
       
       setUser({});

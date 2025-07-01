@@ -77,21 +77,6 @@ const TrialNotifications = () => {
 
   }, [companyStatus.isInTrial, companyStatus.daysRemaining, user?.profile, user?.id]);
 
-  // Limpar notificações antigas quando sair do período de trial
-  useEffect(() => {
-    if (!companyStatus.isInTrial && user?.id) {
-      // Limpar todas as notificações de trial do localStorage para este usuário
-      for (let i = 1; i <= 7; i++) {
-        localStorage.removeItem(`trial-notification-day-${i}-${user.id}`);
-      }
-      // Limpar também a notificação de boas-vindas
-      localStorage.removeItem(`trial-welcome-shown-${user.id}`);
-      
-      // Limpar o cache de notificações mostradas
-      hasShownNotifications.current.clear();
-    }
-  }, [companyStatus.isInTrial, user?.id]);
-
   return null; // Este componente não renderiza nada visualmente
 };
 

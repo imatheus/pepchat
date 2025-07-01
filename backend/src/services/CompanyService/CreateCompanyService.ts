@@ -284,7 +284,20 @@ const CreateCompanyService = async (
     },
   });
 
-  //userRating
+  //autoRating - Avaliação automática
+  await Setting.findOrCreate({
+    where: {
+      companyId: company.id,
+      key: "autoRating"
+    },
+    defaults: {
+      companyId: company.id,
+      key: "autoRating",
+      value: "enabled"
+    },
+  });
+
+  //chatBotType
   await Setting.findOrCreate({
     where: {
       companyId: company.id,

@@ -20,7 +20,8 @@
     "test:webhook:confirmed": "node test-webhook.js PAYMENT_CONFIRMED",
     "test:webhook:overdue": "node test-webhook.js PAYMENT_OVERDUE",
     "check-unused-deps": "node check-unused-deps.js",
-    "check-unused-deps:detailed": "node check-unused-deps-detailed.js"
+    "check-unused-deps:detailed": "node check-unused-deps-detailed.js",
+    "script:auto-rating": "ts-node src/scripts/setupAutoRating.ts"
   },
   "dependencies": {
     "@adiwajshing/baileys": "^4.4.0",

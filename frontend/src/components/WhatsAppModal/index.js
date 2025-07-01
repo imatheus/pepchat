@@ -18,8 +18,9 @@ import {
   InputAdornment,
   IconButton,
   Tooltip,
+  Box,
 } from "@material-ui/core";
-import { FileCopy as CopyIcon, Refresh as RefreshIcon } from "@material-ui/icons";
+import { FileCopy as CopyIcon, Refresh as RefreshIcon, Info as InfoIcon } from "@material-ui/icons";
 
 import api from "../../services/api";
 import { i18n } from "../../translate/i18n";
@@ -64,6 +65,21 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
+
+  fieldWithHint: {
+    position: "relative",
+  },
+
+  hintIcon: {
+    position: "absolute",
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+    zIndex: 1,
+    color: theme.palette.grey[500],
+    "&:hover": {
+      color: theme.palette.primary.main,
+    },
+  },
 }));
 
 const SessionSchema = Yup.object().shape({
@@ -75,12 +91,21 @@ const SessionSchema = Yup.object().shape({
 
 const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
   const classes = useStyles();
+  
+  // Mensagem padrão para avaliação (sem as opções 1-3 que serão adicionadas automaticamente)
+  const defaultRatingMessage = `Muito obrigado por escolher nossa empresa! 😊
+
+Avalie nossa equipe:`;
+
+  // Mensagem padrão de conclusão
+  const defaultComplationMessage = "Atendimento finalizado. Obrigado pelo contato! 😊";
+
   const initialState = {
     name: "",
     greetingMessage: "",
-    complationMessage: "",
+    complationMessage: defaultComplationMessage, // Pré-preencher com mensagem padrão
     outOfHoursMessage: "",
-    ratingMessage: "",
+    ratingMessage: defaultRatingMessage, // Pré-preencher com mensagem padrão
     isDefault: false,
     token: "",
     provider: "beta",
@@ -106,7 +131,10 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
   useEffect(() => {
     if (open && !whatsAppId && !whatsApp.token) {
       const newToken = generateToken();
-      setWhatsApp(prev => ({ ...prev, token: newToken }));
+      setWhatsApp(prev => ({ 
+        ...prev, 
+        token: newToken
+      }));
     }
   }, [open, whatsAppId, whatsApp.token]);
 
@@ -232,6 +260,7 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
                   />
                 </div>
 
+                {/* Mensagem de saudação */}
                 <div>
                   <Field
                     as={TextField}
@@ -251,26 +280,8 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
                     margin="dense"
                   />
                 </div>
-                <div>
-                  <Field
-                    as={TextField}
-                    label={i18n.t("queueModal.form.complationMessage")}
-                    type="complationMessage"
-                    multiline
-                    rows={4}
-                    fullWidth
-                    name="complationMessage"
-                    error={
-                      touched.complationMessage &&
-                      Boolean(errors.complationMessage)
-                    }
-                    helperText={
-                      touched.complationMessage && errors.complationMessage
-                    }
-                    variant="outlined"
-                    margin="dense"
-                  />
-                </div>
+
+                {/* Mensagem fora de expediente */}
                 <div>
                   <Field
                     as={TextField}
@@ -291,19 +302,58 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
                     margin="dense"
                   />
                 </div>
-                <div>
+
+                {/* Mensagem de avaliação com hint */}
+                <div className={classes.fieldWithHint}>
                   <Field
                     as={TextField}
                     label={i18n.t("queueModal.form.ratingMessage")}
                     type="ratingMessage"
                     multiline
-                    rows={4}
+                    rows={6}
                     fullWidth
                     name="ratingMessage"
                     error={
                       touched.ratingMessage && Boolean(errors.ratingMessage)
                     }
                     helperText={touched.ratingMessage && errors.ratingMessage}
+                    variant="outlined"
+                    margin="dense"
+                    placeholder="Exemplo: Muito obrigado por escolher nossa empresa! 😊
+
+Avalie nossa equipe:
+
+[Aqui serão inseridas automaticamente as opções 1-3]"
+                  />
+                  <Tooltip 
+                    title="Personalize a mensagem de avaliação. As opções de avaliação (1 - Insatisfeito, 2 - Satisfeito, 3 - Muito Satisfeito) serão adicionadas automaticamente após esta mensagem."
+                    placement="top"
+                    arrow
+                  >
+                    <IconButton 
+                      size="small" 
+                      className={classes.hintIcon}
+                    >
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+
+                {/* Mensagem de conclusão - movida para baixo da avaliação */}
+                <div>
+                  <Field
+                    as={TextField}
+                    label={i18n.t("queueModal.form.complationMessage")}
+                    type="complationMessage"
+                    multiline
+                    rows={2}
+                    fullWidth
+                    name="complationMessage"
+                    error={
+                      touched.complationMessage &&
+                      Boolean(errors.complationMessage)
+                    }
+                    helperText="Mensagem enviada após a avaliação ou quando o ticket é finalizado."
                     variant="outlined"
                     margin="dense"
                   />
