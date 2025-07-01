@@ -50,6 +50,12 @@ class Plan extends Model<Plan> {
   @Column
   useCampaigns: boolean;
 
+  @Column
+  campaignContactsLimit: number; // Limite de contatos por campanha
+
+  @Column
+  campaignsPerMonthLimit: number; // Limite de campanhas por mês
+
   @CreatedAt
   createdAt: Date;
 

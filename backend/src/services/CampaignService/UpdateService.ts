@@ -2,6 +2,7 @@ import AppError from "../../errors/AppError";
 import Campaign from "../../models/Campaign";
 import ContactList from "../../models/ContactList";
 import Whatsapp from "../../models/Whatsapp";
+import ValidateCampaignLimitsService from "./ValidateCampaignLimitsService";
 
 interface Data {
   id: number | string;
@@ -24,7 +25,7 @@ interface Data {
 }
 
 const UpdateService = async (data: Data): Promise<Campaign> => {
-  const { id } = data;
+  const { id, companyId, contactListId } = data;
 
   const record = await Campaign.findByPk(id);
 
@@ -37,6 +38,16 @@ const UpdateService = async (data: Data): Promise<Campaign> => {
       "Só é permitido alterar campanha Inativa e Programada",
       400
     );
+  }
+
+  // VALIDAÇÃO CRÍTICA DE SEGURANÇA: Verificar limites do plano no backend
+  // Só validar se a lista de contatos foi alterada
+  if (contactListId && contactListId !== record.contactListId) {
+    await ValidateCampaignLimitsService({
+      companyId,
+      contactListId,
+      campaignId: typeof id === 'string' ? parseInt(id) : id
+    });
   }
 
   if (

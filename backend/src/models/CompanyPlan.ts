@@ -70,6 +70,12 @@ class CompanyPlan extends Model<CompanyPlan> {
   useCampaigns: boolean;
 
   @Column
+  campaignContactsLimit: number; // Limite de contatos por campanha
+
+  @Column
+  campaignsPerMonthLimit: number; // Limite de campanhas por mês
+
+  @Column
   isActive: boolean; // Se o plano está ativo
 
   @CreatedAt

@@ -14,6 +14,8 @@ interface PlanLimits {
   useFacebook: boolean;
   useInstagram: boolean;
   useCampaigns: boolean;
+  campaignContactsLimit: number;
+  campaignsPerMonthLimit: number;
 }
 
 const GetCompanyActivePlanService = async ({
@@ -42,7 +44,9 @@ const GetCompanyActivePlanService = async ({
       useWhatsapp: companyPlan.useWhatsapp,
       useFacebook: companyPlan.useFacebook,
       useInstagram: companyPlan.useInstagram,
-      useCampaigns: companyPlan.useCampaigns
+      useCampaigns: companyPlan.useCampaigns,
+      campaignContactsLimit: companyPlan.campaignContactsLimit || 150,
+      campaignsPerMonthLimit: companyPlan.campaignsPerMonthLimit || 4
     };
   }
 
@@ -65,7 +69,9 @@ const GetCompanyActivePlanService = async ({
       useWhatsapp: company.plan.useWhatsapp,
       useFacebook: company.plan.useFacebook,
       useInstagram: company.plan.useInstagram,
-      useCampaigns: company.plan.useCampaigns
+      useCampaigns: company.plan.useCampaigns,
+      campaignContactsLimit: company.plan.campaignContactsLimit || 150,
+      campaignsPerMonthLimit: company.plan.campaignsPerMonthLimit || 4
     };
   }
 
@@ -77,7 +83,9 @@ const GetCompanyActivePlanService = async ({
     useWhatsapp: true,
     useFacebook: false,
     useInstagram: false,
-    useCampaigns: false
+    useCampaigns: false,
+    campaignContactsLimit: 0, // Sem campanhas no fallback
+    campaignsPerMonthLimit: 0
   };
 };
 

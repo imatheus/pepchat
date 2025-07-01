@@ -63,6 +63,8 @@ const CreateCompanyPlanService = async ({
     useFacebook: basePlan.useFacebook,
     useInstagram: basePlan.useInstagram,
     useCampaigns: basePlan.useCampaigns,
+    campaignContactsLimit: basePlan.campaignContactsLimit || 150,
+    campaignsPerMonthLimit: basePlan.campaignsPerMonthLimit || 4,
     isActive: true
   });
 

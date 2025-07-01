@@ -3,6 +3,7 @@ import AppError from "../../errors/AppError";
 import Campaign from "../../models/Campaign";
 import ContactList from "../../models/ContactList";
 import Whatsapp from "../../models/Whatsapp";
+import ValidateCampaignLimitsService from "./ValidateCampaignLimitsService";
 
 interface Data {
   name: string;
@@ -24,7 +25,7 @@ interface Data {
 }
 
 const CreateService = async (data: Data): Promise<Campaign> => {
-  const { name } = data;
+  const { name, companyId, contactListId } = data;
 
   const ticketnoteSchema = Yup.object().shape({
     name: Yup.string()
@@ -37,6 +38,12 @@ const CreateService = async (data: Data): Promise<Campaign> => {
   } catch (err: any) {
     throw new AppError(err.message);
   }
+
+  // VALIDAÇÃO CRÍTICA DE SEGURANÇA: Verificar limites do plano no backend
+  await ValidateCampaignLimitsService({
+    companyId,
+    contactListId
+  });
 
   if (data.scheduledAt != null && data.scheduledAt != "") {
     data.status = "PROGRAMADA";

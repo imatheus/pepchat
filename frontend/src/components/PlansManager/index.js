@@ -75,7 +75,9 @@ export function PlanManagerForm(props) {
         useWhatsapp: true,
         useFacebook: false,
         useInstagram: false,
-        useCampaigns: false
+        useCampaigns: false,
+        campaignContactsLimit: 150,
+        campaignsPerMonthLimit: 4
     });
 
     useEffect(() => {
@@ -210,6 +212,44 @@ export function PlanManagerForm(props) {
                                 )}
                             </Field>
                         </Grid>
+                        
+                        {/* Campos condicionais para limites de campanhas */}
+                        {values.values.useCampaigns && (
+                            <>
+                                <Grid xs={12} item>
+                                    <Box mt={2} mb={1}>
+                                        <Typography variant="h6" color="textSecondary">
+                                            Limites de Campanhas
+                                        </Typography>
+                                    </Box>
+                                </Grid>
+                                <Grid xs={12} sm={6} md={6} item>
+                                    <Field
+                                        as={TextField}
+                                        label="Contatos por Campanha"
+                                        name="campaignContactsLimit"
+                                        variant="outlined"
+                                        className={classes.fullWidth}
+                                        margin="dense"
+                                        type="number"
+                                        helperText="Máximo de contatos permitidos por campanha"
+                                    />
+                                </Grid>
+                                <Grid xs={12} sm={6} md={6} item>
+                                    <Field
+                                        as={TextField}
+                                        label="Campanhas por Mês"
+                                        name="campaignsPerMonthLimit"
+                                        variant="outlined"
+                                        className={classes.fullWidth}
+                                        margin="dense"
+                                        type="number"
+                                        helperText="Máximo de campanhas permitidas por mês"
+                                    />
+                                </Grid>
+                            </>
+                        )}
+                        
                         <Grid xs={12} item>
                             <Grid justifyContent="flex-end" spacing={1} container>
                                 <Grid xs={4} md={1} item>
@@ -255,6 +295,7 @@ export function PlansManagerGrid(props) {
                         <TableCell align="center">Filas</TableCell>
                         <TableCell align="center">Canais</TableCell>
                         <TableCell align="center">Campanhas</TableCell>
+                        <TableCell align="center">Limites</TableCell>
                         <TableCell align="center">Valor</TableCell>
                     </TableRow>
                 </TableHead>
@@ -278,6 +319,12 @@ export function PlansManagerGrid(props) {
                                 ].filter(Boolean).join(', ') || '-'}
                             </TableCell>
                             <TableCell align="center">{row.useCampaigns ? 'Sim' : 'Não'}</TableCell>
+                            <TableCell align="center">
+                                {row.useCampaigns ? 
+                                    `${row.campaignContactsLimit || 150} contatos/campanha, ${row.campaignsPerMonthLimit || 4} campanhas/mês` 
+                                    : '-'
+                                }
+                            </TableCell>
                             <TableCell align="center">{row.value.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' }) || '-'}</TableCell>
                         </TableRow>
                     ))}
@@ -304,7 +351,9 @@ export default function PlansManager() {
         useWhatsapp: true,
         useFacebook: false,
         useInstagram: false,
-        useCampaigns: false
+        useCampaigns: false,
+        campaignContactsLimit: 150,
+        campaignsPerMonthLimit: 4
     })
 
     useEffect(() => {
@@ -358,6 +407,21 @@ export default function PlansManager() {
         const useInstagram = data.useInstagram !== undefined ? data.useInstagram : false;
         const useCampaigns = data.useCampaigns !== undefined ? data.useCampaigns : false;
 
+        // Validar limites de campanhas se campanhas estiverem habilitadas
+        const campaignContactsLimit = useCampaigns ? (parseInt(data.campaignContactsLimit) || 150) : null;
+        const campaignsPerMonthLimit = useCampaigns ? (parseInt(data.campaignsPerMonthLimit) || 4) : null;
+
+        if (useCampaigns) {
+            if (campaignContactsLimit < 1) {
+                toast.error('O limite de contatos por campanha deve ser maior que zero');
+                return;
+            }
+            if (campaignsPerMonthLimit < 1) {
+                toast.error('O limite de campanhas por mês deve ser maior que zero');
+                return;
+            }
+        }
+
         if (!useWhatsapp && !useFacebook && !useInstagram) {
             toast.error('Pelo menos um canal deve estar habilitado no plano');
             return;
@@ -373,7 +437,9 @@ export default function PlansManager() {
             useWhatsapp: useWhatsapp,
             useFacebook: useFacebook,
             useInstagram: useInstagram,
-            useCampaigns: useCampaigns
+            useCampaigns: useCampaigns,
+            campaignContactsLimit: campaignContactsLimit,
+            campaignsPerMonthLimit: campaignsPerMonthLimit
         }
         setLoading(true)
         try {
@@ -454,7 +520,9 @@ export default function PlansManager() {
             useWhatsapp: true,
             useFacebook: false,
             useInstagram: false,
-            useCampaigns: false
+            useCampaigns: false,
+            campaignContactsLimit: 150,
+            campaignsPerMonthLimit: 4
         })
     }
 
@@ -469,7 +537,9 @@ export default function PlansManager() {
             useWhatsapp: data.useWhatsapp !== undefined ? data.useWhatsapp : true,
             useFacebook: data.useFacebook !== undefined ? data.useFacebook : false,
             useInstagram: data.useInstagram !== undefined ? data.useInstagram : false,
-            useCampaigns: data.useCampaigns !== undefined ? data.useCampaigns : false
+            useCampaigns: data.useCampaigns !== undefined ? data.useCampaigns : false,
+            campaignContactsLimit: data.campaignContactsLimit || 150,
+            campaignsPerMonthLimit: data.campaignsPerMonthLimit || 4
         })
     }
 

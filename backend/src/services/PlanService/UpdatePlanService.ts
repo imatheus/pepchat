@@ -12,10 +12,12 @@ interface PlanData {
   useFacebook?: boolean;
   useInstagram?: boolean;
   useCampaigns?: boolean;
+  campaignContactsLimit?: number;
+  campaignsPerMonthLimit?: number;
 }
 
 const UpdatePlanService = async (planData: PlanData): Promise<Plan> => {
-  const { id, name, users, connections, queues, value, useWhatsapp, useFacebook, useInstagram, useCampaigns } = planData;
+  const { id, name, users, connections, queues, value, useWhatsapp, useFacebook, useInstagram, useCampaigns, campaignContactsLimit, campaignsPerMonthLimit } = planData;
 
   const plan = await Plan.findByPk(id);
 
@@ -47,6 +49,12 @@ const UpdatePlanService = async (planData: PlanData): Promise<Plan> => {
   if (value !== undefined && (isNaN(value) || value < 0)) {
     throw new AppError("ERR_PLAN_INVALID_VALUE");
   }
+  if (campaignContactsLimit !== undefined && (isNaN(campaignContactsLimit) || campaignContactsLimit < 0)) {
+    throw new AppError("ERR_PLAN_INVALID_CAMPAIGN_CONTACTS_LIMIT");
+  }
+  if (campaignsPerMonthLimit !== undefined && (isNaN(campaignsPerMonthLimit) || campaignsPerMonthLimit < 0)) {
+    throw new AppError("ERR_PLAN_INVALID_CAMPAIGNS_PER_MONTH_LIMIT");
+  }
 
   await plan.update({
     name,
@@ -57,7 +65,9 @@ const UpdatePlanService = async (planData: PlanData): Promise<Plan> => {
     useWhatsapp,
     useFacebook,
     useInstagram,
-    useCampaigns
+    useCampaigns,
+    campaignContactsLimit,
+    campaignsPerMonthLimit
   });
 
   return plan;

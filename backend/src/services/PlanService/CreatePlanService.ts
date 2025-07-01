@@ -12,6 +12,8 @@ interface PlanData {
   useFacebook?: boolean;
   useInstagram?: boolean;
   useCampaigns?: boolean;
+  campaignContactsLimit?: number;
+  campaignsPerMonthLimit?: number;
 }
 
 const CreatePlanService = async (planData: PlanData): Promise<Plan> => {
@@ -50,7 +52,13 @@ const CreatePlanService = async (planData: PlanData): Promise<Plan> => {
     useWhatsapp: Yup.boolean(),
     useFacebook: Yup.boolean(),
     useInstagram: Yup.boolean(),
-    useCampaigns: Yup.boolean()
+    useCampaigns: Yup.boolean(),
+    campaignContactsLimit: Yup.number()
+      .min(0, "ERR_PLAN_INVALID_CAMPAIGN_CONTACTS_LIMIT")
+      .nullable(),
+    campaignsPerMonthLimit: Yup.number()
+      .min(0, "ERR_PLAN_INVALID_CAMPAIGNS_PER_MONTH_LIMIT")
+      .nullable()
   });
 
   try {
