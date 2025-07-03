@@ -2,6 +2,8 @@ import { Router } from "express";
 import isAuth from "../middleware/isAuth";
 import isSuperUser from "../middleware/isSuperUser";
 import * as AsaasController from "../controllers/AsaasController";
+import { validateAsaasWebhook } from "../middleware/webhookAuth";
+import { webhookLimiter } from "../middleware/security";
 
 const asaasRoutes = Router();
 
@@ -14,8 +16,8 @@ asaasRoutes.post("/asaas/create-company", isAuth, isSuperUser, AsaasController.c
 asaasRoutes.post("/asaas/sync-all-companies", isAuth, isSuperUser, AsaasController.syncAllCompanies);
 asaasRoutes.post("/asaas/sync-invoices", isAuth, isSuperUser, AsaasController.syncInvoices);
 
-// Webhook público (sem autenticação)
-asaasRoutes.post("/asaas/webhook", AsaasController.webhook);
+// Webhook com autenticação
+asaasRoutes.post("/asaas/webhook", webhookLimiter, validateAsaasWebhook, AsaasController.webhook);
 asaasRoutes.get("/asaas/webhook", (req, res) => {
   res.json({ 
     message: "Asaas Webhook endpoint is working", 

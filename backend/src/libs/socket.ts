@@ -10,7 +10,7 @@ export const initIO = (httpServer: Server): SocketIOServer => {
   io = new SocketIOServer(httpServer, {
     transports: ["websocket"], // Force WebSocket transport
     cors: {
-      origin: process.env.FRONTEND_URL || "*", // Fallback to allow all origins if FRONTEND_URL is not set
+      origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ["http://localhost:3000"],
       methods: ["GET", "POST"], // Explicitly allow methods
       credentials: true, // Allow credentials if needed
     },

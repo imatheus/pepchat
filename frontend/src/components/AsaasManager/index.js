@@ -5,8 +5,6 @@ import {
   Button,
   Typography,
   Box,
-  Switch,
-  FormControlLabel,
   Select,
   MenuItem,
   FormControl,
@@ -14,6 +12,7 @@ import {
   CircularProgress,
   Grid
 } from "@material-ui/core";
+import ToggleSwitch from "../ToggleSwitch";
 import { Alert } from "@material-ui/lab";
 import { makeStyles } from "@material-ui/core/styles";
 import { toast } from "react-toastify";
@@ -158,14 +157,9 @@ const AsaasManager = () => {
         
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={config.enabled}
-                  onChange={(e) => handleInputChange("enabled", e.target.checked)}
-                  color="primary"
-                />
-              }
+            <ToggleSwitch
+              checked={config.enabled}
+              onChange={(e) => handleInputChange("enabled", e.target.checked)}
               label="Integração Ativa"
             />
           </Grid>

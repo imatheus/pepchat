@@ -3,6 +3,7 @@
 import { QueryTypes } from "sequelize";
 import * as _ from "lodash";
 import sequelize from "../../database";
+import SecureQueryService from "../DatabaseService/SecureQueryService";
 
 export interface DashboardData {
   counters: any;
@@ -20,29 +21,46 @@ export default async function DashboardDataService(
   params: Params
 ): Promise<DashboardData> {
   try {
-    // Build date filter conditions
+    // Validar e converter companyId
+    const validCompanyId = parseInt(companyId.toString(), 10);
+    if (!Number.isInteger(validCompanyId) || validCompanyId <= 0) {
+      throw new Error("Company ID inválido");
+    }
+
+    // Build date filter conditions de forma segura
     let dateFilter = '';
     let dateFilterAttendants = '';
     const replacements: any[] = [];
     const replacementsAttendants: any[] = [];
 
     if (_.has(params, "days") && params.days > 0) {
-      dateFilter = ` AND tt."queuedAt" >= (NOW() - INTERVAL '${parseInt(`${params.days}`.replace(/\D/g, ""), 10)} days')`;
-      dateFilterAttendants = ` AND tt."queuedAt" >= (NOW() - INTERVAL '${parseInt(`${params.days}`.replace(/\D/g, ""), 10)} days')`;
+      const safeDays = parseInt(`${params.days}`.replace(/\D/g, ""), 10);
+      if (safeDays > 0 && safeDays <= 365) { // Limitar a 1 ano
+        dateFilter = ` AND tt."queuedAt" >= (NOW() - INTERVAL '${safeDays} days')`;
+        dateFilterAttendants = ` AND tt."queuedAt" >= (NOW() - INTERVAL '${safeDays} days')`;
+      }
     }
 
     if (_.has(params, "date_from") && params.date_from) {
-      dateFilter += ` AND tt."queuedAt" >= ?`;
-      dateFilterAttendants += ` AND tt."queuedAt" >= ?`;
-      replacements.push(`${params.date_from} 00:00:00`);
-      replacementsAttendants.push(`${params.date_from} 00:00:00`);
+      // Validar formato de data
+      const dateFrom = new Date(params.date_from);
+      if (!isNaN(dateFrom.getTime())) {
+        dateFilter += ` AND tt."queuedAt" >= ?`;
+        dateFilterAttendants += ` AND tt."queuedAt" >= ?`;
+        replacements.push(`${params.date_from} 00:00:00`);
+        replacementsAttendants.push(`${params.date_from} 00:00:00`);
+      }
     }
 
     if (_.has(params, "date_to") && params.date_to) {
-      dateFilter += ` AND tt."finishedAt" <= ?`;
-      dateFilterAttendants += ` AND tt."finishedAt" <= ?`;
-      replacements.push(`${params.date_to} 23:59:59`);
-      replacementsAttendants.push(`${params.date_to} 23:59:59`);
+      // Validar formato de data
+      const dateTo = new Date(params.date_to);
+      if (!isNaN(dateTo.getTime())) {
+        dateFilter += ` AND tt."finishedAt" <= ?`;
+        dateFilterAttendants += ` AND tt."finishedAt" <= ?`;
+        replacements.push(`${params.date_to} 23:59:59`);
+        replacementsAttendants.push(`${params.date_to} 23:59:59`);
+      }
     }
 
     const countersQuery = `
@@ -132,17 +150,10 @@ export default async function DashboardDataService(
     const finalReplacementsCounters = [companyId, ...replacements, companyId, companyId];
     const finalReplacementsAttendants = [companyId, ...replacementsAttendants, companyId];
 
-    // Execute queries
+    // Execute queries usando o serviço seguro
     const [countersResult, attendantsResult] = await Promise.all([
-      sequelize.query(countersQuery, {
-        replacements: finalReplacementsCounters,
-        type: QueryTypes.SELECT,
-        plain: true
-      }),
-      sequelize.query(attendantsQuery, {
-        replacements: finalReplacementsAttendants,
-        type: QueryTypes.SELECT
-      })
+      SecureQueryService.executeDashboardQuery(validCompanyId, dateFilter, replacements),
+      SecureQueryService.executeAttendantsQuery(validCompanyId, dateFilterAttendants, replacementsAttendants)
     ]);
 
     // Validate and sanitize counters data

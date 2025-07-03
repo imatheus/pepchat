@@ -14,8 +14,11 @@ export const userMonitor = new Queue("UserMonitor", connection);
 
 async function handleLoginStatus(job) {
   const users: { id: number; companyId: number }[] = await sequelize.query(
-    `select id, "companyId" from "Users" where "updatedAt" < now() - '5 minutes'::interval and online = true`,
-    { type: QueryTypes.SELECT }
+    `SELECT id, "companyId" FROM "Users" WHERE "updatedAt" < NOW() - INTERVAL '5 minutes' AND online = true`,
+    { 
+      type: QueryTypes.SELECT,
+      logging: false
+    }
   );
   for (let item of users) {
     try {

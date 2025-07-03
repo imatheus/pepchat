@@ -3,6 +3,8 @@ import { getIO } from "../libs/socket";
 
 import CheckSettingsHelper from "../helpers/CheckSettings";
 import AppError from "../errors/AppError";
+import { PermissionHelper } from "../helpers/PermissionHelper";
+import { ValidationHelper } from "../helpers/ValidationHelper";
 
 import CreateUserService from "../services/UserServices/CreateUserService";
 import ListUsersService from "../services/UserServices/ListUsersService";
@@ -91,16 +93,21 @@ export const update = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  if (req.user.profile !== "admin") {
-    throw new AppError("ERR_NO_PERMISSION", 403);
-  }
-
-  const { id: requestUserId, companyId } = req.user;
+  const { id: requestUserId, companyId, profile } = req.user;
   const { userId } = req.params;
   const userData = req.body;
 
+  // Verificar permissões usando o helper
+  await PermissionHelper.requireUserPermission(
+    { id: requestUserId, profile, companyId },
+    userId
+  );
+
+  // Sanitizar dados de entrada
+  const sanitizedData = ValidationHelper.sanitizeUserData(userData);
+
   const user = await UpdateUserService({
-    userData,
+    userData: sanitizedData,
     userId,
     companyId,
     requestUserId: +requestUserId
@@ -120,11 +127,13 @@ export const remove = async (
   res: Response
 ): Promise<void> => {
   const { userId } = req.params;
-  const { companyId } = req.user;
+  const { companyId, profile, id: requestUserId } = req.user;
 
-  if (req.user.profile !== "admin") {
-    throw new AppError("ERR_NO_PERMISSION", 403);
-  }
+  // Verificar permissões usando o helper
+  await PermissionHelper.requireUserPermission(
+    { id: requestUserId, profile, companyId },
+    userId
+  );
 
   await DeleteUserService(userId, companyId);
 

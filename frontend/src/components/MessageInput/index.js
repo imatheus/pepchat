@@ -15,7 +15,7 @@ import MoodIcon from "@material-ui/icons/Mood";
 import SendIcon from "@material-ui/icons/Send";
 import CancelIcon from "@material-ui/icons/Cancel";
 import ClearIcon from "@material-ui/icons/Clear";
-import { FormControlLabel, Switch } from "@material-ui/core";
+import ToggleSwitch from "../ToggleSwitch";
 
 import { i18n } from "../../translate/i18n";
 import api from "../../services/api";
@@ -383,21 +383,15 @@ const MessageInput = ({ ticketStatus }) => {
 							<AttachFileIcon className={classes.sendMessageIcons} />
 						</IconButton>
 					</label>
-					<FormControlLabel
-						style={{ marginRight: 7, color: "gray" }}
+					<ToggleSwitch
+						name="signMessage"
 						label={i18n.t("messagesInput.signMessage")}
 						labelPlacement="start"
-						control={
-							<Switch
-								size="small"
-								checked={signMessage}
-								onChange={e => {
-									setSignMessage(e.target.checked);
-								}}
-								name="showAllTickets"
-								color="primary"
-							/>
-						}
+						checked={signMessage}
+						onChange={e => {
+							setSignMessage(e.target.checked);
+						}}
+					
 					/>
 					<div className={classes.messageInputWrapper}>
 						<InputBase

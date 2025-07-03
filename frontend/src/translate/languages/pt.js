@@ -555,7 +555,7 @@ const messages = {
         placeholderOpen: "Digite uma mensagem",
         placeholderClosed:
           "Reabra ou aceite esse ticket para enviar uma mensagem.",
-        signMessage: "Assinar",
+        signMessage: "Assinar Atendimento",
       },
       contactDrawer: {
         header: "Dados do contato",

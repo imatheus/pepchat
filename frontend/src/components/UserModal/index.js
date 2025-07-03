@@ -30,6 +30,8 @@ import toastError from "../../errors/toastError";
 import QueueSelect from "../QueueSelect";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { Can } from "../Can";
+import ToggleSwitch from "../ToggleSwitch";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -103,6 +105,7 @@ const UserModal = ({ open, onClose, userId }) => {
 	const [user, setUser] = useState(initialState);
 	const [selectedQueueIds, setSelectedQueueIds] = useState([]);
 	const [profileImagePreview, setProfileImagePreview] = useState("");
+	const [signMessage, setSignMessage] = useLocalStorage("signOption", true);
 
 	useEffect(() => {
 		const fetchUser = async () => {
@@ -304,7 +307,17 @@ const UserModal = ({ open, onClose, userId }) => {
 									)}
 								/>
 
-															</DialogContent>
+								{/* Opção de Assinar Mensagens */}
+								<Box mt={2}>
+									<ToggleSwitch
+										name="signMessage"
+										label={i18n.t("messagesInput.signMessage")}
+										checked={signMessage}
+										onChange={(e) => setSignMessage(e.target.checked)}
+									/>
+								</Box>
+
+							</DialogContent>
 							<DialogActions>
 								<Button
 									onClick={handleClose}

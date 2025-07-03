@@ -14,13 +14,13 @@ import SendIcon from "@material-ui/icons/Send";
 import CancelIcon from "@material-ui/icons/Cancel";
 import ClearIcon from "@material-ui/icons/Clear";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
-import { FormControlLabel, Switch, Menu, MenuItem, ListItemText, Divider, Popper, Paper, ClickAwayListener } from "@material-ui/core";
+import { Menu, MenuItem, ListItemText, Divider, Popper, Paper, ClickAwayListener } from "@material-ui/core";
+import ToggleSwitch from "../ToggleSwitch";
 
 import { i18n } from "../../translate/i18n";
 import api from "../../services/api";
 import { ReplyMessageContext } from "../../context/ReplyingMessage/ReplyingMessageContext";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import { useLocalStorage } from "../../hooks/useLocalStorage";
 import toastError from "../../errors/toastError";
 
 import useQuickMessages from "../../hooks/useQuickMessages";
@@ -209,21 +209,16 @@ const SignSwitch = (props) => {
   const { width, setSignMessage, signMessage } = props;
   if (isWidthUp("md", width)) {
     return (
-      <FormControlLabel
-        style={{ marginRight: 7, color: "gray" }}
+      <ToggleSwitch
+         name="signMessage"
+         style={{ marginRight: 16 }}
         label={i18n.t("messagesInput.signMessage")}
         labelPlacement="start"
-        control={
-          <Switch
-            size="small"
-            checked={signMessage}
-            onChange={(e) => {
-              setSignMessage(e.target.checked);
-            }}
-            name="showAllTickets"
-            color="primary"
-          />
-        }
+        checked={signMessage}
+        onChange={(e) => {
+          setSignMessage(e.target.checked);
+        }}
+     
       />
     );
   }
@@ -519,7 +514,7 @@ const MessageInputCustom = (props) => {
     useContext(ReplyMessageContext);
   const { user } = useContext(AuthContext);
 
-  const [signMessage, setSignMessage] = useLocalStorage("signOption", true);
+  // signMessage hook removed; reading signOption from localStorage instead
   const { list: listQuickMessages } = useQuickMessages();
 
   useEffect(() => {
@@ -656,11 +651,12 @@ const MessageInputCustom = (props) => {
     if (inputMessage.trim() === "") return;
     setLoading(true);
 
+const shouldSign = localStorage.getItem("signOption") === "true";
     const message = {
       read: 1,
       fromMe: true,
       mediaUrl: "",
-      body: signMessage
+      body: shouldSign
         ? `*${user?.name}:*\n${inputMessage.trim()}`
         : inputMessage.trim(),
       quotedMsg: replyingMessage,
@@ -765,12 +761,7 @@ const MessageInputCustom = (props) => {
             onSelectMessage={handleSelectQuickMessage}
           />
 
-          <SignSwitch
-            width={props.width}
-            setSignMessage={setSignMessage}
-            signMessage={signMessage}
-          />
-
+          
           <CustomInput
             loading={loading}
             inputRef={inputRef}
