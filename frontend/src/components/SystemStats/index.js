@@ -40,7 +40,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip as RechartsTooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Bar // Adicionado para barras
 } from "recharts";
 
 const useStyles = makeStyles((theme) => ({
@@ -48,38 +49,52 @@ const useStyles = makeStyles((theme) => ({
     ...theme.scrollbarStyles,
     width: "100%",
     maxHeight: "100%",
+    fontFamily: "'Lato', Arial, sans-serif", // Aplica Lato em todo o dash
   },
   card: {
-    borderRadius: 12,
+    borderRadius: 15, // Arredondamento de 15px
     height: "100%",
     display: "flex",
     flexDirection: "column",
+    boxShadow: "0 2px 8px 0 rgba(44,62,80,0.07)", // Shadow curto e leve
+    border: "1px solid #eee",
   },
   cardContent: {
     flexGrow: 1,
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
-    textAlign: "center",
+    alignItems: "flex-start",
+    textAlign: "left",
     padding: theme.spacing(2),
+    position: "relative",
   },
-  cardAvatar: {
-    fontSize: 48,
-    color: theme.palette.grey[500],
-    backgroundColor: theme.palette.background.paper,
-    width: theme.spacing(7),
-    height: theme.spacing(7),
-    marginBottom: theme.spacing(1),
+  cardTitleRow: {
+    display: "flex",
+    alignItems: "center",
+    width: "100%",
+    justifyContent: "space-between",
+    marginBottom: theme.spacing(0.5),
+    borderBottom: "1px solid #eee", // Linha cinza claro
+    paddingBottom: theme.spacing(1),
   },
   cardTitle: {
-    fontSize: "1.5rem",
+    fontSize: "1.15rem",
     fontWeight: "bold",
-    color: "#4caf50", // Verde
-    marginBottom: theme.spacing(0.5),
+    color: "#666",
+    fontFamily: "'Lato', Arial, sans-serif", // Garante Lato no título
   },
-  cardSubtitle: {
-    color: theme.palette.grey[600],
-    fontSize: "0.875rem",
+  cardIcon: {
+    fontSize: 40,
+    marginLeft: theme.spacing(1),
+    color: "#4caf50", // Ícone verde
+  },
+  cardValue: {
+    color: '#4caf50',
+    fontWeight: 600,
+    fontSize: '1.7rem',
+    marginTop: 4,
+    marginBottom: 0,
+    fontFamily: "'Lato', Arial, sans-serif", // Garante Lato no valor
   },
   tableContainer: {
     marginTop: theme.spacing(2),
@@ -219,7 +234,7 @@ const SystemStats = () => {
           label="Trial"
           size="small"
           className={`${classes.statusChip} ${classes.trialChip}`}
-          icon={<ScheduleIcon />}
+          icon={<ScheduleIcon style={{ color: '#4caf50' }} />} // Ícone verde
         />
       );
     }
@@ -306,12 +321,17 @@ const SystemStats = () => {
         <Grid item xs={12} sm={6} md={4} lg={2.4}>
           <Card className={classes.card}>
             <CardContent className={classes.cardContent}>
-              <PeopleIcon className={classes.cardAvatar} />
-              <Typography className={classes.cardTitle}>
+              <div className={classes.cardTitleRow}>
+                <Typography className={classes.cardTitle}>
+                  Usuários Online
+                </Typography>
+                <PeopleIcon className={classes.cardIcon} />
+              </div>
+              <Typography className={classes.cardValue}>
                 {stats?.users?.online || 0}
               </Typography>
               <Typography className={classes.cardSubtitle}>
-                Usuários Online
+                {/* Espaço reservado para subtítulo se necessário */}
               </Typography>
             </CardContent>
           </Card>
@@ -320,13 +340,15 @@ const SystemStats = () => {
         <Grid item xs={12} sm={6} md={4} lg={2.4}>
           <Card className={classes.card}>
             <CardContent className={classes.cardContent}>
-              <BusinessIcon className={classes.cardAvatar} />
-              <Typography className={classes.cardTitle}>
+              <div className={classes.cardTitleRow}>
+                <Typography className={classes.cardTitle}>
+                  Empresas
+                </Typography>
+                <BusinessIcon className={classes.cardIcon} />
+              </div>
+              <Typography className={classes.cardValue}>
                 {stats?.companies?.total || 0}
               </Typography>
-              <Typography className={classes.cardSubtitle}>
-                Total de Empresas
-              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -334,13 +356,15 @@ const SystemStats = () => {
         <Grid item xs={12} sm={6} md={4} lg={2.4}>
           <Card className={classes.card}>
             <CardContent className={classes.cardContent}>
-              <BusinessIcon className={classes.cardAvatar} style={{ color: "#ff9800" }} />
-              <Typography className={classes.cardTitle}>
+              <div className={classes.cardTitleRow}>
+                <Typography className={classes.cardTitle}>
+                  Empresas em Trial
+                </Typography>
+                <BusinessIcon className={classes.cardIcon} style={{ color: "#ff9800" }} />
+              </div>
+              <Typography className={classes.cardValue}>
                 {stats?.companies?.inTrial || 0}
               </Typography>
-              <Typography className={classes.cardSubtitle}>
-                Empresas em Trial
-              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -348,13 +372,15 @@ const SystemStats = () => {
         <Grid item xs={12} sm={6} md={4} lg={2.4}>
           <Card className={classes.card}>
             <CardContent className={classes.cardContent}>
-              <WhatsAppIcon className={classes.cardAvatar} style={{ color: "#25D366" }} />
-              <Typography className={classes.cardTitle}>
+              <div className={classes.cardTitleRow}>
+                <Typography className={classes.cardTitle}>
+                  WhatsApp Conectados
+                </Typography>
+                <WhatsAppIcon className={classes.cardIcon} style={{ color: "#25D366" }} />
+              </div>
+              <Typography className={classes.cardValue}>
                 {stats?.whatsapp?.connected || 0}
               </Typography>
-              <Typography className={classes.cardSubtitle}>
-                WhatsApp Conectados
-              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -362,12 +388,14 @@ const SystemStats = () => {
         <Grid item xs={12} sm={6} md={4} lg={2.4}>
           <Card className={classes.card}>
             <CardContent className={classes.cardContent}>
-              <TicketIcon className={classes.cardAvatar} />
-              <Typography className={classes.cardTitle}>
+              <div className={classes.cardTitleRow}>
+                <Typography className={classes.cardTitle}>
+                  Tickets Hoje
+                </Typography>
+                <TicketIcon className={classes.cardIcon} />
+              </div>
+              <Typography className={classes.cardValue}>
                 {stats?.tickets?.today || 0}
-              </Typography>
-              <Typography className={classes.cardSubtitle}>
-                Tickets Hoje
               </Typography>
             </CardContent>
           </Card>
@@ -375,13 +403,12 @@ const SystemStats = () => {
       </Grid>
 
       {/* Gráfico de Evolução de Usuários */}
-      <Paper className={classes.chartContainer} elevation={2}>
+      <Paper className={classes.chartContainer} elevation={0} style={{ boxShadow: 'none', border: '1px solid #eee' }}>
         <Typography variant="h6" className={classes.chartTitle}>
-          Usuários Cadastrados
         </Typography>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={userGrowthData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+        <ResponsiveContainer width="100%" height={320}>
+          <LineChart data={userGrowthData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
             <XAxis 
               dataKey="month" 
               stroke="#666"
@@ -392,6 +419,8 @@ const SystemStats = () => {
               stroke="#666"
               fontSize={12}
               tick={{ fill: '#666' }}
+              allowDecimals={false}
+              domain={[0, dataMax => Math.max(dataMax * 1.1, 10)]}
             />
             <RechartsTooltip 
               contentStyle={{
@@ -414,15 +443,15 @@ const SystemStats = () => {
               }}
               formatter={(value, name, props) => {
                 if (name === 'usuarios') {
-                  const novosUsuarios = props.payload?.novosUsuarios || 0;
-                  return [
-                    `${value} usuários total`,
-                    novosUsuarios > 0 ? `(+${novosUsuarios} novos)` : '(nenhum novo)'
-                  ];
+                  return [`${value} acumulado`, 'Total acumulado'];
+                }
+                if (name === 'novosUsuarios') {
+                  return [`${value} novos`, 'Novos no mês'];
                 }
                 return [value, name];
               }}
             />
+            <Bar dataKey="novosUsuarios" fill="#90caf9" barSize={32} radius={[8, 8, 0, 0]} name="Novos no mês" />
             <Line 
               type="monotone" 
               dataKey="usuarios" 
@@ -430,6 +459,7 @@ const SystemStats = () => {
               strokeWidth={3}
               dot={{ fill: '#4caf50', strokeWidth: 2, r: 4 }}
               activeDot={{ r: 6, stroke: '#4caf50', strokeWidth: 2, fill: '#fff' }}
+              name="Total acumulado"
             />
           </LineChart>
         </ResponsiveContainer>
