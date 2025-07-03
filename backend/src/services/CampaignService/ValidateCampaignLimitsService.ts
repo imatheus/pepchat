@@ -40,12 +40,38 @@ const ValidateCampaignLimitsService = async ({
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
 
-  // Contar campanhas criadas no mês atual (excluindo a campanha sendo editada)
+  // CORREÇÃO DO BUG: Contar campanhas que contam para o limite mensal
+  // Problema anterior: Contava apenas campanhas criadas no mês (createdAt)
+  // Isso permitia bypass deletando campanhas já processadas
+  // 
+  // Nova lógica: Uma campanha conta para o limite se:
+  // 1. Foi finalizada no mês atual (independente de quando foi criada), OU
+  // 2. Está ativa (EM_ANDAMENTO, PROGRAMADA) no momento atual, OU  
+  // 3. Foi criada no mês atual (incluindo canceladas/inativas para evitar bypass)
+  
   const whereCondition: any = {
     companyId,
-    createdAt: {
-      [Op.between]: [firstDayOfMonth, lastDayOfMonth]
-    }
+    [Op.or]: [
+      // Campanhas finalizadas no mês atual
+      {
+        status: 'FINALIZADA',
+        completedAt: {
+          [Op.between]: [firstDayOfMonth, lastDayOfMonth]
+        }
+      },
+      // Campanhas ativas (independente de quando foram criadas)
+      {
+        status: {
+          [Op.in]: ['EM_ANDAMENTO', 'PROGRAMADA']
+        }
+      },
+      // Campanhas criadas no mês atual (incluindo canceladas e inativas)
+      {
+        createdAt: {
+          [Op.between]: [firstDayOfMonth, lastDayOfMonth]
+        }
+      }
+    ]
   };
 
   // Se estamos editando uma campanha, excluí-la da contagem

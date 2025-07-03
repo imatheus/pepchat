@@ -32,6 +32,7 @@ import webHookMetaRoutes from "./WebHookMetaRoutes";
 import webChatRoutes from "./webChatRoutes";
 import asaasRoutes from "./asaasRoutes";
 import autoRatingRoutes from "./autoRatingRoutes";
+import historyConfigRoutes from "./historyConfigRoutes";
 
 const routes = Router();
 
@@ -67,5 +68,6 @@ routes.use("/webhook/meta", webHookMetaRoutes);
 routes.use(webChatRoutes);
 routes.use(asaasRoutes);
 routes.use(autoRatingRoutes);
+routes.use(historyConfigRoutes);
 
 export default routes;

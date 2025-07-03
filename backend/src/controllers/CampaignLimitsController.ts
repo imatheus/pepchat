@@ -18,17 +18,36 @@ export const getCampaignLimits = async (req: AuthenticatedRequest, res: Response
     // Obter limites do plano ativo
     const planLimits = await GetCompanyActivePlanService({ companyId });
 
-    // Contar campanhas do mês atual
+    // Contar campanhas do mês atual usando a mesma lógica do ValidateCampaignLimitsService
     const currentDate = new Date();
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
 
+    // Usar a mesma lógica de contagem para consistência
     const currentMonthCampaigns = await Campaign.count({
       where: {
         companyId,
-        createdAt: {
-          [Op.between]: [firstDayOfMonth, lastDayOfMonth]
-        }
+        [Op.or]: [
+          // Campanhas finalizadas no mês atual
+          {
+            status: 'FINALIZADA',
+            completedAt: {
+              [Op.between]: [firstDayOfMonth, lastDayOfMonth]
+            }
+          },
+          // Campanhas ativas (independente de quando foram criadas)
+          {
+            status: {
+              [Op.in]: ['EM_ANDAMENTO', 'PROGRAMADA']
+            }
+          },
+          // Campanhas criadas no mês atual (incluindo canceladas/inativas)
+          {
+            createdAt: {
+              [Op.between]: [firstDayOfMonth, lastDayOfMonth]
+            }
+          }
+        ]
       }
     });
 

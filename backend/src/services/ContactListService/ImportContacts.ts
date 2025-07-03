@@ -6,6 +6,7 @@ import CheckContactNumberSafe from "../WbotServices/CheckNumberSafe";
 import { logger } from "../../utils/logger";
 import GetCompanyActivePlanService from "../CompanyService/GetCompanyActivePlanService";
 import AppError from "../../errors/AppError";
+import { getIO } from "../../libs/socket";
 
 interface ImportResult {
   imported: ContactListItem[];
@@ -15,11 +16,26 @@ interface ImportResult {
   maxContactsAllowed: number;
 }
 
+interface ProgressUpdate {
+  current: number;
+  total: number;
+  percentage: number;
+  currentContact: string;
+  status: 'validating' | 'completed' | 'error';
+}
+
 export async function ImportContacts(
   contactListId: number,
   companyId: number,
   file: Express.Multer.File | undefined
 ): Promise<ImportResult> {
+  const io = getIO();
+  
+  // Função para enviar atualizações de progresso
+  const sendProgressUpdate = (update: ProgressUpdate) => {
+    io.emit(`company-${companyId}-import-progress-${contactListId}`, update);
+  };
+
   // Verificar limites do plano da empresa
   const planLimits = await GetCompanyActivePlanService({ companyId });
   
@@ -113,11 +129,35 @@ export async function ImportContacts(
     }
   }
 
-  // Validar números no WhatsApp usando versão mais segura
+  // Validar números no WhatsApp usando versão mais segura com progresso
   const validatedContacts: ContactListItem[] = [];
+  const totalToValidate = contactList.length;
   
-  for (let newContact of contactList) {
-    logger.info(`Validando número: ${newContact.number}`);
+  // Enviar progresso inicial
+  sendProgressUpdate({
+    current: 0,
+    total: totalToValidate,
+    percentage: 0,
+    currentContact: 'Iniciando validação...',
+    status: 'validating'
+  });
+  
+  for (let i = 0; i < contactList.length; i++) {
+    const newContact = contactList[i];
+    
+    // Enviar atualização de progresso
+    const current = i + 1;
+    const percentage = Math.round((current / totalToValidate) * 100);
+    
+    sendProgressUpdate({
+      current,
+      total: totalToValidate,
+      percentage,
+      currentContact: `${newContact.name} (${newContact.number})`,
+      status: 'validating'
+    });
+    
+    logger.info(`Validando número ${current}/${totalToValidate}: ${newContact.number}`);
     
     const checkResult = await CheckContactNumberSafe(newContact.number, companyId);
     
@@ -157,7 +197,19 @@ export async function ImportContacts(
       validatedContacts.push(newContact);
       logger.info(`Número validado com sucesso: ${newContact.number}`);
     }
+    
+    // Pequena pausa para não sobrecarregar o sistema
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
+
+  // Enviar progresso final
+  sendProgressUpdate({
+    current: totalToValidate,
+    total: totalToValidate,
+    percentage: 100,
+    currentContact: 'Validação concluída!',
+    status: 'completed'
+  });
 
   // Contar contatos descartados por filtros iniciais
   const initiallyDiscarded = contacts.length - validContacts.length;

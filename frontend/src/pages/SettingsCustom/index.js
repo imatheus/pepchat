@@ -10,6 +10,7 @@ import CompaniesManager from "../../components/CompaniesManager";
 import PlansManager from "../../components/PlansManager";
 import Options from "../../components/Settings/Options";
 import AsaasManager from "../../components/AsaasManager";
+import HistoryConfig from "../../components/HistoryConfig";
 
 import { i18n } from "../../translate/i18n.js";
 import { toast } from "react-toastify";
@@ -116,6 +117,7 @@ const SettingsCustom = () => {
           className={classes.tab}
         >
           <Tab label="Opções" value={"options"} />
+          <Tab label="Histórico WhatsApp" value={"history"} />
           {isSuper() ? <Tab label="Empresas" value={"companies"} /> : null}
           {isSuper() ? <Tab label="Planos" value={"plans"} /> : null}
           {isSuper() ? <Tab label="Asaas" value={"asaas"} /> : null}
@@ -161,6 +163,9 @@ const SettingsCustom = () => {
             <Options
               settings={settings}
             />
+          </TabPanel>
+          <TabPanel className={classes.container} value={tab} name={"history"}>
+            <HistoryConfig />
           </TabPanel>
         </Paper>
       </Paper>

@@ -43,6 +43,7 @@ import Setting from "../../models/Setting";
 import { cacheLayer } from "../../libs/cache";
 import { debounce } from "../../helpers/Debounce";
 import { provider } from "./providers";
+import { shouldIgnoreMessage } from "./MessageFilterService";
 
 // Função para obter o tipo de chatbot das configurações da empresa
 const getChatbotType = async (companyId: number): Promise<string> => {
@@ -1045,20 +1046,21 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
   if (!isValidMsg(msg)) return;
 
   try {
+    // Verificar se a mensagem deve ser ignorada (filtros aprimorados)
+    const shouldIgnore = await shouldIgnoreMessage(msg, {
+      whatsappId: wbot.id!,
+      companyId
+    });
+
+    if (shouldIgnore) {
+      logger.debug(`Message ignored: ${msg.key.id} - Reason: filtered by MessageFilterService`);
+      return;
+    }
+
     let msgContact: IMe;
     let groupContact: Contact | undefined;
     const isGroup = msg.key.remoteJid?.endsWith("@g.us");
     const bodyMessage = getBodyMessage(msg);
-
-    // Ignorar mensagens do próprio bot ou mensagens com caracteres especiais
-    if (msg.key.fromMe) {
-      return;
-    }
-
-    // Ignorar mensagens que começam com caracteres especiais (mensagens do bot)
-    if (bodyMessage && (/\u200e/.test(bodyMessage) || bodyMessage.includes('*[') || bodyMessage.startsWith('‎'))) {
-      return;
-    }
 
     msgContact = await getContactMessage(msg, wbot);
 
@@ -1138,10 +1140,19 @@ const wbotMessageListener = async (wbot: Session, companyId: number): Promise<vo
       const messages = messageUpsert.messages.filter(filterMessages);
       if (!messages) return;
 
+      logger.info(`Processing ${messages.length} messages for company ${companyId}`);
+
       for (const message of messages) {
-        const messageExists = await Message.count({ where: { id: message.key.id!, companyId } });
-        if (!messageExists) {
-          await handleMessage(message, wbot, companyId);
+        try {
+          const messageExists = await Message.count({ where: { id: message.key.id!, companyId } });
+          if (!messageExists) {
+            logger.debug(`Processing new message: ${message.key.id} from ${message.key.remoteJid}`);
+            await handleMessage(message, wbot, companyId);
+          } else {
+            logger.debug(`Message already exists: ${message.key.id}`);
+          }
+        } catch (error) {
+          logger.error(error, `Error processing message ${message.key.id}`);
         }
       }
     });

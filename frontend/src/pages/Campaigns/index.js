@@ -567,15 +567,17 @@ const Campaigns = () => {
                       <EditIcon />
                     </IconButton>
 
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        setConfirmModalOpen(true);
-                        setDeletingCampaign(campaign);
-                      }}
-                    >
-                      <DeleteOutlineIcon />
-                    </IconButton>
+                    {campaign.status !== "FINALIZADA" && (
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          setConfirmModalOpen(true);
+                          setDeletingCampaign(campaign);
+                        }}
+                      >
+                        <DeleteOutlineIcon />
+                      </IconButton>
+                    )}
                   </TableCell>
                 </TableRow>
                 );

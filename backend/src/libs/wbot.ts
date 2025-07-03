@@ -74,7 +74,13 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
     }
 
     if (connection === 'open') {
-        await whatsapp.update({ status: "CONNECTED", qrcode: "" });
+        // Marcar o timestamp de quando a sessão foi iniciada para filtrar mensagens antigas
+        const sessionStartedAt = new Date();
+        await whatsapp.update({ 
+          status: "CONNECTED", 
+          qrcode: "",
+          sessionStartedAt 
+        });
         const updatedWhatsapp = await whatsapp.reload();
         io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
         io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });

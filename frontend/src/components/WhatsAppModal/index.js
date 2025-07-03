@@ -26,7 +26,7 @@ import api from "../../services/api";
 import { i18n } from "../../translate/i18n";
 import toastError from "../../errors/toastError";
 import QueueSelect from "../QueueSelect";
-import StandardToggleSwitch from "../StandardToggleSwitch";
+import ToggleSwitch from "../ToggleSwitch";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -240,11 +240,12 @@ Avalie nossa equipe:`;
                     <Grid style={{ paddingTop: 15 }} item>
                       <Field name="isDefault">
                         {({ field }) => (
-                          <StandardToggleSwitch
+                          <ToggleSwitch
                             label={i18n.t("whatsappModal.form.default")}
                             checked={field.value}
                             onChange={field.onChange}
                             name={field.name}
+                            variant="standard"
                           />
                         )}
                       </Field>

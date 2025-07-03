@@ -5,9 +5,9 @@ import * as CampaignLimitsController from "../controllers/CampaignLimitsControll
 const routes = Router();
 
 // Obter limites de campanhas da empresa
-routes.get("/campaign-limits", isAuth, CampaignLimitsController.getCampaignLimits);
+routes.get("/campaign-limits", isAuth, CampaignLimitsController.getCampaignLimits as any);
 
 // Validar limites antes de criar/editar campanha
-routes.post("/campaign-limits/validate", isAuth, CampaignLimitsController.validateCampaignLimits);
+routes.post("/campaign-limits/validate", isAuth, CampaignLimitsController.validateCampaignLimits as any);
 
 export default routes;

@@ -58,7 +58,11 @@ import {
   Menu,
   MenuItem,
   Toolbar,
-  Chip
+  Chip,
+  LinearProgress,
+  Box,
+  Card,
+  CardContent
 } from "@material-ui/core";
 
 import planilhaExemplo from "../../assets/planilha.xlsx";
@@ -135,6 +139,20 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     gap: theme.spacing(1),
   },
+  progressCard: {
+    margin: theme.spacing(1, 0),
+    border: `1px solid ${theme.palette.divider}`,
+    backgroundColor: 'white',
+  },
+  progressText: {
+    marginBottom: theme.spacing(1),
+    fontWeight: 'bold',
+  },
+  currentContactText: {
+    fontSize: '0.875rem',
+    opacity: 0.8,
+    marginTop: theme.spacing(0.5),
+  },
 }));
 
 const ContactListItems = () => {
@@ -167,6 +185,16 @@ const ContactListItems = () => {
   const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
   const [selectAllChecked, setSelectAllChecked] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  
+  // Estados para progresso de validação
+  const [validationProgress, setValidationProgress] = useState({
+    isValidating: false,
+    current: 0,
+    total: 0,
+    percentage: 0,
+    currentContact: '',
+    status: 'validating'
+  });
 
   const { findById: findContactList } = useContactLists();
 
@@ -232,6 +260,25 @@ const ContactListItems = () => {
       }
     );
 
+    // Escutar atualizações de progresso de validação
+    socket.on(`company-${companyId}-import-progress-${contactListId}`, (progressData) => {
+      setValidationProgress({
+        isValidating: progressData.status === 'validating',
+        current: progressData.current,
+        total: progressData.total,
+        percentage: progressData.percentage,
+        currentContact: progressData.currentContact,
+        status: progressData.status
+      });
+
+      // Se a validação foi concluída, ocultar a barra após 3 segundos
+      if (progressData.status === 'completed') {
+        setTimeout(() => {
+          setValidationProgress(prev => ({ ...prev, isValidating: false }));
+        }, 3000);
+      }
+    });
+
     return () => {
       socket.disconnect();
     };
@@ -269,7 +316,7 @@ const ContactListItems = () => {
   const handleDeleteContact = async (contactId) => {
     try {
       await api.delete(`/contact-list-items/${contactId}`);
-      toast.success(i18n.t("contacts.toasts.deleted"));
+      toast.success(i18n.t("contacts.toasts.deleted"), { autoClose: 5000 });
     } catch (err) {
       toastError(err);
     }
@@ -299,7 +346,7 @@ const ContactListItems = () => {
 
   const handleOpenBulkDeleteModal = () => {
     if (selectedContactsForDeletion.length === 0) {
-      toast.warning("Selecione pelo menos um contato para excluir");
+      toast.warning("Selecione pelo menos um contato para excluir", { autoClose: 5000 });
       return;
     }
     setBulkDeleteModalOpen(true);
@@ -347,10 +394,10 @@ const ContactListItems = () => {
 
       // Mostrar resultado
       if (deletedCount > 0) {
-        toast.success(`${deletedCount} contatos excluídos com sucesso!`);
+        toast.success(`${deletedCount} contatos excluídos com sucesso!`, { autoClose: 6000 });
       }
       if (errorCount > 0) {
-        toast.error(`Erro ao excluir ${errorCount} contatos`);
+        toast.error(`Erro ao excluir ${errorCount} contatos`, { autoClose: 6000 });
       }
 
       setBulkDeleteModalOpen(false);
@@ -368,6 +415,16 @@ const ContactListItems = () => {
 
   const handleImportContacts = async () => {
     try {
+      // Mostrar progresso inicial
+      setValidationProgress({
+        isValidating: true,
+        current: 0,
+        total: 0,
+        percentage: 0,
+        currentContact: 'Preparando importação...',
+        status: 'validating'
+      });
+
       const formData = new FormData();
       formData.append("file", fileUploadRef.current.files[0]);
       const response = await api.request({
@@ -379,26 +436,21 @@ const ContactListItems = () => {
       // Mostrar informações detalhadas da importação
       const { data } = response;
       if (data.success) {
-        toast.success(data.message);
+        toast.success(data.message, { autoClose: 6000 });
         
         // Mostrar informações adicionais se houver contatos descartados
         if (data.data.discarded > 0) {
-          toast.info(`${data.data.discarded} contatos foram descartados (números inválidos ou duplicados)`);
+          toast.info(`${data.data.discarded} contatos foram descartados (números inválidos ou duplicados)`, { autoClose: 8000 });
         }
         
         // Avisar se o limite foi excedido
         if (data.data.limitExceeded) {
-          toast.warning(`Limite de contatos atingido! Seu plano permite até ${data.data.maxContactsAllowed} contatos por campanha.`);
-        }
-        
-        // Mostrar números inválidos se houver poucos
-        if (data.data.invalidNumbers && data.data.invalidNumbers.length > 0 && data.data.invalidNumbers.length <= 5) {
-          toast.error(`Números inválidos descartados: ${data.data.invalidNumbers.join(', ')}`);
-        } else if (data.data.invalidNumbers && data.data.invalidNumbers.length > 5) {
-          toast.error(`${data.data.invalidNumbers.length} números inválidos foram descartados`);
+          toast.warning(`Limite de contatos atingido! Seu plano permite até ${data.data.maxContactsAllowed} contatos por campanha.`, { autoClose: 8000 });
         }
       }
     } catch (err) {
+      // Ocultar progresso em caso de erro
+      setValidationProgress(prev => ({ ...prev, isValidating: false }));
       toastError(err);
     }
   };
@@ -449,7 +501,7 @@ const ContactListItems = () => {
 
   const handleImportSelectedContacts = async () => {
     if (selectedContacts.length === 0) {
-      toast.warning("Selecione pelo menos um contato para importar");
+      toast.warning("Selecione pelo menos um contato para importar", { autoClose: 5000 });
       return;
     }
 
@@ -458,12 +510,12 @@ const ContactListItems = () => {
         contactIds: selectedContacts
       });
       
-      toast.success(`${data.result.imported} contatos importados com sucesso!`);
+      toast.success(`${data.result.imported} contatos importados com sucesso!`, { autoClose: 6000 });
       if (data.result.skipped > 0) {
-        toast.info(`${data.result.skipped} contatos já existiam na lista`);
+        toast.info(`${data.result.skipped} contatos já existiam na lista`, { autoClose: 6000 });
       }
       if (data.result.errors > 0) {
-        toast.error(`${data.result.errors} contatos falharam na importação`);
+        toast.error(`${data.result.errors} contatos falharam na importação`, { autoClose: 6000 });
       }
       
       handleCloseImportContactsModal();
@@ -728,6 +780,37 @@ const ContactListItems = () => {
           </Grid>
         </Grid>
       </MainHeader>
+
+      {/* Barra de progresso de validação */}
+      {validationProgress.isValidating && (
+        <Card className={classes.progressCard}>
+          <CardContent>
+            <Typography variant="h6" className={classes.progressText}>
+              Importando contatos...
+            </Typography>
+            <Box display="flex" alignItems="center" marginBottom={1}>
+              <Box width="100%" marginRight={1}>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={validationProgress.percentage} 
+                  style={{ height: 8, borderRadius: 4 }}
+                />
+              </Box>
+              <Box minWidth={35}>
+                <Typography variant="body1" color="textSecondary">
+                  {validationProgress.percentage}%
+                </Typography>
+              </Box>
+            </Box>
+            <Typography variant="body2">
+              {validationProgress.current} de {validationProgress.total} contatos validados
+            </Typography>
+            <Typography variant="body2" className={classes.currentContactText}>
+              Validando: {validationProgress.currentContact}
+            </Typography>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Barra de ações em massa */}
       {selectedContactsForDeletion.length > 0 && (

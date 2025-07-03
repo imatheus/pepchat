@@ -1,5 +1,7 @@
 import openSocket from "socket.io-client";
-import { isObject } from "lodash";
+
+// Função nativa para verificar se é objeto
+const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 
 export function socketConnection(params) {
   let userId = null;

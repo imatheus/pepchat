@@ -16,7 +16,7 @@ import {
 import { Formik, Form, Field } from 'formik';
 import ButtonWithSpinner from "../ButtonWithSpinner";
 import ConfirmationModal from "../ConfirmationModal";
-import StandardToggleSwitch from "../StandardToggleSwitch";
+import ToggleSwitch from "../ToggleSwitch";
 import { Edit as EditIcon } from "@material-ui/icons";
 
 import { toast } from "react-toastify";
@@ -167,7 +167,7 @@ export function PlanManagerForm(props) {
                         <Grid xs={12} sm={3} md={3} item>
                             <Field name="useCampaigns">
                                 {({ field }) => (
-                                    <StandardToggleSwitch
+                                    <ToggleSwitch
                                         label="Campanhas"
                                         checked={field.value}
                                         onChange={field.onChange}
@@ -179,7 +179,7 @@ export function PlanManagerForm(props) {
                         <Grid xs={12} sm={3} md={3} item>
                             <Field name="useWhatsapp">
                                 {({ field }) => (
-                                    <StandardToggleSwitch
+                                    <ToggleSwitch
                                         label="WhatsApp"
                                         checked={field.value}
                                         onChange={field.onChange}
@@ -191,7 +191,7 @@ export function PlanManagerForm(props) {
                         <Grid xs={12} sm={3} md={3} item>
                             <Field name="useFacebook">
                                 {({ field }) => (
-                                    <StandardToggleSwitch
+                                    <ToggleSwitch
                                         label="Facebook"
                                         checked={field.value}
                                         onChange={field.onChange}
@@ -203,7 +203,7 @@ export function PlanManagerForm(props) {
                         <Grid xs={12} sm={3} md={3} item>
                             <Field name="useInstagram">
                                 {({ field }) => (
-                                    <StandardToggleSwitch
+                                    <ToggleSwitch
                                         label="Instagram"
                                         checked={field.value}
                                         onChange={field.onChange}
