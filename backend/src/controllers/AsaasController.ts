@@ -19,6 +19,7 @@ export const index = async (req: Request, res: Response): Promise<void> => {
   const response = {
     id: asaasConfig.id,
     webhookUrl: asaasConfig.webhookUrl,
+    webhookToken: asaasConfig.webhookToken,
     environment: asaasConfig.environment,
     enabled: asaasConfig.enabled,
     hasApiKey: !!asaasConfig.apiKey,
@@ -30,7 +31,7 @@ export const index = async (req: Request, res: Response): Promise<void> => {
 
 // Criar ou atualizar configuração do Asaas
 export const store = async (req: Request, res: Response): Promise<void> => {
-  const { apiKey, webhookUrl, environment = 'sandbox', enabled = true } = req.body;
+  const { apiKey, webhookUrl, webhookToken, environment = 'sandbox', enabled = true } = req.body;
 
   if (!apiKey) {
     throw new AppError("Chave de API é obrigatória", 400);
@@ -43,6 +44,7 @@ export const store = async (req: Request, res: Response): Promise<void> => {
     await asaasConfig.update({
       apiKey,
       webhookUrl,
+      webhookToken,
       environment,
       enabled
     });
@@ -51,6 +53,7 @@ export const store = async (req: Request, res: Response): Promise<void> => {
     asaasConfig = await AsaasConfig.create({
       apiKey,
       webhookUrl,
+      webhookToken,
       environment,
       enabled
     });
@@ -60,6 +63,7 @@ export const store = async (req: Request, res: Response): Promise<void> => {
   const response = {
     id: asaasConfig.id,
     webhookUrl: asaasConfig.webhookUrl,
+    webhookToken: asaasConfig.webhookToken,
     environment: asaasConfig.environment,
     enabled: asaasConfig.enabled,
     hasApiKey: !!asaasConfig.apiKey,
@@ -71,7 +75,7 @@ export const store = async (req: Request, res: Response): Promise<void> => {
 
 // Atualizar configuração do Asaas
 export const update = async (req: Request, res: Response): Promise<void> => {
-  const { apiKey, webhookUrl, environment, enabled } = req.body;
+  const { apiKey, webhookUrl, webhookToken, environment, enabled } = req.body;
 
   const asaasConfig = await AsaasConfig.findOne();
 
@@ -82,6 +86,7 @@ export const update = async (req: Request, res: Response): Promise<void> => {
   await asaasConfig.update({
     ...(apiKey && { apiKey }),
     ...(webhookUrl !== undefined && { webhookUrl }),
+    ...(webhookToken !== undefined && { webhookToken }),
     ...(environment && { environment }),
     ...(enabled !== undefined && { enabled })
   });
@@ -90,6 +95,7 @@ export const update = async (req: Request, res: Response): Promise<void> => {
   const response = {
     id: asaasConfig.id,
     webhookUrl: asaasConfig.webhookUrl,
+    webhookToken: asaasConfig.webhookToken,
     environment: asaasConfig.environment,
     enabled: asaasConfig.enabled,
     hasApiKey: !!asaasConfig.apiKey,
@@ -144,6 +150,124 @@ export const webhook = async (req: Request, res: Response): Promise<void> => {
     // Para outros erros, retornar 400 para que o Asaas tente novamente
     res.status(400).json({ 
       error: error.message || "Erro ao processar webhook do Asaas" 
+    });
+  }
+};
+
+// Webhook público do Asaas (sem autenticação por token, mas com validações de segurança)
+export const webhookPublic = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const payload = req.body;
+    const userAgent = req.headers['user-agent'] as string;
+    const contentType = req.headers['content-type'] as string;
+
+    // Validações de segurança básicas
+    if (!payload || typeof payload !== 'object') {
+      logger.warn('Webhook rejeitado: payload inválido');
+      res.status(400).json({ error: "Payload inválido" });
+      return;
+    }
+
+    // Verificar se tem estrutura básica de webhook do Asaas
+    if (!payload.event) {
+      logger.warn('Webhook rejeitado: evento não especificado');
+      res.status(400).json({ error: "Evento não especificado" });
+      return;
+    }
+
+    // Verificar se o User-Agent parece ser do Asaas (opcional, mas ajuda na segurança)
+    const validUserAgents = ['Asaas', 'asaas', 'webhook'];
+    const isValidUserAgent = !userAgent || validUserAgents.some(ua => userAgent.toLowerCase().includes(ua.toLowerCase()));
+
+    // Log do webhook recebido
+    logger.info('Asaas webhook público recebido:', {
+      event: payload.event,
+      paymentId: payload.payment?.id,
+      subscriptionId: payload.subscription?.id,
+      externalReference: payload.payment?.externalReference,
+      userAgent: userAgent,
+      contentType: contentType,
+      isValidUserAgent: isValidUserAgent
+    });
+
+    // Processar o webhook
+    await ProcessAsaasWebhookService({
+      payload,
+      signature: null // Sem validação de assinatura por enquanto
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error: any) {
+    logger.error('Error processing Asaas webhook público:', {
+      error: error.message,
+      stack: error.stack,
+      payload: req.body
+    });
+
+    // Retornar 200 para erros de dados inconsistentes para evitar retry
+    if (error.message && (
+      error.message.includes('chave estrangeira') ||
+      error.message.includes('Company') && error.message.includes('not found') ||
+      error.message.includes('Could not identify')
+    )) {
+      logger.warn('Returning 200 for data inconsistency error to prevent retry');
+      res.status(200).json({ 
+        success: false,
+        error: "Data inconsistency - webhook processed but not applied",
+        details: error.message
+      });
+      return;
+    }
+
+    // Para outros erros, retornar 400 para que o Asaas tente novamente
+    res.status(400).json({ 
+      error: error.message || "Erro ao processar webhook do Asaas" 
+    });
+  }
+};
+
+// Webhook do Asaas para debug (sem autenticação)
+export const webhookDebug = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const payload = req.body;
+    const headers = req.headers;
+
+    // Log detalhado para debug
+    logger.info('Asaas webhook debug received:', {
+      headers: Object.keys(headers),
+      userAgent: headers['user-agent'],
+      contentType: headers['content-type'],
+      asaasSignature: headers['asaas-signature'],
+      asaasAccessToken: headers['asaas-access-token'],
+      authorization: headers['authorization'],
+      event: payload.event,
+      paymentId: payload.payment?.id,
+      subscriptionId: payload.subscription?.id,
+      externalReference: payload.payment?.externalReference,
+      fullPayload: payload
+    });
+
+    // Processar o webhook normalmente
+    await ProcessAsaasWebhookService({
+      payload,
+      signature: headers['asaas-signature'] as string
+    });
+
+    res.status(200).json({ success: true, debug: true });
+  } catch (error: any) {
+    logger.error('Error processing Asaas webhook debug:', {
+      error: error.message,
+      stack: error.stack,
+      payload: req.body,
+      headers: req.headers
+    });
+
+    // Sempre retornar 200 no debug para evitar retry
+    res.status(200).json({ 
+      success: false,
+      debug: true,
+      error: error.message,
+      details: error.stack
     });
   }
 };

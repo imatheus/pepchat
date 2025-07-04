@@ -52,31 +52,49 @@ const remove = async (req: Request, res: Response): Promise<void> => {
       console.log("Erro ao desconectar wbot:", err);
     }
     
-    // Atualizar status no banco e notificar frontend
-    await whatsapp.update({ status: "DISCONNECTED", qrcode: "" });
-    const updatedWhatsapp = await whatsapp.reload();
-    
-    io.emit(`company-${companyId}-whatsapp`, {
-      action: "update",
-      whatsapp: updatedWhatsapp
-    });
-    
-    io.emit(`company-${companyId}-whatsappSession`, {
-      action: "update",
-      session: updatedWhatsapp
-    });
+    try {
+      // Atualizar status no banco e notificar frontend
+      await whatsapp.update({ status: "DISCONNECTED", qrcode: "" });
+      
+      // Verificar se a instância ainda existe antes de recarregar
+      const existingWhatsapp = await ShowWhatsAppService(whatsappId, companyId);
+      if (existingWhatsapp) {
+        const updatedWhatsapp = await whatsapp.reload();
+        
+        io.emit(`company-${companyId}-whatsapp`, {
+          action: "update",
+          whatsapp: updatedWhatsapp
+        });
+        
+        io.emit(`company-${companyId}-whatsappSession`, {
+          action: "update",
+          session: updatedWhatsapp
+        });
+      }
+    } catch (error: any) {
+      console.log("Erro ao recarregar whatsapp após desconexão:", error.message);
+    }
     
     removeWbot(whatsapp.id);
   }
 
   if(whatsapp.channel === "facebook" || whatsapp.channel === "instagram") {
-    await whatsapp.update({ status: "DISCONNECTED" });
-    const updatedWhatsapp = await whatsapp.reload();
-    
-    io.emit(`company-${companyId}-whatsapp`, {
-      action: "update",
-      whatsapp: updatedWhatsapp
-    });
+    try {
+      await whatsapp.update({ status: "DISCONNECTED" });
+      
+      // Verificar se a instância ainda existe antes de recarregar
+      const existingWhatsapp = await ShowWhatsAppService(whatsappId, companyId);
+      if (existingWhatsapp) {
+        const updatedWhatsapp = await whatsapp.reload();
+        
+        io.emit(`company-${companyId}-whatsapp`, {
+          action: "update",
+          whatsapp: updatedWhatsapp
+        });
+      }
+    } catch (error: any) {
+      console.log("Erro ao recarregar whatsapp social após desconexão:", error.message);
+    }
   }
 
   res.status(200).json({ message: "Session disconnected." });

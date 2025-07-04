@@ -65,48 +65,105 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
     console.log(`Conexão para ${name}: ${connection}`);
 
     if (qr) {
-      // O QR Code é salvo no banco e enviado para o frontend.
-      // A impressão no terminal foi removida.
-      await whatsapp.update({ qrcode: qr, status: "qrcode" });
-      const updatedWhatsapp = await whatsapp.reload();
-      io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
-      io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
+      try {
+        // O QR Code é salvo no banco e enviado para o frontend.
+        // A impressão no terminal foi removida.
+        await whatsapp.update({ qrcode: qr, status: "qrcode" });
+        
+        // Verificar se a instância ainda existe antes de recarregar
+        const existingWhatsapp = await Whatsapp.findByPk(id);
+        if (existingWhatsapp) {
+          const updatedWhatsapp = await whatsapp.reload();
+          io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
+          io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
+        } else {
+          console.log(`Whatsapp ${id} não existe mais no banco de dados`);
+          removeWbot(id);
+          return;
+        }
+      } catch (error: any) {
+        console.error(`Erro ao processar QR code para ${name}:`, error.message);
+        if (error.message.includes('could not be reloaded') || error.message.includes('does not exist')) {
+          removeWbot(id);
+          return;
+        }
+      }
     }
 
     if (connection === 'open') {
-        // Marcar o timestamp de quando a sessão foi iniciada para filtrar mensagens antigas
-        const sessionStartedAt = new Date();
-        await whatsapp.update({ 
-          status: "CONNECTED", 
-          qrcode: "",
-          sessionStartedAt 
-        });
-        const updatedWhatsapp = await whatsapp.reload();
-        io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
-        io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
-        console.log(`-> CONEXÃO ABERTA PARA ${name} <-`);
-        wbotMessageListener(wbot as any, companyId);
+        try {
+          // Marcar o timestamp de quando a sessão foi iniciada para filtrar mensagens antigas
+          const sessionStartedAt = new Date();
+          
+          // Verificar se a instância ainda existe antes de atualizar
+          const existingWhatsapp = await Whatsapp.findByPk(id);
+          if (existingWhatsapp) {
+            await whatsapp.update({ 
+              status: "CONNECTED", 
+              qrcode: "",
+              sessionStartedAt 
+            });
+            const updatedWhatsapp = await whatsapp.reload();
+            io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
+            io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
+            console.log(`-> CONEXÃO ABERTA PARA ${name} <-`);
+            wbotMessageListener(wbot as any, companyId);
+          } else {
+            console.log(`Whatsapp ${id} não existe mais no banco de dados`);
+            removeWbot(id);
+            return;
+          }
+        } catch (error: any) {
+          console.error(`Erro ao processar conexão aberta para ${name}:`, error.message);
+          if (error.message.includes('could not be reloaded') || error.message.includes('does not exist')) {
+            removeWbot(id);
+            return;
+          }
+        }
     }
 
     if (connection === 'close') {
-        const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
-        let status = "DISCONNECTED";
-        if (statusCode === DisconnectReason.loggedOut) {
-          await removeBaileysState(id);
-          status = "DISCONNECTED";
-        } else {
-          // Se não for deslogado, tenta reconectar
-          setTimeout(() => initWbot(whatsapp), 5000);
-          status = "OPENING";
-        }
-        await whatsapp.update({ status, qrcode: "" });
-        const updatedWhatsapp = await whatsapp.reload();
-        io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
-        io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
-        
-        // Remover a sessão da lista quando desconectada
-        if (status === "DISCONNECTED") {
-          removeWbot(id);
+        try {
+          const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
+          let status = "DISCONNECTED";
+          
+          // Verificar se a instância ainda existe antes de atualizar
+          const existingWhatsapp = await Whatsapp.findByPk(id);
+          if (!existingWhatsapp) {
+            console.log(`Whatsapp ${id} não existe mais no banco de dados`);
+            removeWbot(id);
+            return;
+          }
+          
+          if (statusCode === DisconnectReason.loggedOut) {
+            await removeBaileysState(id);
+            status = "DISCONNECTED";
+          } else {
+            // Se não for deslogado, tenta reconectar apenas se a instância ainda existir
+            setTimeout(async () => {
+              const stillExists = await Whatsapp.findByPk(id);
+              if (stillExists) {
+                initWbot(stillExists);
+              }
+            }, 5000);
+            status = "OPENING";
+          }
+          
+          await whatsapp.update({ status, qrcode: "" });
+          const updatedWhatsapp = await whatsapp.reload();
+          io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
+          io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
+          
+          // Remover a sessão da lista quando desconectada
+          if (status === "DISCONNECTED") {
+            removeWbot(id);
+          }
+        } catch (error: any) {
+          console.error(`Erro ao processar conexão fechada para ${name}:`, error.message);
+          if (error.message.includes('could not be reloaded') || error.message.includes('does not exist')) {
+            console.log(`Removendo sessão ${id} devido a instância não existir mais`);
+            removeWbot(id);
+          }
         }
     }
   });

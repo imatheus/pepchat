@@ -5,26 +5,49 @@ import {
   UpdatedAt,
   Model,
   PrimaryKey,
-  AutoIncrement
+  AutoIncrement,
+  DataType
 } from "sequelize-typescript";
 
-@Table
+@Table({
+  tableName: "AsaasConfigs"
+})
 class AsaasConfig extends Model<AsaasConfig> {
   @PrimaryKey
   @AutoIncrement
   @Column
   id: number;
 
-  @Column
+  @Column({
+    type: DataType.STRING,
+    allowNull: false
+  })
   apiKey: string;
 
-  @Column
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
   webhookUrl: string;
 
-  @Column
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  webhookToken: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    defaultValue: 'sandbox'
+  })
   environment: string; // 'sandbox' ou 'production'
 
-  @Column
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true
+  })
   enabled: boolean;
 
   @CreatedAt

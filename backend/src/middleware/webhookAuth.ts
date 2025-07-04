@@ -44,23 +44,47 @@ export const validateMetaWebhook = (
 };
 
 // Middleware para validar webhook do Asaas
-export const validateAsaasWebhook = (
+export const validateAsaasWebhook = async (
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
-  const signature = req.headers["asaas-access-token"] as string;
-  const expectedToken = process.env.ASAAS_WEBHOOK_TOKEN;
-  
-  if (!signature || !expectedToken) {
-    throw new AppError("Token de webhook ausente", 401);
+): Promise<void> => {
+  try {
+    // Importar AsaasConfig aqui para evitar dependência circular
+    const AsaasConfig = require("../models/AsaasConfig").default;
+    
+    // Buscar configuração do Asaas no banco
+    const asaasConfig = await AsaasConfig.findOne();
+    
+    if (!asaasConfig || !asaasConfig.webhookToken) {
+      console.warn("Token de webhook não configurado no sistema");
+      throw new AppError("Token de webhook não configurado no sistema", 500);
+    }
+    
+    // O Asaas pode enviar o token em diferentes headers
+    const signature = req.headers["asaas-access-token"] as string ||
+                     req.headers["asaas-signature"] as string ||
+                     req.headers["authorization"]?.replace("Bearer ", "") as string ||
+                     req.query.token as string;
+    
+    if (!signature) {
+      console.warn("Token de webhook ausente. Headers recebidos:", Object.keys(req.headers));
+      throw new AppError("Token de webhook ausente", 401);
+    }
+    
+    if (signature !== asaasConfig.webhookToken) {
+      console.warn("Token de webhook inválido. Recebido:", signature.substring(0, 10) + "...");
+      throw new AppError("Token de webhook inválido", 401);
+    }
+    
+    next();
+  } catch (error: any) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    console.error("Erro ao validar webhook do Asaas:", error);
+    throw new AppError("Erro interno ao validar webhook", 500);
   }
-  
-  if (signature !== expectedToken) {
-    throw new AppError("Token de webhook inválido", 401);
-  }
-  
-  next();
 };
 
 // Middleware para validar webhook genérico com token

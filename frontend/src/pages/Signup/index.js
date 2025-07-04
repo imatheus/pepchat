@@ -243,18 +243,29 @@ const SignUp = () => {
 	const handleSignUp = async (values, actions) => {
 		console.log("Valores recebidos no handleSignUp:", values);
 		
-		// Remove máscaras dos campos antes de enviar
+		// Validar se o plano foi selecionado
+		if (!values.planId) {
+			toast.error("Por favor, selecione um plano");
+			return;
+		}
+		
+		// Remove máscaras dos campos antes de enviar e remove campos desnecessários
 		const processedValues = {
-			...values,
+			name: values.name,
+			email: values.email,
+			password: values.password,
+			fullName: values.fullName,
 			document: removeMask(values.document),
 			phone: removeMask(values.phone),
+			documentType: values.documentType,
+			planId: parseInt(values.planId),
+			users: values.users,
+			recurrence: "MENSAL",
+			dueDate: dueDate,
+			trialExpiration: trialExpiration,
+			status: true,
+			campaignsEnabled: true
 		};
-		
-		Object.assign(processedValues, { recurrence: "MENSAL" });
-		Object.assign(processedValues, { dueDate: dueDate });
-		Object.assign(processedValues, { trialExpiration: trialExpiration });
-		Object.assign(processedValues, { status: "t" });
-		Object.assign(processedValues, { campaignsEnabled: true });
 		
 		console.log("Valores processados para envio:", processedValues);
 		
@@ -263,21 +274,26 @@ const SignUp = () => {
 			toast.success(i18n.t("signup.toasts.success"));
 			history.push("/login");
 		} catch (err) {
-			console.log(err);
+			console.log("Erro no cadastro:", err);
 			toastError(err);
 		}
 	};
 
 	const [plans, setPlans] = useState([]);
-	const { list: listPlans } = usePlans();
+	const { getPlanList } = usePlans();
 
 	useEffect(() => {
 		async function fetchData() {
-			const list = await listPlans();
-			setPlans(list);
+			try {
+				const list = await getPlanList();
+				console.log("Planos carregados:", list);
+				setPlans(list);
+			} catch (error) {
+				console.error("Erro ao carregar planos:", error);
+			}
 		}
 		fetchData();
-	}, [listPlans]);
+	}, [getPlanList]);
 
 	return (
 		<>

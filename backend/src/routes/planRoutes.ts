@@ -5,6 +5,9 @@ import * as PlanController from "../controllers/PlanController";
 
 const planRoutes = express.Router();
 
+// Rota pública para listar planos (para signup)
+planRoutes.get("/plans/public", PlanController.list);
+
 planRoutes.get("/plans", isAuth, PlanController.index);
 
 planRoutes.get("/plans/list", isAuth, PlanController.list);

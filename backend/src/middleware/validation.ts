@@ -35,9 +35,7 @@ export const validateUser = [
   body("password")
     .optional()
     .isLength({ min: 6, max: 50 })
-    .withMessage("Senha deve ter entre 6 e 50 caracteres")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage("Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número"),
+    .withMessage("Senha deve ter entre 6 e 50 caracteres"),
   
   body("profile")
     .optional()
@@ -75,8 +73,56 @@ export const validateCompany = [
   
   body("document")
     .optional()
-    .matches(/^\d{11}$|^\d{14}$/)
-    .withMessage("Documento deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos)"),
+    .custom((value) => {
+      if (!value) return true; // Documento é opcional
+      
+      // Remove caracteres não numéricos
+      const cleanDocument = value.replace(/\D/g, '');
+      
+      // Verifica se é CPF (11 dígitos) ou CNPJ (14 dígitos)
+      if (cleanDocument.length !== 11 && cleanDocument.length !== 14) {
+        throw new Error("Documento deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos)");
+      }
+      
+      return true;
+    }),
+  
+  body("fullName")
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Nome completo deve ter entre 2 e 100 caracteres"),
+  
+  body("phone")
+    .optional()
+    .custom((value) => {
+      if (!value) return true; // Telefone é opcional
+      
+      // Remove caracteres não numéricos
+      const cleanPhone = value.replace(/\D/g, '');
+      
+      // Verifica se tem pelo menos 10 dígitos (telefone brasileiro)
+      if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+        throw new Error("Telefone deve ter 10 ou 11 dígitos");
+      }
+      
+      return true;
+    }),
+  
+  body("planId")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("ID do plano deve ser um número inteiro positivo"),
+  
+  body("users")
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage("Número de usuários deve ser entre 1 e 100"),
+  
+  body("password")
+    .optional()
+    .isLength({ min: 6, max: 50 })
+    .withMessage("Senha deve ter entre 6 e 50 caracteres"),
   
   handleValidationErrors
 ];

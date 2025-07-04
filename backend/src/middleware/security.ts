@@ -28,12 +28,20 @@ export const apiLimiter = rateLimit({
 // Rate limiting para webhooks
 export const webhookLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 100, // máximo 100 requests por IP por minuto
+  max: 500, // máximo 500 requests por IP por minuto
   message: {
     error: "Rate limit exceeded for webhooks"
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => {
+    // Pular rate limiting para webhooks do Asaas se tiver o token correto
+    if (req.path.includes('/asaas/webhook')) {
+      const token = req.headers["asaas-access-token"];
+      return token === process.env.ASAAS_WEBHOOK_TOKEN;
+    }
+    return false;
+  }
 });
 
 // Configuração do Helmet

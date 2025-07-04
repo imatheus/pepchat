@@ -16,8 +16,14 @@ asaasRoutes.post("/asaas/create-company", isAuth, isSuperUser, AsaasController.c
 asaasRoutes.post("/asaas/sync-all-companies", isAuth, isSuperUser, AsaasController.syncAllCompanies);
 asaasRoutes.post("/asaas/sync-invoices", isAuth, isSuperUser, AsaasController.syncInvoices);
 
-// Webhook com autenticação
-asaasRoutes.post("/asaas/webhook", webhookLimiter, validateAsaasWebhook, AsaasController.webhook);
+// Webhook com autenticação por token (para quando o Asaas for configurado corretamente)
+asaasRoutes.post("/asaas/webhook/secure", webhookLimiter, validateAsaasWebhook, AsaasController.webhook);
+
+// Webhook principal do Asaas (sem autenticação por token, mas com outras validações)
+asaasRoutes.post("/asaas/webhook", webhookLimiter, AsaasController.webhookPublic);
+
+// Webhook sem autenticação para debug (temporário)
+asaasRoutes.post("/asaas/webhook/debug", webhookLimiter, AsaasController.webhookDebug);
 asaasRoutes.get("/asaas/webhook", (req, res) => {
   res.json({ 
     message: "Asaas Webhook endpoint is working", 

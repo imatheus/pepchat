@@ -64,6 +64,7 @@ const AsaasManager = () => {
   const [config, setConfig] = useState({
     apiKey: "",
     webhookUrl: "",
+     webhookToken: "",
     environment: "sandbox",
     enabled: true,
   });
@@ -192,7 +193,7 @@ const AsaasManager = () => {
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid item xs={12} md={8}>
                 <TextField
                   fullWidth
                   label="URL do Webhook"
@@ -200,6 +201,18 @@ const AsaasManager = () => {
                   onChange={(e) => handleInputChange("webhookUrl", e.target.value)}
                   className={classes.formField}
                   helperText="URL que receberá as notificações do Asaas (opcional)"
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  label="Token do Webhook"
+                  value={config.webhookToken}
+                  onChange={(e) => handleInputChange("webhookToken", e.target.value)}
+                  className={classes.formField}
+                  helperText="Token de segurança para validar webhooks"
+                  placeholder="Ex: meu_token_seguro_123"
                 />
               </Grid>
             </>
