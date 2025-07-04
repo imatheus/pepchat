@@ -51,11 +51,13 @@ import {
   List,
   ListItem,
   ListItemText,
+  ListItemSecondaryAction,
   Checkbox,
   CircularProgress,
   Typography,
   Menu,
   MenuItem,
+  Toolbar,
   Chip,
   LinearProgress,
   Box,
@@ -350,7 +352,9 @@ const ContactListItems = () => {
     setBulkDeleteModalOpen(true);
   };
 
-  // handleCloseBulkDeleteModal removido - não utilizado
+  const handleCloseBulkDeleteModal = () => {
+    setBulkDeleteModalOpen(false);
+  };
 
   const handleBulkDelete = async () => {
     setBulkDeleting(true);

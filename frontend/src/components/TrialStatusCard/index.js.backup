@@ -172,7 +172,11 @@ const TrialStatusCard = () => {
     return '';
   };
 
-  // getStatusIcon removido - não utilizado
+  const getStatusIcon = () => {
+    if (daysRemaining <= 1) return <WarningIcon />;
+    if (daysRemaining <= 3) return <ScheduleIcon />;
+    return <CheckCircleIcon />;
+  };
 
   const getStatusText = () => {
     if (daysRemaining <= 1) return 'CRÍTICO';

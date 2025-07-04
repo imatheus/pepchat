@@ -376,7 +376,23 @@ const [planUsers, setPlanUsers] = useState({});
         }).format(value);
     };
 
-    // getAllPossibleFeatures removido - não utilizado
+    const getAllPossibleFeatures = () => {
+        const allFeatures = new Set();
+        
+        plans.forEach(plan => {
+            if (plan.useFacebook) allFeatures.add("Facebook Messenger");
+            if (plan.useInstagram) allFeatures.add("Instagram Direct");
+            if (plan.useCampaigns) allFeatures.add("Campanhas de Marketing");
+        });
+        
+        // Features that all plans have
+        allFeatures.add("Agendamento de Mensagens");
+        allFeatures.add("Suporte técnico");
+        allFeatures.add("Integração com e-commerce");
+        allFeatures.add("Chatbot");
+        
+        return Array.from(allFeatures);
+    };
 
     const getPlanFeatures = (plan) => {
         const basicFeatures = [

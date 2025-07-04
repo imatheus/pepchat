@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Popover,
+  Paper,
   Typography,
   Button,
   Box,
@@ -130,7 +131,7 @@ const TutorialTooltip = ({
   placement = "right"
 }) => {
   const classes = useStyles();
-  // theme removido - não utilizado
+  const theme = useTheme();
 
   const getPaperClassName = () => {
     let className = classes.paper;

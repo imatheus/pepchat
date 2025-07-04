@@ -15,6 +15,7 @@ import {
   useTheme,
   useMediaQuery,
   Avatar,
+  Box,
 } from "@material-ui/core";
 
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
@@ -33,7 +34,7 @@ import { i18n } from "../translate/i18n";
 import toastError from "../errors/toastError";
 import logo from "../assets/logo.png"; 
 import { socketConnection } from "../services/socket";
-// moment removido - não utilizado
+import moment from "moment";
 import useCompanyStatus from "../hooks/useCompanyStatus";
 import TrialNotifications from "../components/TrialNotifications";
 

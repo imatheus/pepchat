@@ -205,7 +205,25 @@ const EmojiOptions = (props) => {
   );
 };
 
-// SignSwitch removido - não utilizado
+const SignSwitch = (props) => {
+  const { width, setSignMessage, signMessage } = props;
+  if (isWidthUp("md", width)) {
+    return (
+      <ToggleSwitch
+         name="signMessage"
+         style={{ marginRight: 16 }}
+        label={i18n.t("messagesInput.signMessage")}
+        labelPlacement="start"
+        checked={signMessage}
+        onChange={(e) => {
+          setSignMessage(e.target.checked);
+        }}
+     
+      />
+    );
+  }
+  return null;
+};
 
 const QuickMessagesButton = (props) => {
   const { disabled, quickMessages, onSelectMessage } = props;

@@ -98,7 +98,7 @@ const reducer = (state, action) => {
 
 const Queues = () => {
   const classes = useStyles();
-  // const { completeTutorial } = useContext(TutorialContext); // Removido - não utilizado
+  const { completeTutorial } = useContext(TutorialContext);
 
   const [queues, dispatch] = useReducer(reducer, []);
   const [loading, setLoading] = useState(false);

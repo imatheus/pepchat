@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import useCompanyStatus from "../../hooks/useCompanyStatus";
@@ -21,7 +21,16 @@ const TrialGuard = ({ children }) => {
     return location.pathname === "/signup";
   };
 
-  useEffect(() => { /* ... */ }, [isFinanceiroPage, isLoginPage, isSignupPage, user, location.pathname]);
+  useEffect(() => {
+    // Só verificar se o usuário está logado e não está nas páginas permitidas
+    if (user && user.company && !isLoginPage() && !isSignupPage()) {
+      if (isCompanyBlocked && !isFinanceiroPage()) {
+        console.log('TrialGuard: Redirecionando para financeiro - empresa bloqueada');
+        // Redirecionar para a página financeira se a empresa está bloqueada
+        history.push("/financeiro");
+      }
+    }
+  }, [user, location.pathname, history, isCompanyBlocked]);
 
   // Se a empresa está bloqueada e não está na página financeira, não renderizar o conteúdo
   if (user && user.company && isCompanyBlocked && !isFinanceiroPage() && !isLoginPage() && !isSignupPage()) {

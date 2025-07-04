@@ -45,7 +45,7 @@ const useStyles = makeStyles(theme => ({
 		alignItems: "center",
 		justifyContent: "center",
 		cursor: "pointer",
-    // border: ... // Removido - chave duplicada
+		border: "2px dashed #ddd",
 		transition: "all 0.3s ease",
 		"&:hover": {
 			backgroundColor: "#eeeeee",

@@ -25,7 +25,7 @@ import { AuthContext } from "../../context/Auth/AuthContext";
 
 import toastError from "../../errors/toastError";
 import { toast } from "react-toastify";
-import { showUniqueError, showUniqueWarning } from "../../utils/toastManager";
+import { showUniqueError, showUniqueSuccess, showUniqueWarning, showUniqueInfo } from "../../utils/toastManager";
 import { socketConnection } from "../../services/socket";
 import useCompanyStatus from "../../hooks/useCompanyStatus";
 import TrialUpgradePrompt from "../../components/TrialUpgradePrompt";
@@ -471,7 +471,13 @@ const Invoices = () => {
     setPageNumber((prevState) => prevState + 1);
   };
 
-  // handleScroll removido - não utilizado
+  const handleScroll = (e) => {
+    if (!hasMore || loading) return;
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollHeight - (scrollTop + 100) < clientHeight) {
+      loadMore();
+    }
+  };
 
   const getStatusInfo = (record) => {
     const status = record.status;
@@ -540,15 +546,21 @@ const Invoices = () => {
     return status === "paid" || status === "CONFIRMED" || status === "RECEIVED" || status === "RECEIVED_IN_CASH";
   }
 
-  // isInTrialPeriod removido - não utilizado
+  const isInTrialPeriod = () => {
+    return companyStatus.isInTrial;
+  };
 
   const isTrialExpired = () => {
     return companyStatus.isExpired && !companyStatus.isInTrial;
   };
 
-  // getDaysRemaining removido - não utilizado
+  const getDaysRemaining = () => {
+    return companyStatus.daysRemaining;
+  };
 
-  // getDaysExpired removido - não utilizado
+  const getDaysExpired = () => {
+    return companyStatus.isExpired ? Math.abs(companyStatus.daysRemaining) : 0;
+  };
 
   return (
     <MainContainer>

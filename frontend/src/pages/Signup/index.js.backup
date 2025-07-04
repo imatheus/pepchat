@@ -13,6 +13,9 @@ import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import {
+	InputLabel,
+	MenuItem,
+	Select,
 	Stepper,
 	Step,
 	StepLabel,
@@ -101,7 +104,48 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-// UserSchema removido - não utilizado
+const UserSchema = Yup.object().shape({
+	name: Yup.string()
+		.min(2, "Too Short!")
+		.max(50, "Too Long!")
+		.required("Required"),
+	password: Yup.string()
+		.min(8, "A senha deve ter pelo menos 8 caracteres")
+		.matches(
+			/^(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/,
+			"A senha deve conter pelo menos 1 letra e 1 caractere especial"
+		)
+		.required("Senha é obrigatória"),
+	confirmPassword: Yup.string()
+		.oneOf([Yup.ref('password'), null], "As senhas devem coincidir")
+		.required("Confirmação de senha é obrigatória"),
+	email: Yup.string().email("Invalid email").required("Required"),
+	fullName: Yup.string()
+		.min(2, "Nome muito curto!")
+		.max(100, "Nome muito longo!")
+		.required("Nome completo é obrigatório"),
+	document: Yup.string()
+		.required("Documento é obrigatório")
+		.test("document-validation", "Documento inválido", function(value) {
+			if (!value) return false;
+			const { documentType } = this.parent;
+			if (documentType === "cpf") {
+				return isValidCPF(value);
+			} else if (documentType === "cnpj") {
+				return isValidCNPJ(value);
+			}
+			return isValidDocument(value);
+		}),
+	phone: Yup.string()
+		.min(10, "Telefone muito curto!")
+		.required("Telefone é obrigatório"),
+	documentType: Yup.string()
+		.required("Tipo de documento é obrigatório"),
+	users: Yup.number()
+		.min(1, "Mínimo de 1 usuário")
+		.max(100, "Máximo de 100 usuários")
+		.required("Número de usuários é obrigatório"),
+});
 
 const SignUp = () => {
 	const classes = useStyles();
@@ -169,7 +213,7 @@ const SignUp = () => {
 			}
 			
 			if (values.document) {
-				// cleanDocument removido - não utilizado
+				const cleanDocument = values.document.replace(/\D/g, "");
 				if (values.documentType === "cpf") {
 					if (!isValidCPF(values.document)) {
 						errors.document = "CPF inválido";
@@ -184,7 +228,7 @@ const SignUp = () => {
 			if (values.password) {
 				if (values.password.length < 8) {
 					errors.password = "A senha deve ter pelo menos 8 caracteres";
-				} else if (!/^(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])/.test(values.password)) {
+				} else if (!/^(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(values.password)) {
 					errors.password = "A senha deve conter pelo menos 1 letra e 1 caractere especial";
 				}
 			}

@@ -9,9 +9,9 @@ import {
 } from "@material-ui/core";
 import { Formik, Form } from "formik";
 
-// import AddressForm... // Removido - não utilizado
+import AddressForm from "./Forms/AddressForm";
 import PaymentForm from "./Forms/PaymentForm";
-// import ReviewOrder... // Removido - não utilizado
+import ReviewOrder from "./ReviewOrder";
 import CheckoutSuccess from "./CheckoutSuccess";
 
 import api from "../../services/api";

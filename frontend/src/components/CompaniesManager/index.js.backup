@@ -26,7 +26,7 @@ import useCompanies from "../../hooks/useCompanies";
 import usePlans from "../../hooks/usePlans";
 import ModalUsers from "../ModalUsers";
 import api from "../../services/api";
-import { head, isArray } from "lodash";
+import { head, isArray, has } from "lodash";
 import { useDate } from "../../hooks/useDate";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { socketConnection } from "../../services/socket";

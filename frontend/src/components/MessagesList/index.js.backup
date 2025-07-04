@@ -21,6 +21,8 @@ import {
   DoneAll,
   ExpandMore,
   GetApp,
+  Facebook,
+  Instagram,
 } from "@material-ui/icons";
 
 import MarkdownWrapper from "../MarkdownWrapper";

@@ -66,17 +66,12 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
 
   // Cleanup dos timeouts quando o componente for desmontado
   useEffect(() => {
-          // ... código do effect
-          const currentTimeouts = saveTimeouts.current;
-          return () => {
-            // Usar variável local para cleanup
-            if (currentTimeouts) {
-              Object.values(currentTimeouts).forEach(timeout => {
-                if (timeout) clearTimeout(timeout);
-              });
-            }
-          };
-        }, []);
+    return () => {
+      Object.values(saveTimeouts.current).forEach(timeout => {
+        if (timeout) clearTimeout(timeout);
+      });
+    };
+  }, []);
 
   const handleOption = (index) => async () => {
     setActiveOption(index);

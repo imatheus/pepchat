@@ -18,6 +18,7 @@ import {
   InputAdornment,
   IconButton,
   Tooltip,
+  Box,
 } from "@material-ui/core";
 import { FileCopy as CopyIcon, Refresh as RefreshIcon, Info as InfoIcon } from "@material-ui/icons";
 
