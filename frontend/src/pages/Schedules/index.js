@@ -190,17 +190,12 @@ const Schedules = () => {
   };
 
   const handleDeleteSchedule = async (scheduleId) => {
-    console.log("🗑️ Frontend - Starting delete for schedule:", scheduleId);
-    
     try {
-      console.log("🗑️ Frontend - Calling API delete");
       await api.delete(`/schedules/${scheduleId}`);
       
-      console.log("🗑️ Frontend - API delete successful");
       toast.success("✅ Agendamento excluído com sucesso!");
       
       // Atualizar lista localmente (garantir que o ID seja número)
-      console.log("🗑️ Frontend - Updating local state");
       dispatch({ type: "DELETE_SCHEDULE", payload: Number(scheduleId) });
       
     } catch (err) {
@@ -208,7 +203,6 @@ const Schedules = () => {
       toastError(err);
     } finally {
       // Sempre fechar modal de confirmação
-      console.log("🗑️ Frontend - Closing confirmation modal");
       setDeletingSchedule(null);
       setConfirmModalOpen(false);
     }

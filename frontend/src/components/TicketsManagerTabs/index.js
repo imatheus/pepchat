@@ -12,7 +12,6 @@ import MoveToInboxIcon from "@material-ui/icons/MoveToInbox";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import AddCommentIcon from "@material-ui/icons/AddComment";
 
-
 import NewTicketModal from "../NewTicketModal";
 import TicketsList from "../TicketsListCustom";
 import TabPanel from "../TabPanel";
@@ -183,7 +182,6 @@ const TicketsManagerTabs = () => {
     setTabOpen(newValue);
   };
 
-  
   const handleCloseOrOpenTicket = (ticket) => {
     setNewTicketModalOpen(false);
     if (ticket !== undefined && ticket.uuid !== undefined) {
@@ -206,7 +204,6 @@ const TicketsManagerTabs = () => {
       <NewTicketModal
         modalOpen={newTicketModalOpen}
         onClose={(ticket) => {
-          console.log("ticket", ticket);
           handleCloseOrOpenTicket(ticket);
         }}
       />

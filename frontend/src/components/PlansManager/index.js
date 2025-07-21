@@ -24,7 +24,6 @@ import usePlans from "../../hooks/usePlans";
 import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
-
 const useStyles = makeStyles(theme => ({
     root: {
         width: '100%'
@@ -456,8 +455,7 @@ export default function PlansManager() {
             setTimeout(async () => {
                 try {
                     await refreshUserData();
-                    console.log('Dados do usuário atualizados após salvar plano');
-                } catch (error) {
+                    } catch (error) {
                     console.error('Erro ao atualizar dados do usuário:', error);
                     // Fallback: recarregar a página se a atualização falhar
                     window.location.reload();

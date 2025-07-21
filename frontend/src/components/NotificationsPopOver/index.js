@@ -80,14 +80,12 @@ const NotificationsPopOver = () => {
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.3);
     } catch (error) {
-      console.log("Erro ao reproduzir som de notificação:", error);
-    }
+      }
   };
 
 	useEffect(() => {
 		if (!("Notification" in window)) {
-			console.log("This browser doesn't support notifications");
-		} else {
+			} else {
 			Notification.requestPermission();
 		}
 	}, []);

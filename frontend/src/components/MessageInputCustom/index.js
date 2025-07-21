@@ -28,7 +28,6 @@ import useQuickMessages from "../../hooks/useQuickMessages";
 import Compressor from 'compressorjs';
 import LinearWithValueLabel from "./ProgressBarCustom";
 
-
 const useStyles = makeStyles((theme) => ({
   mainWrapper: {
     background: "#eee",
@@ -95,7 +94,6 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: -12,
   },
 
-  
   replyginMsgWrapper: {
     display: "flex",
     width: "100%",
@@ -613,11 +611,9 @@ const MessageInputCustom = (props) => {
             (event.loaded * 100) / event.total
           );
           setPercentLoading(progress);
-          console.log(`Upload está ${progress}% completo...`);
-        },
+          },
       });
       
-      console.log('Upload concluído com sucesso!');
       setLoading(false);
       setMedias([]);
       setPercentLoading(0);
@@ -655,7 +651,6 @@ const shouldSign = localStorage.getItem("signOption") === "true";
     setReplyingMessage(null);
   };
 
-  
   const disableOption = () => {
     return loading || ticketStatus !== "open";
   };
@@ -743,7 +738,6 @@ const shouldSign = localStorage.getItem("signOption") === "true";
             onSelectMessage={handleSelectQuickMessage}
           />
 
-          
           <CustomInput
             loading={loading}
             inputRef={inputRef}

@@ -144,12 +144,6 @@ const TrialStatusCard = () => {
       const trialStart = moment(user.company.createdAt);
       const trialEnd = moment(user.company.trialExpiration);
       const totalDays = Math.ceil(trialEnd.diff(trialStart, 'days', true));
-      console.log('Trial calculation:', {
-        trialStart: trialStart.format('DD/MM/YYYY'),
-        trialEnd: trialEnd.format('DD/MM/YYYY'),
-        totalDays,
-        daysRemaining
-      });
       return totalDays;
     }
     return 7; // Fallback para 7 dias se não conseguir calcular
@@ -159,13 +153,6 @@ const TrialStatusCard = () => {
   const daysUsed = Math.max(1, totalTrialDays - daysRemaining + 1); // Garantir que comece do dia 1
   const progressPercentage = ((daysUsed - 1) / totalTrialDays) * 100; // Ajustar progresso para começar do 0%
   
-  console.log('TrialStatusCard values:', {
-    daysRemaining,
-    totalTrialDays,
-    daysUsed,
-    progressPercentage
-  });
-
   const getCardClass = () => {
     if (daysRemaining <= 1) return classes.criticalCard;
     if (daysRemaining <= 3) return classes.warningCard;

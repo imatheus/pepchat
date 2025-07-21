@@ -499,8 +499,6 @@ export default function CompaniesManager() {
 
     // Listener global para atualizações de data de vencimento de qualquer empresa
     socket.on('company-due-date-updated', (data) => {
-      console.log('Data de vencimento atualizada via socket:', data);
-      
       // Atualizar a lista de empresas para refletir a mudança
       loadPlans();
       
@@ -511,13 +509,9 @@ export default function CompaniesManager() {
     // Listener específico para atualizações de status de empresa
     socket.on('company-status-updated', (data) => {
       if (data.action === "company_due_date_updated") {
-        console.log('Data de vencimento da empresa atualizada:', data.company.dueDate);
-        
         // Atualizar a lista de empresas
         loadPlans();
       } else if (data.action === "subscription_updated") {
-        console.log('Assinatura atualizada:', data);
-        
         // Atualizar a lista de empresas
         loadPlans();
         

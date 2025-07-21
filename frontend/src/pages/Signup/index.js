@@ -130,7 +130,6 @@ const SignUp = () => {
 	const steps = ['Cadastro', 'Plano'];
 
 	const handleNext = (values) => {
-		console.log("Salvando valores antes de avançar:", values);
 		setFormValues(values); // Salva os valores antes de avançar
 		setActiveStep((prevActiveStep) => prevActiveStep + 1);
 	};
@@ -197,8 +196,6 @@ const SignUp = () => {
 	};
 
 	const handleSignUp = async (values, actions) => {
-		console.log("Valores recebidos no handleSignUp:", values);
-		
 		// Validar se o plano foi selecionado
 		if (!values.planId) {
 			toast.error("Por favor, selecione um plano");
@@ -223,14 +220,11 @@ const SignUp = () => {
 			campaignsEnabled: true
 		};
 		
-		console.log("Valores processados para envio:", processedValues);
-		
 		try {
 			await openApi.post("/companies/cadastro", processedValues);
 			toast.success(i18n.t("signup.toasts.success"));
 			history.push("/login");
 		} catch (err) {
-			console.log("Erro no cadastro:", err);
 			toastError(err);
 		}
 	};
@@ -242,7 +236,6 @@ const SignUp = () => {
 		async function fetchData() {
 			try {
 				const list = await getPlanList();
-				console.log("Planos carregados:", list);
 				setPlans(list);
 			} catch (error) {
 				console.error("Erro ao carregar planos:", error);
@@ -259,8 +252,6 @@ const SignUp = () => {
 				enableReinitialize={true}
 				validate={(values) => validateStep(values, activeStep)}
 				onSubmit={(values, actions) => {
-					console.log("onSubmit chamado com valores:", values);
-					
 					if (activeStep === 0) {
 						// Primeira etapa - validar e ir para próxima
 						const errors = validateStep(values, 0);
@@ -551,7 +542,6 @@ const SignUp = () => {
 									errors={errors}
 									onSubmit={() => {
 										// Submeter formulário quando confirmar no modal
-										console.log("PlanSelection onSubmit - valores atuais:", values);
 										setTimeout(() => {
 											handleSignUp(values, { setSubmitting: () => {} });
 										}, 400);

@@ -98,22 +98,25 @@ const reducer = (state, action) => {
 
   if (action.type === "RESET_UNREAD") {
     const ticketId = action.payload;
+
     const ticketIndex = state.findIndex((t) => t.id === ticketId);
     if (ticketIndex !== -1) {
       const newState = [...state];
       newState[ticketIndex] = { ...newState[ticketIndex], unreadMessages: 0 };
       return newState;
     }
+
     return state;
   }
 
   if (action.type === "ADD_TICKET") {
     const ticket = action.payload;
-    const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
     
+    const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
     if (ticketIndex === -1) {
       // Adiciona novo ticket no topo da lista
-      return [ticket, ...state];
+      const newState = [ticket, ...state];
+      return newState;
     } else {
       // Se o ticket já existe, atualizar com os novos dados
       const newState = [...state];
@@ -131,8 +134,8 @@ const reducer = (state, action) => {
 
   if (action.type === "UPDATE_TICKET") {
     const ticket = action.payload;
+
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
-    
     if (ticketIndex !== -1) {
       const newState = [...state];
       newState[ticketIndex] = ticket;
@@ -144,14 +147,15 @@ const reducer = (state, action) => {
       return newState;
     } else {
       // Novo ticket sempre vai para o topo da lista
-      return [ticket, ...state];
+      const newState = [ticket, ...state];
+      return newState;
     }
   }
 
   if (action.type === "UPDATE_TICKET_UNREAD_MESSAGES") {
     const ticket = action.payload;
+
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
-    
     if (ticketIndex !== -1) {
       const newState = [...state];
       newState[ticketIndex] = ticket;
@@ -160,7 +164,8 @@ const reducer = (state, action) => {
       newState.unshift(updatedTicket);
       return newState;
     } else {
-      return [ticket, ...state];
+      const newState = [ticket, ...state];
+      return newState;
     }
   }
 
@@ -178,20 +183,18 @@ const reducer = (state, action) => {
   if (action.type === "DELETE_TICKET") {
     const ticketId = action.payload;
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticketId));
-    
     if (ticketIndex !== -1) {
       const newState = [...state];
       newState.splice(ticketIndex, 1);
       return newState;
     }
+
     return state;
   }
 
   if (action.type === "RESET") {
     return [];
   }
-
-  return state;
 };
 
 const TicketsListCustom = (props) => {
@@ -205,11 +208,11 @@ const TicketsListCustom = (props) => {
     updateCount,
     style,
   } = props;
-  
   const classes = useStyles();
   const [pageNumber, setPageNumber] = useState(1);
   const [, setUpdate] = useState(0);
   const [ticketsList, dispatch] = useReducer(reducer, []);
+  const [,] = useState([]);
   const { user } = useContext(AuthContext);
   const { refreshTickets } = useContext(TicketsContext);
   const { profile, queues } = user;
@@ -230,16 +233,21 @@ const TicketsListCustom = (props) => {
   });
 
   useEffect(() => {
+    const queueIds = queues.map((q) => q.id);
+    
     // Filtrar tickets baseado nos setores selecionados
     let filteredTickets;
     
     if (selectedQueueIds.length === 0) {
+      // Se nenhum setor está selecionado, mostrar todos os tickets
       filteredTickets = tickets;
     } else {
       filteredTickets = tickets.filter((t) => {
+        // Se "no-queue" está selecionado e o ticket não tem fila
         if (selectedQueueIds.includes("no-queue") && !t.queueId) {
           return true;
         }
+        // Se o ticket tem fila e ela está selecionada (excluindo "no-queue")
         if (t.queueId && selectedQueueIds.filter(id => id !== "no-queue").includes(t.queueId)) {
           return true;
         }
@@ -247,7 +255,7 @@ const TicketsListCustom = (props) => {
       });
     }
 
-    dispatch({ type: "LOAD_TICKETS", payload: filteredTickets });
+        dispatch({ type: "LOAD_TICKETS", payload: filteredTickets });
   }, [tickets, status, searchParam, queues, profile, selectedQueueIds]);
 
   useEffect(() => {
@@ -264,14 +272,18 @@ const TicketsListCustom = (props) => {
       let queueCheck;
       
       if (selectedQueueIds.length === 0) {
+        // Se nenhum setor está selecionado, mostrar todos os tickets
         queueCheck = true;
       } else {
+        // Se "no-queue" está selecionado e o ticket não tem fila
         if (selectedQueueIds.includes("no-queue") && !ticket.queueId) {
           queueCheck = true;
         }
+        // Se o ticket tem fila e ela está selecionada (excluindo "no-queue")
         else if (ticket.queueId && selectedQueueIds.filter(id => id !== "no-queue").includes(ticket.queueId)) {
           queueCheck = true;
         }
+        // Para tickets pending, também verificar as filas do usuário
         else if (status === "pending") {
           const userQueueIds = queues.map((q) => q.id);
           queueCheck = userQueueIds.indexOf(ticket.queueId) > -1;
@@ -280,14 +292,15 @@ const TicketsListCustom = (props) => {
           queueCheck = false;
         }
       }
-      
       const profileCheck = profile === "admin" || profile === "user";
+      
       return userCheck && queueCheck && profileCheck;
     };
 
     socket.on("connect", () => {
       if (status) {
         socket.emit("joinTickets", status);
+        // Também se conectar às notificações gerais para receber todos os eventos
         socket.emit("joinNotification");
       } else {
         socket.emit("joinNotification");
@@ -331,22 +344,29 @@ const TicketsListCustom = (props) => {
       }
 
       if (data.action === "create") {
-        if (data.ticket.status === status && shouldUpdateTicket(data.ticket)) {
-          dispatch({
-            type: "ADD_TICKET",
-            payload: data.ticket,
-          });
-        }
+        if (data.ticket.status === status) {
+          if (shouldUpdateTicket(data.ticket)) {
+            dispatch({
+              type: "ADD_TICKET",
+              payload: data.ticket,
+            });
+          } else {
+            }
+        } else {
+          }
       }
 
-      if (data.action === "delete" || data.action === "removeFromList") {
+      if (data.action === "delete") {
+        dispatch({ type: "DELETE_TICKET", payload: data.ticketId });
+      }
+
+      if (data.action === "removeFromList") {
         dispatch({ type: "DELETE_TICKET", payload: data.ticketId });
       }
     });
 
     socket.on(`company-${companyId}-appMessage`, (data) => {
       const queueIds = queues.map((q) => q.id);
-      
       if (
         profile === "user" &&
         (queueIds.indexOf(data.ticket.queue?.id) === -1 ||
@@ -380,8 +400,10 @@ const TicketsListCustom = (props) => {
   useEffect(() => {
     if (typeof updateCount === "function") {
       updateCount(ticketsList.length);
-    }
-  }, [ticketsList, updateCount]);
+      } else {
+      }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketsList]);
 
   const loadMore = () => {
     setPageNumber((prevState) => prevState + 1);

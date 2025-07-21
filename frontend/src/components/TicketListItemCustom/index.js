@@ -198,7 +198,6 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
     // Escutar mudanças nas tags do ticket
     socket.on(`company-${companyId}-ticket`, (data) => {
       if (data.action === "update" && data.ticket && data.ticket.id === ticket.id) {
-        console.log(`🏷️ Tags atualizadas para ticket ${ticket.id}:`, data.ticket.tags);
         setCurrentTicketTags(data.ticket.tags || []);
       }
     });
@@ -249,8 +248,6 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
         status: "open",
         userId: user?.id,
       });
-      
-      console.log(`✅ Ticket ${id} aceito com sucesso:`, response.data);
       
       // Forçar atualização das listas
       if (setUpdate) {
@@ -305,7 +302,6 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
     return ticket.queue?.color || "#7C7C7C";
   };
 
-  
   const renderTicketInfo = () => {
     if (ticketUser) {
       return (
@@ -342,7 +338,6 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               }}
             />
           )}
-
 
           {ticket.queue?.name !== null && (
             <Badge
@@ -551,7 +546,6 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
       );
     }
   };
-
 
   return (
     <React.Fragment key={ticket.id}>

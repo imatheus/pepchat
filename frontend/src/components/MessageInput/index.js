@@ -25,7 +25,6 @@ import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { socketConnection } from "../../services/socket";
 import toastError from "../../errors/toastError";
 
-
 const useStyles = makeStyles(theme => ({
 	mainWrapper: {
 		background: "#eee",
@@ -92,7 +91,6 @@ const useStyles = makeStyles(theme => ({
 		marginLeft: -12,
 	},
 
-	
 	replyginMsgWrapper: {
 		display: "flex",
 		width: "100%",
@@ -209,8 +207,7 @@ const MessageInput = ({ ticketStatus }) => {
 					}, 1000);
 				}
 			} catch (error) {
-				console.warn("Error emitting typing event:", error);
-			}
+				}
 		}
 	};
 
@@ -280,7 +277,6 @@ const MessageInput = ({ ticketStatus }) => {
 		setReplyingMessage(null);
 	};
 
-	
 	const renderReplyingMessage = message => {
 		return (
 			<div className={classes.replyginMsgWrapper}>

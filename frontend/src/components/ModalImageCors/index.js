@@ -126,8 +126,6 @@ const ModalImageCors = ({ imageUrl }) => {
 	const generateImageUrls = () => {
 		if (!imageUrl) return [];
 		
-		console.log('URL original recebida:', imageUrl);
-		
 		// Extrair apenas o nome do arquivo
 		let filename = imageUrl;
 		if (filename.includes('/')) {
@@ -138,8 +136,6 @@ const ModalImageCors = ({ imageUrl }) => {
 		if (filename.includes('undefined')) {
 			filename = filename.replace(/.*undefined[/\\]?/, '');
 		}
-		
-		console.log('Nome do arquivo extraído:', filename);
 		
 		// Gerar URLs possíveis
 		const baseUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080';
@@ -154,7 +150,6 @@ const ModalImageCors = ({ imageUrl }) => {
 			urls.unshift(imageUrl);
 		}
 		
-		console.log('URLs geradas:', urls);
 		return urls;
 	};
 
@@ -172,12 +167,8 @@ const ModalImageCors = ({ imageUrl }) => {
 
 	const handleDownload = async () => {
 		const urlsToTry = generateImageUrls();
-		console.log('Tentando download com URLs:', urlsToTry);
-
 		for (const url of urlsToTry) {
 			try {
-				console.log(`Tentando URL: ${url}`);
-				
 				const response = await fetch(url);
 				
 				if (response.ok) {
@@ -196,18 +187,15 @@ const ModalImageCors = ({ imageUrl }) => {
 						
 						// Limpar URL do blob
 						window.URL.revokeObjectURL(downloadUrl);
-						console.log('Download realizado com sucesso!');
 						return;
 					}
 				}
 			} catch (error) {
-				console.log(`Erro com URL ${url}:`, error);
 				continue;
 			}
 		}
 
 		// Se todas as tentativas falharam, tentar abrir em nova aba
-		console.log('Todas as tentativas de download falharam, abrindo em nova aba');
 		const firstUrl = urlsToTry[0];
 		if (firstUrl) {
 			window.open(firstUrl, '_blank');
@@ -222,13 +210,11 @@ const ModalImageCors = ({ imageUrl }) => {
 	};
 
 	const handleImageLoad = () => {
-		console.log('Imagem carregada com sucesso');
 		setImageError(false);
 	};
 
 	// Funções para controlar carregamento da imagem no chat
 	const handleChatImageLoad = () => {
-		console.log('Imagem do chat carregada com sucesso');
 		setShowPlaceholder(false);
 	};
 

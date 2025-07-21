@@ -56,7 +56,6 @@ const reducer = (state, action) => {
     if (userIndex !== -1) {
       // Atualizar apenas os campos fornecidos, mantendo os outros
       state[userIndex] = { ...state[userIndex], ...user };
-      console.log('Fatura atualizada no reducer:', state[userIndex]);
       return [...state];
     } else {
       return [user, ...state];
@@ -389,8 +388,6 @@ const Invoices = () => {
     // Só executar se o usuário estiver carregado
     if (!user || !user.profile) return;
     
-    console.log('Financeiro - Perfil do usuário:', user?.profile);
-    console.log('Financeiro - Trial expirado:', isTrialExpired());
     if (user?.profile !== 'user' && isTrialExpired()) {
       showUniqueWarning(
         'Seu período de teste expirou! Para continuar utilizando o sistema, regularize o pagamento.',
@@ -454,7 +451,6 @@ const Invoices = () => {
           });
 
           // Mostrar notificação de vencimento (não para usuários "user")
-          console.log('Financeiro socket payment_overdue - Perfil do usuário:', user?.profile);
           if (user?.profile !== 'user') {
             showUniqueWarning(`Fatura #${data.invoice.id} está vencida.`);
           }
@@ -501,7 +497,6 @@ const Invoices = () => {
     return { text: "Em Aberto", type: "open" };
   };
 
-  
   const renderStatus = (record) => {
     const statusInfo = getStatusInfo(record);
     
@@ -567,8 +562,7 @@ const Invoices = () => {
       <MainHeader>
         <Title>Financeiro</Title>
       </MainHeader>
-      
-            
+
       {/* Two Column Layout */}
       <div className={classes.mainContainer}>
         {/* Left Column - Plan Information */}

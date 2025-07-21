@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 import { showUniqueError, showUniqueSuccess, showUniqueInfo } from "../utils/toastManager";
 import api from "../services/api";
 
-
 const useCompanyStatus = () => {
   const { user, refreshUserData } = useContext(AuthContext);
   const [companyStatus, setCompanyStatus] = useState({
@@ -153,16 +152,13 @@ const useCompanyStatus = () => {
     const companyIdNum = Number(user?.companyId);
     if (!user?.companyId || isNaN(companyIdNum) || companyIdNum <= 0) {
       if (user?.companyId !== undefined) {
-        console.warn('Tentativa de conectar socket com companyId inválido:', user?.companyId);
-      }
+        }
       return;
     }
     const socket = socketConnection({ companyId: companyIdNum });
 
     // Listener para mudanças de status da empresa
     socket.on(`company-${companyIdNum}-status-updated`, async (data) => {
-      console.log('Status da empresa atualizado via socket:', data);
-      
       if (data.action === "company_reactivated") {
         // Não mostrar toast aqui pois já é mostrado no useAuth
         
@@ -175,8 +171,6 @@ const useCompanyStatus = () => {
           window.location.reload();
         }, 4000);
       } else if (data.action === "company_blocked") {
-        console.log('Empresa bloqueada por falta de pagamento');
-        
         toast.error(`🚫 Empresa bloqueada por falta de pagamento.`);
         
         // Atualizar dados do usuário e sincronizar status
@@ -188,8 +182,6 @@ const useCompanyStatus = () => {
           window.location.reload();
         }, 4000);
       } else if (data.action === "company_due_date_updated") {
-        console.log('Data de vencimento da empresa atualizada:', data.company.dueDate);
-        
         // Atualizar dados do usuário e sincronizar status
         await refreshUserData();
         await syncStatusWithBackend();
@@ -201,8 +193,6 @@ const useCompanyStatus = () => {
           showUniqueInfo(`Data de vencimento atualizada`);
         }
       } else if (data.action === "subscription_updated") {
-        console.log('Assinatura da empresa atualizada:', data);
-        
         // Atualizar dados do usuário e sincronizar status
         await refreshUserData();
         await syncStatusWithBackend();
@@ -227,8 +217,6 @@ const useCompanyStatus = () => {
     // Listener para atualizações de data de vencimento específicas
     socket.on(`company-${companyIdNum}-due-date-updated`, async (data) => {
       if (data.action === "new_invoice_created") {
-        console.log('Nova fatura criada, vencimento:', data.company.newDueDate);
-        
         // Atualizar dados do usuário e sincronizar status
         await refreshUserData();
         await syncStatusWithBackend();

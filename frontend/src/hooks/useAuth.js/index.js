@@ -56,7 +56,6 @@ const useAuth = () => {
         // Licença expirada tentando acessar rota restrita
         // Verificar se o usuário está carregado e não é super admin
         if (user && user.profile && user.profile !== 'super' && !user.super) {
-          console.log('useAuth 402 - Perfil do usuário:', user.profile);
           // Não mostrar avisos de vencimento para usuários de nível "user"
           if (user.profile !== 'user') {
             toast.warn("Acesso restrito. Redirecionando para o financeiro...");
@@ -121,7 +120,6 @@ const useAuth = () => {
         // Empresa foi bloqueada por vencimento
         // Verificar se o usuário está carregado e não é super admin antes de bloquear
         if (user && user.profile && user.profile !== 'super' && !user.super) {
-          console.log('useAuth socket company_blocked - Perfil do usuário:', user.profile);
           // Não mostrar avisos de vencimento para usuários de nível "user"
           if (user.profile !== 'user') {
             showUniqueError(`🚫 Empresa bloqueada por falta de pagamento. Redirecionando para o financeiro...`);
