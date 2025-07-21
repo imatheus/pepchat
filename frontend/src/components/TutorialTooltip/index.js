@@ -5,15 +5,14 @@ import {
   Button,
   Box,
   IconButton,
-  makeStyles,
-  useTheme
+  makeStyles
 } from "@material-ui/core";
 import {
   Close as CloseIcon,
   ArrowForward as ArrowForwardIcon,
   Info as InfoIcon
 } from "@material-ui/icons";
-import { useCustomTheme } from "../../context/Theme/ThemeContext";
+
 
 const useStyles = makeStyles((theme) => ({
   popover: {

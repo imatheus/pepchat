@@ -34,7 +34,6 @@ import toastError from "../errors/toastError";
 import logo from "../assets/logo.png"; 
 import { socketConnection } from "../services/socket";
 // moment removido - não utilizado
-import useCompanyStatus from "../hooks/useCompanyStatus";
 import TrialNotifications from "../components/TrialNotifications";
 
 const drawerWidth = 300;
@@ -363,7 +362,6 @@ const LoggedInLayout = ({ children }) => {
   const [drawerVariant, setDrawerVariant] = useState("permanent");
   const { user } = useContext(AuthContext);
   const { drawerCollapsed, toggleDrawerCollapse, darkMode, toggleDarkMode } = useCustomTheme();
-  const { companyStatus } = useCompanyStatus();
 
   const theme = useTheme();
   const greaterThenSm = useMediaQuery(theme.breakpoints.up("sm"));

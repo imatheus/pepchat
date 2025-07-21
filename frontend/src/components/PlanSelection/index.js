@@ -336,7 +336,7 @@ const [planUsers, setPlanUsers] = useState({});
                 setPlanUsers(prev => ({ ...prev, ...initialPlanUsers }));
             }
         }
-    }, [plans]);
+    }, [plans, planUsers]);
 
     const getSelectedPlan = () => {
         return plans.find(plan => plan.id === parseInt(selectedPlanId));

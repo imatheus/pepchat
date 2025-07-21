@@ -1,9 +1,9 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import { AuthContext } from "../context/Auth/AuthContext";
 import moment from "moment";
 import { socketConnection } from "../services/socket";
 import { toast } from "react-toastify";
-import { showUniqueError, showUniqueSuccess, showUniqueInfo } from "../utils/toastManager";
+import { showUniqueSuccess, showUniqueInfo } from "../utils/toastManager";
 import api from "../services/api";
 
 const useCompanyStatus = () => {
@@ -16,8 +16,10 @@ const useCompanyStatus = () => {
     message: ""
   });
 
+  const company = user?.company;
+
   // Função para calcular o status da empresa de forma consistente
-  const calculateCompanyStatus = (company) => {
+  const calculateCompanyStatus = useCallback((company) => {
     if (!company) {
       return {
         isActive: false,
@@ -94,10 +96,10 @@ const useCompanyStatus = () => {
       daysRemaining,
       message
     };
-  };
+  }, []);
 
   // Função para sincronizar status com o backend
-  const syncStatusWithBackend = async () => {
+  const syncStatusWithBackend = useCallback(async () => {
     try {
       const { data } = await api.get("/companies/status");
       if (data.success) {
@@ -126,32 +128,34 @@ const useCompanyStatus = () => {
     } catch (error) {
       console.error("Erro ao sincronizar status com backend:", error);
       // Fallback para cálculo local
-      if (user?.company) {
-        const status = calculateCompanyStatus(user.company);
+      if (company) {
+        const status = calculateCompanyStatus(company);
         setCompanyStatus(status);
         return status;
       }
     }
-  };
+  }, [company, calculateCompanyStatus]);
 
   // Atualizar status quando o usuário mudar
   useEffect(() => {
-    if (user?.company) {
+    if (company) {
       // Primeiro usar dados locais
-      const localStatus = calculateCompanyStatus(user.company);
+      const localStatus = calculateCompanyStatus(company);
       setCompanyStatus(localStatus);
       
       // Depois sincronizar com backend
       syncStatusWithBackend();
     }
-  }, [user?.company]);
+  }, [company, calculateCompanyStatus, syncStatusWithBackend]);
 
   // Socket listeners para atualizações em tempo real
+  const companyId = user?.companyId;
+
   useEffect(() => {
     // Só executa se companyId for um número válido e positivo
-    const companyIdNum = Number(user?.companyId);
-    if (!user?.companyId || isNaN(companyIdNum) || companyIdNum <= 0) {
-      if (user?.companyId !== undefined) {
+    const companyIdNum = Number(companyId);
+    if (!companyId || isNaN(companyIdNum) || companyIdNum <= 0) {
+      if (companyId !== undefined) {
         }
       return;
     }
@@ -231,29 +235,32 @@ const useCompanyStatus = () => {
     return () => {
       socket.disconnect();
     };
-  }, [user?.companyId, refreshUserData, syncStatusWithBackend]);
+  }, [companyId, refreshUserData, syncStatusWithBackend]);
 
   // Função para verificar se o usuário é super admin
-  const isSuperAdmin = () => {
-    return user?.profile === 'super' || user?.super === true;
-  };
+  const profile = user?.profile;
+  const isSuper = user?.super;
+
+  const isSuperAdmin = useCallback(() => {
+    return profile === 'super' || isSuper === true;
+  }, [profile, isSuper]);
 
   // Função para verificar se a empresa está bloqueada
-  const isCompanyBlocked = () => {
+  const isCompanyBlocked = useCallback(() => {
     // Super admins nunca são bloqueados
     if (isSuperAdmin()) return false;
     
     // Se não está ativa e não está em trial, está bloqueada
     return !companyStatus.isActive && !companyStatus.isInTrial;
-  };
+  }, [isSuperAdmin, companyStatus.isActive, companyStatus.isInTrial]);
 
   // Função para verificar se deve mostrar aviso de vencimento próximo
-  const shouldShowExpirationWarning = () => {
+  const shouldShowExpirationWarning = useCallback(() => {
     if (isSuperAdmin()) return false;
     if (companyStatus.isExpired || companyStatus.isInTrial) return false;
     
     return companyStatus.daysRemaining <= 5 && companyStatus.daysRemaining > 0;
-  };
+  }, [isSuperAdmin, companyStatus.isExpired, companyStatus.isInTrial, companyStatus.daysRemaining]);
 
   return {
     companyStatus,

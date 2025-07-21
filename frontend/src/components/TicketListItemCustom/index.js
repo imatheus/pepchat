@@ -244,7 +244,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   const handleAcepptTicket = async (id) => {
     setLoading(true);
     try {
-      const response = await api.put(`/tickets/${id}`, {
+      await api.put(`/tickets/${id}`, {
         status: "open",
         userId: user?.id,
       });

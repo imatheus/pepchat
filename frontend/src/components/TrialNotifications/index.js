@@ -8,11 +8,14 @@ const TrialNotifications = () => {
   const { user } = useContext(AuthContext);
   const hasShownNotifications = useRef(new Set());
 
+  const profile = user?.profile;
+  const userId = user?.id;
+
   useEffect(() => {
     // Não mostrar avisos de vencimento para usuários de nível "user"
-    if (user?.profile === 'user') return;
+    if (profile === 'user') return;
     
-    if (!companyStatus.isInTrial || !user?.id) return;
+    if (!companyStatus.isInTrial || !userId) return;
 
     const daysRemaining = companyStatus.daysRemaining;
     
@@ -23,20 +26,20 @@ const TrialNotifications = () => {
     if (daysRemaining === 1) {
       message = '🚨 ÚLTIMO DIA do seu período de avaliação! Ative sua conta hoje para não perder o acesso.';
       toastType = 'error';
-      storageKey = `trial-notification-day-${daysRemaining}-${user.id}`;
+      storageKey = `trial-notification-day-${daysRemaining}-${userId}`;
     } else if (daysRemaining === 2) {
       message = '⚠️ Restam apenas 2 dias do seu período de avaliação.';
       toastType = 'warning';
-      storageKey = `trial-notification-day-${daysRemaining}-${user.id}`;
+      storageKey = `trial-notification-day-${daysRemaining}-${userId}`;
     } else if (daysRemaining === 3) {
       message = '⏰ Restam 3 dias do seu período de avaliação.';
       toastType = 'warning';
-      storageKey = `trial-notification-day-${daysRemaining}-${user.id}`;
+      storageKey = `trial-notification-day-${daysRemaining}-${userId}`;
     } else if (daysRemaining === 7) {
       message = 'Você tem 7 dias para testar todas as funcionalidades gratuitamente.';
       toastType = 'success';
       // Para a notificação de 7 dias, usar uma chave única que aparece apenas uma vez
-      storageKey = `trial-welcome-shown-${user.id}`;
+      storageKey = `trial-welcome-shown-${userId}`;
     }
 
     // Verificar se já mostrou esta notificação específica
@@ -75,7 +78,7 @@ const TrialNotifications = () => {
       }
     }
 
-  }, [companyStatus.isInTrial, companyStatus.daysRemaining, user?.profile, user?.id]);
+  }, [companyStatus.isInTrial, companyStatus.daysRemaining, profile, userId]);
 
   return null; // Este componente não renderiza nada visualmente
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import {
   makeStyles,
   Paper,
@@ -476,15 +476,18 @@ export default function CompaniesManager() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [records, setRecords] = useState([]);
-  const [record, setRecord] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    planId: "",
-    status: true,
-    dueDate: "",
-    recurrence: "",
-  });
+  const [record, setRecord] = useState({ name: "" });
+
+  const loadPlans = useCallback(async () => {
+    setLoading(true);
+    try {
+      const companyList = await list();
+      setRecords(companyList);
+    } catch (e) {
+      toast.error("Não foi possível carregar a lista de registros");
+    }
+    setLoading(false);
+  }, [setLoading, list, setRecords]);
 
   useEffect(() => {
     loadPlans();
@@ -492,10 +495,12 @@ export default function CompaniesManager() {
   }, []);
 
   // Socket listener para atualizações de data de vencimento
-  useEffect(() => {
-    if (!user?.companyId) return;
+  const companyId = user?.companyId;
 
-    const socket = socketConnection({ companyId: user.companyId });
+  useEffect(() => {
+    if (!companyId) return;
+
+    const socket = socketConnection({ companyId });
 
     // Listener global para atualizações de data de vencimento de qualquer empresa
     socket.on('company-due-date-updated', (data) => {
@@ -523,18 +528,9 @@ export default function CompaniesManager() {
     return () => {
       socket.disconnect();
     };
-  }, [user?.companyId]);
+  }, [companyId, loadPlans]);
 
-  const loadPlans = async () => {
-    setLoading(true);
-    try {
-      const companyList = await list();
-      setRecords(companyList);
-    } catch (e) {
-      toast.error("Não foi possível carregar a lista de registros");
-    }
-    setLoading(false);
-  };
+
 
   const handleSubmit = async (data) => {
     setLoading(true);

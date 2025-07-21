@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer, useContext } from "react";
+import React, { useState, useEffect, useReducer, useContext, useCallback } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
@@ -24,8 +24,7 @@ import TableRowSkeleton from "../../components/TableRowSkeleton";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
 import toastError from "../../errors/toastError";
-import { toast } from "react-toastify";
-import { showUniqueError, showUniqueWarning } from "../../utils/toastManager";
+import { showUniqueWarning } from "../../utils/toastManager";
 import { socketConnection } from "../../services/socket";
 import useCompanyStatus from "../../hooks/useCompanyStatus";
 import TrialUpgradePrompt from "../../components/TrialUpgradePrompt";
@@ -287,23 +286,23 @@ const Invoices = () => {
 
   const [loading, setLoading] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [, setHasMore] = useState(false);
   const [searchParam, ] = useState("");
   const [invoices, dispatch] = useReducer(reducer, []);
   const [storagePlans, setStoragePlans] = React.useState([]);
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
 
-  const formatCurrency = (value) => {
+  const formatCurrency = useCallback((value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(value);
-  };
+  }, []);
 
-  const getPlanFeatures = (plan) => {
+  const getPlanFeatures = useCallback((plan) => {
     if (!plan) return [];
     
     const features = [
@@ -331,9 +330,9 @@ const Invoices = () => {
     );
 
     return features;
-  };
+  }, []);
 
-  const handleOpenContactModal = (invoice) => {
+  const handleOpenContactModal = useCallback((invoice) => {
     // Se a fatura tem invoiceUrl, redireciona diretamente para o Asaas
     if (invoice.invoiceUrl) {
       window.open(invoice.invoiceUrl, '_blank');
@@ -344,19 +343,23 @@ const Invoices = () => {
     setStoragePlans(invoice);
     setSelectedContactId(null);
     setContactModalOpen(true);
-  };
+  }, []);
 
-  const handleViewInvoice = (invoice) => {
+  const handleViewInvoice = useCallback((invoice) => {
     // Abrir fatura paga para visualização
     if (invoice.invoiceUrl) {
       window.open(invoice.invoiceUrl, '_blank');
     }
-  };
+  }, []);
 
-  const handleCloseContactModal = () => {
+  const handleCloseContactModal = useCallback(() => {
     setSelectedContactId(null);
     setContactModalOpen(false);
-  };
+  }, []);
+
+  const isTrialExpired = useCallback(() => {
+    return companyStatus.isExpired && !companyStatus.isInTrial;
+  }, [companyStatus.isExpired, companyStatus.isInTrial]);
 
   useEffect(() => {
     dispatch({ type: "RESET" });
@@ -384,25 +387,28 @@ const Invoices = () => {
   }, [searchParam, pageNumber]);
 
   // Mostrar toast de trial expirado apenas uma vez (não para usuários "user")
+  const profile = user?.profile;
+  const companyId = user?.companyId;
+
   useEffect(() => {
     // Só executar se o usuário estiver carregado
-    if (!user || !user.profile) return;
+    if (!profile) return;
     
-    if (user?.profile !== 'user' && isTrialExpired()) {
+    if (profile !== 'user' && isTrialExpired()) {
       showUniqueWarning(
         'Seu período de teste expirou! Para continuar utilizando o sistema, regularize o pagamento.',
         { autoClose: 8000 }
       );
     }
-  }, [companyStatus.isExpired, companyStatus.isInTrial, user?.profile]);
+  }, [companyStatus.isExpired, companyStatus.isInTrial, profile, isTrialExpired]);
 
   // Socket.IO listener para atualizações de pagamento em tempo real
   useEffect(() => {
-    if (user?.companyId) {
-      const socket = socketConnection({ companyId: user.companyId });
+    if (companyId && profile) {
+      const socket = socketConnection({ companyId });
 
       // Listener para pagamento confirmado
-      socket.on(`company-${user.companyId}-invoice-paid`, (data) => {
+      socket.on(`company-${companyId}-invoice-paid`, (data) => {
         if (data.action === "payment_confirmed") {
           // Atualizar a fatura na lista
           dispatch({
@@ -420,7 +426,7 @@ const Invoices = () => {
       });
 
       // Listener para mudanças de status da empresa
-      socket.on(`company-${user.companyId}-status-updated`, (data) => {
+      socket.on(`company-${companyId}-status-updated`, (data) => {
         if (data.action === "company_reactivated") {
           // Não mostrar toast aqui pois já é mostrado no useAuth
           
@@ -439,7 +445,7 @@ const Invoices = () => {
       });
 
       // Listener para atualizações de status (vencimento, etc.)
-      socket.on(`company-${user.companyId}-invoice-updated`, (data) => {
+      socket.on(`company-${companyId}-invoice-updated`, (data) => {
         if (data.action === "payment_overdue") {
           // Atualizar a fatura na lista
           dispatch({
@@ -451,7 +457,7 @@ const Invoices = () => {
           });
 
           // Mostrar notificação de vencimento (não para usuários "user")
-          if (user?.profile !== 'user') {
+          if (profile !== 'user') {
             showUniqueWarning(`Fatura #${data.invoice.id} está vencida.`);
           }
         }
@@ -461,15 +467,9 @@ const Invoices = () => {
         socket.disconnect();
       };
     }
-  }, [user?.companyId]);
+  }, [companyId, profile, dispatch]);
 
-  const loadMore = () => {
-    setPageNumber((prevState) => prevState + 1);
-  };
-
-  // handleScroll removido - não utilizado
-
-  const getStatusInfo = (record) => {
+  const getStatusInfo = useCallback((record) => {
     const status = record.status;
     
     // Se a fatura já foi paga
@@ -495,9 +495,9 @@ const Invoices = () => {
     }
     
     return { text: "Em Aberto", type: "open" };
-  };
+  }, []);
 
-  const renderStatus = (record) => {
+  const renderStatus = useCallback((record) => {
     const statusInfo = getStatusInfo(record);
     
     switch (statusInfo.type) {
@@ -528,22 +528,12 @@ const Invoices = () => {
           </div>
         );
     }
-  }
+  }, [classes, getStatusInfo]);
 
-  const isPaid = (record) => {
+  const isPaid = useCallback((record) => {
     const status = record.status;
     return status === "paid" || status === "CONFIRMED" || status === "RECEIVED" || status === "RECEIVED_IN_CASH";
-  }
-
-  // isInTrialPeriod removido - não utilizado
-
-  const isTrialExpired = () => {
-    return companyStatus.isExpired && !companyStatus.isInTrial;
-  };
-
-  // getDaysRemaining removido - não utilizado
-
-  // getDaysExpired removido - não utilizado
+  }, []);
 
   return (
     <MainContainer>

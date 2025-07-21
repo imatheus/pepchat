@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Paper,
+
   TextField,
   Button,
   Box,
@@ -12,7 +12,7 @@ import {
   Grid
 } from "@material-ui/core";
 import ToggleSwitch from "../ToggleSwitch";
-import { Alert } from "@material-ui/lab";
+
 import { makeStyles } from "@material-ui/core/styles";
 import { toast } from "react-toastify";
 import api from "../../services/api";

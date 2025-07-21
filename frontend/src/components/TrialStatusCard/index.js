@@ -11,7 +11,6 @@ import {
 } from '@material-ui/core';
 import {
   Schedule as ScheduleIcon,
-  Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   Payment as PaymentIcon,
 } from '@material-ui/icons';

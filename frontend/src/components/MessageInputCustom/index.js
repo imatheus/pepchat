@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
-import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
+import withWidth from "@material-ui/core/withWidth";
 import "emoji-mart/css/emoji-mart.css";
 import { Picker } from "emoji-mart";
 import clsx from "clsx";
@@ -15,7 +15,7 @@ import CancelIcon from "@material-ui/icons/Cancel";
 import ClearIcon from "@material-ui/icons/Clear";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import { Menu, MenuItem, ListItemText, Divider, Popper, Paper, ClickAwayListener } from "@material-ui/core";
-import ToggleSwitch from "../ToggleSwitch";
+
 
 import { i18n } from "../../translate/i18n";
 import api from "../../services/api";

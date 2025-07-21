@@ -166,7 +166,6 @@ const SystemStats = () => {
   const [userGrowthData, setUserGrowthData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [lastUpdate, setLastUpdate] = useState(null);
 
   const fetchStats = async () => {
     try {
@@ -190,7 +189,6 @@ const SystemStats = () => {
       }));
       
       setUserGrowthData(processedGrowthData);
-      setLastUpdate(new Date());
     } catch (err) {
       console.error("Erro ao buscar estatísticas:", err);
       if (err.response?.status === 403) {

@@ -92,7 +92,7 @@ const MainListItems = (props) => {
   const { whatsApps } = useContext(WhatsAppsContext);
   const { user } = useContext(AuthContext);
   const { showQueuesTutorial, dismissTutorial } = useContext(TutorialContext);
-  const { colors, darkMode } = useCustomTheme();
+  const { colors } = useCustomTheme();
   const [connectionWarning, setConnectionWarning] = useState(false);
   const [openCampaignSubmenu, setOpenCampaignSubmenu] = useState(false);
   const [showCampaigns, setShowCampaigns] = useState(false);

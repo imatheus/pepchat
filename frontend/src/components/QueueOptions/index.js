@@ -12,7 +12,6 @@ import CheckIcon from "@material-ui/icons/Check";
 import DoneIcon from "@material-ui/icons/Done";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
-import { toast } from "react-toastify";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -66,47 +65,18 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
 
   // Cleanup dos timeouts quando o componente for desmontado
   useEffect(() => {
-          // ... código do effect
-          const currentTimeouts = saveTimeouts.current;
-          return () => {
-            // Usar variável local para cleanup
-            if (currentTimeouts) {
-              Object.values(currentTimeouts).forEach(timeout => {
-                if (timeout) clearTimeout(timeout);
-              });
-            }
-          };
-        }, []);
-
-  const handleOption = (index) => async () => {
-    setActiveOption(index);
-    const option = options[index];
-
-    if (option !== undefined && option.id !== undefined) {
-      try {
-        const { data } = await api.request({
-          url: "/queue-options",
-          method: "GET",
-          params: { queueId, parentId: option.id },
+    const currentTimeouts = saveTimeouts.current;
+    return () => {
+      // Usar variável local para cleanup
+      if (currentTimeouts) {
+        Object.values(currentTimeouts).forEach(timeout => {
+          if (timeout) clearTimeout(timeout);
         });
-        const optionList = data.map((option) => {
-          return {
-            ...option,
-            children: [],
-            edition: false,
-            saving: false,
-            saved: false,
-          };
-        });
-        option.children = optionList;
-        updateOptions();
-      } catch (e) {
-        toastError(e);
       }
-    }
-  };
+    };
+  }, []);
 
-  const handleSave = async (option, showToast = false, keepEditing = true) => {
+  const handleSave = useCallback(async (option, showToast = false, keepEditing = true) => {
     try {
       // Marcar como salvando
       option.saving = true;
@@ -153,7 +123,35 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
       updateOptions();
       toastError(e);
     }
-  };
+  }, [updateOptions]);
+
+  const handleOption = useCallback((index) => async () => {
+    setActiveOption(index);
+    const option = options[index];
+
+    if (option !== undefined && option.id !== undefined) {
+      try {
+        const { data } = await api.request({
+          url: "/queue-options",
+          method: "GET",
+          params: { queueId, parentId: option.id },
+        });
+        const optionList = data.map((option) => {
+          return {
+            ...option,
+            children: [],
+            edition: false,
+            saving: false,
+            saved: false,
+          };
+        });
+        option.children = optionList;
+        updateOptions();
+      } catch (e) {
+        toastError(e);
+      }
+    }
+  }, [queueId, options, updateOptions]);
 
   const handleAutoSave = useCallback((option) => {
     const optionKey = `${option.queueId}-${option.parentId || 'null'}-${option.option}`;
@@ -169,9 +167,9 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
         handleSave(option, false, true);
       }
     }, 1500); // Salvar após 1.5 segundos de inatividade
-  }, []);
+  }, [handleSave]);
 
-  const handleEdition = (index) => {
+  const handleEdition = useCallback((index) => {
     options[index].edition = !options[index].edition;
     if (options[index].edition) {
       // Quando entra em edição, garantir que tem os campos de controle
@@ -179,9 +177,9 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
       options[index].saved = false;
     }
     updateOptions();
-  };
+  }, [options, updateOptions]);
 
-  const handleFinishEditing = async (option) => {
+  const handleFinishEditing = useCallback(async (option) => {
     // Salvar e sair do modo de edição
     if (option.title.trim() || option.message.trim()) {
       await handleSave(option, false, false);
@@ -189,9 +187,9 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
       option.edition = false;
       updateOptions();
     }
-  };
+  }, [handleSave, updateOptions]);
 
-  const handleDeleteOption = async (index) => {
+  const handleDeleteOption = useCallback(async (index) => {
     const option = options[index];
     if (option !== undefined && option.id !== undefined) {
       try {
@@ -209,21 +207,21 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
       await handleSave(option, false, true);
     });
     updateOptions();
-  };
+  }, [options, handleSave, updateOptions]);
 
-  const handleOptionChangeTitle = (event, index) => {
+  const handleOptionChangeTitle = useCallback((event, index) => {
     options[index].title = event.target.value;
     updateOptions();
     handleAutoSave(options[index]);
-  };
+  }, [options, updateOptions, handleAutoSave]);
 
-  const handleOptionChangeMessage = (event, index) => {
+  const handleOptionChangeMessage = useCallback((event, index) => {
     options[index].message = event.target.value;
     updateOptions();
     handleAutoSave(options[index]);
-  };
+  }, [options, updateOptions, handleAutoSave]);
 
-  const renderTitle = (index) => {
+  const renderTitle = useCallback((index) => {
     const option = options[index];
     if (option.edition) {
       return (
@@ -290,9 +288,9 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
         </Typography>
       </>
     );
-  };
+  }, [classes, options, handleOptionChangeTitle, handleSave, handleFinishEditing, handleDeleteOption, handleEdition]);
 
-  const renderMessage = (index) => {
+  const renderMessage = useCallback((index) => {
     const option = options[index];
     if (option.edition) {
       return (
@@ -328,9 +326,9 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
         </Typography>
       </>
     );
-  };
+  }, [classes, options, handleOptionChangeMessage, handleSave, handleEdition]);
 
-  const handleAddOption = (index) => {
+  const handleAddOption = useCallback((index) => {
     const optionNumber = options[index].children.length + 1;
     options[index].children.push({
       title: "",
@@ -344,9 +342,9 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
       saved: false,
     });
     updateOptions();
-  };
+  }, [options, queueId, updateOptions]);
 
-  const renderStep = (option, index) => {
+  const renderStep = useCallback((option, index) => {
     return (
       <Step key={index}>
         <StepLabel style={{ cursor: "pointer" }} onClick={handleOption(index)}>
@@ -377,9 +375,9 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
         </StepContent>
       </Step>
     );
-  };
+  }, [classes, handleOption, renderTitle, renderMessage, handleAddOption, queueId, updateOptions]);
 
-  const renderStepper = () => {
+  const renderStepper = useCallback(() => {
     return (
       <Stepper
         style={{ marginBottom: 0, paddingBottom: 0 }}
@@ -390,7 +388,7 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
         {options.map((option, index) => renderStep(option, index))}
       </Stepper>
     );
-  };
+  }, [activeOption, options, renderStep]);
 
   return renderStepper();
 }
@@ -398,6 +396,10 @@ export function QueueOptionStepper({ queueId, options, updateOptions }) {
 export function QueueOptions({ queueId }) {
   const classes = useStyles();
   const [options, setOptions] = useState([]);
+
+  const updateOptions = useCallback(() => {
+    setOptions([...options]);
+  }, [options]);
 
   useEffect(() => {
     if (queueId) {
@@ -424,10 +426,9 @@ export function QueueOptions({ queueId }) {
       };
       fetchOptions();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queueId]);
 
-  const renderStepper = () => {
+  const renderStepper = useCallback(() => {
     if (options.length > 0) {
       return (
         <QueueOptionStepper
@@ -437,13 +438,9 @@ export function QueueOptions({ queueId }) {
         />
       );
     }
-  };
+  }, [options, queueId, updateOptions]);
 
-  const updateOptions = () => {
-    setOptions([...options]);
-  };
-
-  const addOption = () => {
+  const addOption = useCallback(() => {
     const newOption = {
       title: "",
       message: "",
@@ -456,7 +453,7 @@ export function QueueOptions({ queueId }) {
       saved: false,
     };
     setOptions([...options, newOption]);
-  };
+  }, [options, queueId]);
 
   return (
     <div className={classes.root}>

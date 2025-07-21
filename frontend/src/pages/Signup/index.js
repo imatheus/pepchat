@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import * as Yup from "yup";
+
 import { useHistory } from "react-router-dom";
 import { Link as RouterLink } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -37,7 +37,7 @@ import { openApi } from "../../services/api";
 import toastError from "../../errors/toastError";
 import moment from "moment";
 import logo from "../../assets/logologin.png";
-import { documentMask, phoneMask, isValidDocument, isValidCPF, isValidCNPJ, removeMask } from "../../utils/masks";
+import { documentMask, phoneMask, isValidCPF, isValidCNPJ, removeMask } from "../../utils/masks";
 
 const useStyles = makeStyles(theme => ({
 	paper: {

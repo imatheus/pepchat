@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useReducer, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 
 import {
   Button,
@@ -27,7 +27,6 @@ import { toast } from "react-toastify";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { socketConnection } from "../../services/socket";
 import { getContrastColor } from "../../utils/colorGenerator";
-import { TutorialContext } from "../../context/Tutorial/TutorialContext";
 
 const useStyles = makeStyles((theme) => ({
   mainPaper: {
