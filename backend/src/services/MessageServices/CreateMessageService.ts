@@ -52,16 +52,32 @@ const CreateMessageService = async ({
 
   const io = getIO();
   
-  // Emit to specific rooms to avoid redundancy
-  io.to(`ticket:${message.ticketId}`)
-    .to(`status:${message.ticket.status}`)
-    .to("notification")
-    .emit(`company-${companyId}-appMessage`, {
-      action: "create",
-      message,
-      ticket: message.ticket,
-      contact: message.ticket.contact
-    });
+  // CORREÇÃO: Emitir apenas para as salas apropriadas baseado no status e origem da mensagem
+  console.log(`📨 New message from ${message.fromMe ? 'agent' : 'customer'} for ticket ${message.ticketId} (status: ${message.ticket.status})`);
+  
+  if (message.fromMe) {
+    // Mensagem do agente - emitir apenas para o ticket específico
+    console.log(`👤 Agent message - emitting only to ticket room`);
+    io.to(`ticket:${message.ticketId}`)
+      .emit(`company-${companyId}-appMessage`, {
+        action: "create",
+        message,
+        ticket: message.ticket,
+        contact: message.ticket.contact
+      });
+  } else {
+    // Mensagem do cliente - emitir para notificações e status apropriado
+    console.log(`💬 Customer message - emitting to notification and status:${message.ticket.status}`);
+    io.to(`ticket:${message.ticketId}`)
+      .to("notification")
+      .to(`status:${message.ticket.status}`)
+      .emit(`company-${companyId}-appMessage`, {
+        action: "create",
+        message,
+        ticket: message.ticket,
+        contact: message.ticket.contact
+      });
+  }
 
   return message;
 };
