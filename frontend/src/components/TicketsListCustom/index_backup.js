@@ -286,7 +286,8 @@ const TicketsListCustom = (props) => {
         // Para tickets pending, também verificar as filas do usuário
         else if (status === "pending") {
           const userQueueIds = queues.map((q) => q.id);
-          queueCheck = userQueueIds.indexOf(ticket.queueId) > -1;
+          // Para tickets pending, incluir tickets sem fila (queueId null) se o usuário tem filas
+          queueCheck = !ticket.queueId ? (userQueueIds.length > 0) : (userQueueIds.indexOf(ticket.queueId) > -1);
         }
         else {
           queueCheck = false;

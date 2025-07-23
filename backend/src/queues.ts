@@ -18,6 +18,7 @@ const redisConfig = {
 
 let scheduleQueue: Queue.Queue | null = null;
 let campaignQueue: Queue.Queue | null = null;
+let autoAssignQueue: Queue.Queue | null = null;
 let redisAvailable = false;
 
 // Função para testar conexão Redis
@@ -56,6 +57,7 @@ const initializeQueues = async () => {
     if (redisAvailable) {
       scheduleQueue = new Queue("ScheduleQueue", redisConfig);
       campaignQueue = new Queue("CampaignQueue", redisConfig);
+      autoAssignQueue = new Queue("AutoAssignQueue", redisConfig);
       
       scheduleQueue.on('error', (error) => {
         logger.warn("Schedule queue error:", error.message);
@@ -64,6 +66,11 @@ const initializeQueues = async () => {
       
       campaignQueue.on('error', (error) => {
         logger.warn("Campaign queue error:", error.message);
+        redisAvailable = false;
+      });
+
+      autoAssignQueue.on('error', (error) => {
+        logger.warn("Auto assign queue error:", error.message);
         redisAvailable = false;
       });
       
@@ -81,13 +88,13 @@ const initializeQueues = async () => {
 initializeQueues();
 
 // Exportar filas (podem ser null se Redis não estiver disponível)
-export { scheduleQueue, campaignQueue, redisAvailable };
+export { scheduleQueue, campaignQueue, autoAssignQueue, redisAvailable };
 
 export const startQueueProcess = async () => {
   try {
     logger.info("Starting background job processors...");
     
-    if (!redisAvailable || !scheduleQueue || !campaignQueue) {
+    if (!redisAvailable || !scheduleQueue || !campaignQueue || !autoAssignQueue) {
       logger.warn("Redis not available - using direct processing for jobs");
       return;
     }
@@ -95,12 +102,16 @@ export const startQueueProcess = async () => {
     // Importar processadores dinamicamente
     const ProcessScheduleJob = (await import("./services/ScheduleServices/ProcessScheduleJob")).default;
     const ProcessCampaignJob = (await import("./services/CampaignService/ProcessCampaignJob")).default;
+    const ProcessAutoAssignJob = (await import("./services/TicketServices/ProcessAutoAssignJob")).default;
 
     // Processamento de agendamentos
     scheduleQueue.process("ProcessSchedule", ProcessScheduleJob);
 
     // Processamento de campanhas
     campaignQueue.process("ProcessCampaign", ProcessCampaignJob);
+
+    // Processamento de auto-atribuição de tickets
+    autoAssignQueue.process("ProcessAutoAssign", ProcessAutoAssignJob);
 
     // Event listeners para logs
     scheduleQueue.on("completed", (job, result) => {
@@ -121,6 +132,15 @@ export const startQueueProcess = async () => {
       Sentry.captureException(err);
     });
 
+    autoAssignQueue.on("completed", (job, result) => {
+      logger.info(`Auto assign job ${job.id} completed`);
+    });
+
+    autoAssignQueue.on("failed", (job, err) => {
+      logger.error(`Auto assign job ${job.id} failed with error: ${err.message}`);
+      Sentry.captureException(err);
+    });
+
     
     // Limpar jobs antigos (com tratamento de erro mais robusto)
     try {
@@ -132,6 +152,11 @@ export const startQueueProcess = async () => {
       if (campaignQueue && typeof campaignQueue.clean === 'function') {
         await campaignQueue.clean(24 * 60 * 60 * 1000, "completed");
         await campaignQueue.clean(24 * 60 * 60 * 1000, "failed");
+      }
+
+      if (autoAssignQueue && typeof autoAssignQueue.clean === 'function') {
+        await autoAssignQueue.clean(24 * 60 * 60 * 1000, "completed");
+        await autoAssignQueue.clean(24 * 60 * 60 * 1000, "failed");
       }
     } catch (cleanError) {
       // Ignorar erros de limpeza silenciosamente

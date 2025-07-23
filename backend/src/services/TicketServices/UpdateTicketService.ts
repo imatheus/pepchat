@@ -6,6 +6,7 @@ import { getIO } from "../../libs/socket";
 import Ticket from "../../models/Ticket";
 import Setting from "../../models/Setting";
 import Queue from "../../models/Queue";
+import User from "../../models/User";
 import ShowTicketService from "./ShowTicketService";
 import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
 import SendWhatsAppMessage from "../WbotServices/SendWhatsAppMessage";
@@ -16,6 +17,43 @@ import { isNil } from "lodash";
 import sendFaceMessage from "../FacebookServices/sendFacebookMessage";
 import AutoRatingService from "./AutoRatingService";
 import AppError from "../../errors/AppError";
+import { logger } from "../../utils/logger";
+
+// Função para selecionar a melhor fila para o usuário baseada na carga de trabalho
+const selectBestQueueForUser = async (userQueues: Queue[], companyId: number): Promise<number> => {
+  try {
+    const queueWorkloads = await Promise.all(
+      userQueues.map(async (queue) => {
+        // Contar tickets ativos (open + pending) na fila
+        const activeTicketsCount = await Ticket.count({
+          where: {
+            queueId: queue.id,
+            status: ['open', 'pending'],
+            companyId
+          }
+        });
+
+        return {
+          queueId: queue.id,
+          queueName: queue.name,
+          activeTickets: activeTicketsCount
+        };
+      })
+    );
+
+    // Ordenar por menor carga de trabalho
+    queueWorkloads.sort((a, b) => a.activeTickets - b.activeTickets);
+    
+    const selectedQueue = queueWorkloads[0];
+    logger.info(`Selected queue for user: ${selectedQueue.queueName} (${selectedQueue.activeTickets} active tickets)`);
+    
+    return selectedQueue.queueId;
+  } catch (error) {
+    logger.error(error, "Error selecting best queue for user, using first queue");
+    // Fallback para a primeira fila em caso de erro
+    return userQueues[0].id;
+  }
+};
 
 interface TicketData {
   status?: string;
@@ -74,9 +112,35 @@ const UpdateTicketService = async ({
     const oldUserId = ticket.user?.id;
     const oldQueueId = ticket.queueId;
 
-    // Validação: Impedir aceitar ticket sem setor selecionado
-    if (status === "open" && !ticket.queueId) {
+    // Verificar se o modo automático do chatbot está habilitado
+    const chatbotAutoModeEnabled = await Setting.findOne({
+      where: { key: "chatbotAutoMode", companyId }
+    });
+    
+    const isAutoModeEnabled = chatbotAutoModeEnabled?.value === 'enabled';
+
+    // Validação: Impedir aceitar ticket sem setor selecionado (apenas se modo automático estiver habilitado)
+    if (status === "open" && !ticket.queueId && isAutoModeEnabled) {
       throw new AppError("Não é possível aceitar um ticket sem fila", 400);
+    }
+
+    // Quando um usuário aceita um ticket sem fila, atribuir automaticamente a fila do usuário
+    if (status === "open" && !ticket.queueId && userId) {
+      const user = await User.findByPk(userId, {
+        include: [{ model: Queue, as: "queues" }]
+      });
+      
+      if (user && user.queues && user.queues.length > 0) {
+        if (user.queues.length === 1) {
+          // Se tem apenas uma fila, usar ela
+          queueId = user.queues[0].id;
+        } else {
+          // Se tem múltiplas filas, escolher a com menor carga de trabalho
+          queueId = await selectBestQueueForUser(user.queues, companyId);
+        }
+        
+        logger.info(`Ticket ${ticketId} auto-assigned queue ${queueId} when user ${userId} accepted it`);
+      }
     }
 
     if (oldStatus === "closed") {

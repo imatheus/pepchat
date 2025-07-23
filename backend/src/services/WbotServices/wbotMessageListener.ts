@@ -58,6 +58,55 @@ const getChatbotType = async (companyId: number): Promise<string> => {
   }
 };
 
+// Função para verificar se o modo automático do chatbot está habilitado
+const isChatbotAutoModeEnabled = async (companyId: number): Promise<boolean> => {
+  try {
+    const setting = await Setting.findOne({
+      where: { key: "chatbotAutoMode", companyId }
+    });
+    return setting?.value === 'enabled';
+  } catch (error) {
+    logger.error(error, "Error getting chatbot auto mode setting");
+    return true; // Default habilitado para manter compatibilidade
+  }
+};
+
+// Função para selecionar a melhor fila para o usuário baseada na carga de trabalho
+const selectBestQueueForUser = async (userQueues: Queue[], companyId: number): Promise<number> => {
+  try {
+    const queueWorkloads = await Promise.all(
+      userQueues.map(async (queue) => {
+        // Contar tickets ativos (open + pending) na fila
+        const activeTicketsCount = await Ticket.count({
+          where: {
+            queueId: queue.id,
+            status: ['open', 'pending'],
+            companyId
+          }
+        });
+
+        return {
+          queueId: queue.id,
+          queueName: queue.name,
+          activeTickets: activeTicketsCount
+        };
+      })
+    );
+
+    // Ordenar por menor carga de trabalho
+    queueWorkloads.sort((a, b) => a.activeTickets - b.activeTickets);
+    
+    const selectedQueue = queueWorkloads[0];
+    logger.info(`Selected queue for user: ${selectedQueue.queueName} (${selectedQueue.activeTickets} active tickets)`);
+    
+    return selectedQueue.queueId;
+  } catch (error) {
+    logger.error(error, "Error selecting best queue for user, using first queue");
+    // Fallback para a primeira fila em caso de erro
+    return userQueues[0].id;
+  }
+};
+
 type Session = WASocket & {
   id?: number;
 };
@@ -1057,6 +1106,9 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
       return;
     }
 
+    // Verificar se o modo automático do chatbot está habilitado
+    const chatbotAutoModeEnabled = await isChatbotAutoModeEnabled(companyId);
+
     let msgContact: IMe;
     let groupContact: Contact | undefined;
     const isGroup = msg.key.remoteJid?.endsWith("@g.us");
@@ -1074,17 +1126,19 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
     const contact = await verifyContact(msgContact, wbot, companyId);
     const ticket = await FindOrCreateTicketService(contact, wbot.id!, 0, companyId, groupContact);
 
-    // Verificar se é uma avaliação antes de processar outras lógicas
-    const ticketTraking = await FindOrCreateATicketTrakingService({
-      ticketId: ticket.id,
-      companyId,
-      whatsappId: wbot.id!
-    });
+    // Verificar se é uma avaliação antes de processar outras lógicas (apenas se modo automático estiver habilitado)
+    if (chatbotAutoModeEnabled) {
+      const ticketTraking = await FindOrCreateATicketTrakingService({
+        ticketId: ticket.id,
+        companyId,
+        whatsappId: wbot.id!
+      });
 
-    if (!msg.key.fromMe) {
-      if (ticketTraking !== null && verifyRating(ticketTraking)) {
-        await handleRating(msg, ticket, ticketTraking);
-        return;
+      if (!msg.key.fromMe) {
+        if (ticketTraking !== null && verifyRating(ticketTraking)) {
+          await handleRating(msg, ticket, ticketTraking);
+          return;
+        }
       }
     }
 
@@ -1096,10 +1150,41 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
       await verifyMessage(msg, ticket, contact);
     }
 
-    // Verificar se precisa mostrar opções de setores (apenas se não tem setor atribuído)
-    if (!ticket.queueId && !isGroup && !msg.key.fromMe && !ticket.userId && whatsapp.queues.length >= 1) {
+    // Verificar se precisa mostrar opções de setores (apenas se modo automático estiver habilitado e não tem setor atribuído)
+    if (chatbotAutoModeEnabled && !ticket.queueId && !isGroup && !msg.key.fromMe && !ticket.userId && whatsapp.queues.length >= 1) {
       await verifyQueue(wbot, msg, ticket, contact);
       return; // Importante: retornar aqui para não continuar o processamento
+    }
+
+    // Se o modo automático estiver desabilitado e o ticket não tem fila, 
+    // mas tem usuário atribuído, atribuir a fila do usuário
+    if (!chatbotAutoModeEnabled && !ticket.queueId && ticket.userId) {
+      const user = await User.findByPk(ticket.userId, {
+        include: [{ model: Queue, as: "queues" }]
+      });
+      
+      if (user && user.queues && user.queues.length > 0) {
+        let selectedQueueId: number;
+        
+        if (user.queues.length === 1) {
+          // Se tem apenas uma fila, usar ela
+          selectedQueueId = user.queues[0].id;
+        } else {
+          // Se tem múltiplas filas, escolher a com menor carga de trabalho
+          selectedQueueId = await selectBestQueueForUser(user.queues, ticket.companyId);
+        }
+        
+        await UpdateTicketService({
+          ticketData: { queueId: selectedQueueId },
+          ticketId: ticket.id,
+          companyId: ticket.companyId
+        });
+        
+        // Recarregar o ticket com as informações atualizadas
+        await ticket.reload({
+          include: [{ model: Queue, as: "queue" }, { model: User, as: "user" }, { model: Contact, as: "contact" }]
+        });
+      }
     }
 
     // Reload ticket to get updated queue information
@@ -1107,8 +1192,8 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
       include: [{ model: Queue, as: "queue" }, { model: User, as: "user" }, { model: Contact, as: "contact" }]
     });
 
-    // Handle chatbot logic for queues with options (apenas se tem setor e chatbot ativo)
-    if (ticket.queue && ticket.chatbot && !msg.key.fromMe) {
+    // Handle chatbot logic for queues with options (apenas se modo automático estiver habilitado, tem setor e chatbot ativo)
+    if (chatbotAutoModeEnabled && ticket.queue && ticket.chatbot && !msg.key.fromMe) {
       await handleChatbot(ticket, msg, wbot, false);
       return; // Importante: retornar aqui para não continuar o processamento
     }

@@ -79,10 +79,12 @@ export default function Options(props) {
   const [callType, setCallType] = useState("enabled");
   const [chatbotType, setChatbotType] = useState("");
   const [CheckMsgIsGroup, setCheckMsgIsGroupType] = useState("enabled");
+  const [chatbotAutoMode, setChatbotAutoMode] = useState("enabled");
 
   const [loadingUserRating, setLoadingUserRating] = useState(false);
   const [loadingCallType, setLoadingCallType] = useState(false);
   const [loadingChatbotType, setLoadingChatbotType] = useState(false);
+  const [loadingChatbotAutoMode, setLoadingChatbotAutoMode] = useState(false);
   const [, setCheckMsgIsGroup] = useState(false);
 
   
@@ -105,6 +107,10 @@ export default function Options(props) {
       const chatbotType = settings.find((s) => s.key === "chatBotType");
       if (chatbotType) {
         setChatbotType(chatbotType.value);
+      }
+      const chatbotAutoMode = settings.find((s) => s.key === "chatbotAutoMode");
+      if (chatbotAutoMode) {
+        setChatbotAutoMode(chatbotAutoMode.value);
       }
 
           }
@@ -153,6 +159,17 @@ export default function Options(props) {
     });
     toast.success("Operação atualizada com sucesso.");
     setCheckMsgIsGroup(false);
+  }
+
+  async function handleChatbotAutoMode(value) {
+    setChatbotAutoMode(value);
+    setLoadingChatbotAutoMode(true);
+    await update({
+      key: "chatbotAutoMode",
+      value,
+    });
+    toast.success("Operação atualizada com sucesso.");
+    setLoadingChatbotAutoMode(false);
   }
 
     return (
@@ -237,6 +254,26 @@ export default function Options(props) {
             </Select>
             <FormHelperText>
               {loadingChatbotType && "Atualizando..."}
+            </FormHelperText>
+          </FormControl>
+        </Grid>
+        <Grid xs={12} sm={6} md={4} item>
+          <FormControl className={classes.selectContainer}>
+            <InputLabel id="chatbot-auto-mode-label">
+              Modo Automático do Chatbot
+            </InputLabel>
+            <Select
+              labelId="chatbot-auto-mode-label"
+              value={chatbotAutoMode}
+              onChange={async (e) => {
+                handleChatbotAutoMode(e.target.value);
+              }}
+            >
+              <MenuItem value={"disabled"}>Desabilitado</MenuItem>
+              <MenuItem value={"enabled"}>Habilitado</MenuItem>
+            </Select>
+            <FormHelperText>
+              {loadingChatbotAutoMode ? "Atualizando..." : "Quando desabilitado, novos leads não passam pelo chatbot automático nem avaliações"}
             </FormHelperText>
           </FormControl>
         </Grid>

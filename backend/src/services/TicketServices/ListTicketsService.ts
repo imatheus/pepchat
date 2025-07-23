@@ -11,6 +11,7 @@ import Tag from "../../models/Tag";
 import TicketTag from "../../models/TicketTag";
 import { intersection } from "lodash";
 import Whatsapp from "../../models/Whatsapp";
+import Setting from "../../models/Setting";
 
 interface Request {
   searchParam?: string;
@@ -54,8 +55,6 @@ const ListTicketsService = async ({
   // Construir condição de queue baseada na presença de "no-queue"
   let queueCondition;
   if (includeNoQueue && numericQueueIds.length > 0) {
-    // Se tem "no-queue" E setores específicos, incluir ambos
-    // NUNCA incluir "no-queue" no IN, apenas IDs numéricos
     queueCondition = { 
       [Op.or]: [
         { [Op.in]: numericQueueIds }, 
@@ -63,25 +62,186 @@ const ListTicketsService = async ({
       ] 
     };
   } else if (includeNoQueue) {
-    // Se tem apenas "no-queue", mostrar apenas tickets sem fila
     queueCondition = { [Op.is]: null };
   } else if (numericQueueIds.length > 0) {
-    // Se tem apenas setores específicos, mostrar apenas esses setores
-    // NUNCA incluir "no-queue" no IN, apenas IDs numéricos
     queueCondition = { [Op.in]: numericQueueIds };
   } else {
-    // Se nenhum checkbox está marcado, mostrar todos os tickets (com e sem fila)
-    queueCondition = null; // Sem filtro de queue
+    queueCondition = null;
   }
 
-  let whereCondition: Filterable["where"] = {
-    [Op.or]: [{ userId }, { status: "pending" }]
+  // Buscar informações do usuário para verificar suas filas
+  const user = await ShowUserService(userId);
+  const userQueueIds = user.queues?.map(queue => queue.id) || [];
+  
+  // Verificar se o chatbot está desabilitado
+  const chatbotAutoModeSetting = await Setting.findOne({
+    where: { key: "chatbotAutoMode", companyId }
+  });
+  const isChatbotDisabled = chatbotAutoModeSetting?.value === 'disabled';
+  
+  // Log para debug
+  console.log('DEBUG ListTicketsService:', {
+    isChatbotDisabled,
+    status,
+    queueIds,
+    queueCondition,
+    userQueueIds,
+    userId,
+    includeNoQueue,
+    numericQueueIds,
+    showAll
+  });
+  
+  // LÓGICA SIMPLIFICADA: Construir condições OR
+  const orConditions = [];
+  
+  // 1. SEMPRE incluir tickets do usuário
+  orConditions.push({ userId });
+  
+  if (isChatbotDisabled) {
+    // 2. SEMPRE incluir tickets pendentes sem fila quando chatbot desabilitado
+    orConditions.push({
+      status: "pending",
+      queueId: null
+    });
+    
+    // 3. Incluir tickets pendentes das filas do usuário
+    if (userQueueIds.length > 0) {
+      orConditions.push({
+        status: "pending",
+        queueId: { [Op.in]: userQueueIds }
+      });
+    }
+    
+    // 4. Se há filtro de fila, incluir também esses tickets
+    if (queueCondition !== null) {
+      orConditions.push({
+        status: "pending",
+        queueId: queueCondition
+      });
+    }
+  } else {
+    // Comportamento original quando chatbot habilitado
+    if (userQueueIds.length > 0) {
+      orConditions.push({
+        status: "pending",
+        queueId: { [Op.in]: userQueueIds }
+      });
+    } else {
+      orConditions.push({ status: "pending" });
+    }
+  }
+  
+  console.log('orConditions:', JSON.stringify(orConditions, null, 2));
+  
+  // CORREÇÃO DIRETA: Construir whereCondition com Op.or
+  const whereCondition: Filterable["where"] = {
+    companyId,
+    [Op.or]: orConditions
   };
   
-  // Só adicionar filtro de queueId se houver condição
-  if (queueCondition !== null) {
-    (whereCondition as any).queueId = queueCondition;
+  console.log('whereCondition after base logic:', JSON.stringify(whereCondition, null, 2));
+
+  // Aplicar filtros de fila para chatbot habilitado
+  if (!isChatbotDisabled && queueCondition !== null) {
+    const newWhereCondition = {
+      [Op.and]: [
+        whereCondition,
+        { queueId: queueCondition }
+      ]
+    };
+    console.log('whereCondition after queue filter:', JSON.stringify(newWhereCondition, null, 2));
+  } else {
+    console.log('whereCondition after queue filter:', JSON.stringify(whereCondition, null, 2));
   }
+
+  // Aplicar filtro de status
+  let finalWhereCondition = whereCondition;
+  
+  if (status) {
+    if (isChatbotDisabled && status === "pending") {
+      // Para status pending com chatbot desabilitado, reconstruir condições
+      const pendingConditions = [
+        { userId, status: "pending" },
+        { status: "pending", queueId: null } // SEMPRE incluir tickets sem fila
+      ];
+      
+      if (userQueueIds.length > 0) {
+        pendingConditions.push({
+          status: "pending",
+          queueId: { [Op.in]: userQueueIds }
+        });
+      }
+      
+      if (queueCondition !== null) {
+        pendingConditions.push({
+          status: "pending",
+          queueId: queueCondition
+        });
+      }
+      
+      finalWhereCondition = {
+        companyId,
+        [Op.or]: pendingConditions
+      };
+    } else if (!isChatbotDisabled) {
+      // Aplicar status normalmente quando chatbot habilitado
+      finalWhereCondition = {
+        [Op.and]: [
+          whereCondition,
+          { status }
+        ]
+      };
+    }
+  }
+  
+  console.log('whereCondition after status filter:', JSON.stringify(finalWhereCondition, null, 2));
+
+  // Tratar showAll
+  if (showAll === "true") {
+    let showAllCondition: any = { companyId };
+    
+    if (status) {
+      showAllCondition.status = status;
+    }
+    
+    if (queueCondition !== null) {
+      if (isChatbotDisabled && (status === "pending" || !status)) {
+        showAllCondition = {
+          companyId,
+          [Op.or]: [
+            { queueId: queueCondition },
+            { queueId: null, status: "pending" }
+          ]
+        };
+        if (status && status !== "pending") {
+          showAllCondition = {
+            companyId,
+            status,
+            queueId: queueCondition
+          };
+        }
+      } else {
+        showAllCondition.queueId = queueCondition;
+      }
+    } else if (isChatbotDisabled && (status === "pending" || !status)) {
+      showAllCondition = {
+        companyId,
+        [Op.or]: [
+          { queueId: { [Op.not]: null } },
+          { queueId: null, status: "pending" }
+        ]
+      };
+      if (status && status !== "pending") {
+        showAllCondition = { companyId, status };
+      }
+    }
+    
+    finalWhereCondition = showAllCondition;
+  }
+  
+  console.log('whereCondition after showAll:', JSON.stringify(finalWhereCondition, null, 2));
+
   let includeCondition: Includeable[];
 
   includeCondition = [
@@ -112,21 +272,6 @@ const ListTicketsService = async ({
     },
   ];
 
-  if (showAll === "true") {
-    if (queueCondition !== null) {
-      whereCondition = { queueId: queueCondition };
-    } else {
-      whereCondition = {}; // Sem filtros quando showAll e nenhum queue selecionado
-    }
-  }
-
-  if (status) {
-    whereCondition = {
-      ...whereCondition,
-      status
-    };
-  }
-
   if (searchParam) {
     const sanitizedSearchParam = searchParam.toLocaleLowerCase().trim();
 
@@ -148,8 +293,8 @@ const ListTicketsService = async ({
       }
     ];
 
-    whereCondition = {
-      ...whereCondition,
+    finalWhereCondition = {
+      ...finalWhereCondition,
       [Op.or]: [
         {
           "$contact.name$": where(
@@ -171,7 +316,8 @@ const ListTicketsService = async ({
   }
 
   if (date) {
-    whereCondition = {
+    finalWhereCondition = {
+      ...finalWhereCondition,
       createdAt: {
         [Op.between]: [+startOfDay(parseISO(date)), +endOfDay(parseISO(date))]
       }
@@ -179,7 +325,8 @@ const ListTicketsService = async ({
   }
 
   if (updatedAt) {
-    whereCondition = {
+    finalWhereCondition = {
+      ...finalWhereCondition,
       updatedAt: {
         [Op.between]: [
           +startOfDay(parseISO(updatedAt)),
@@ -190,21 +337,11 @@ const ListTicketsService = async ({
   }
 
   if (withUnreadMessages === "true") {
-    const user = await ShowUserService(userId);
-    const userQueueIds = user.queues.map(queue => queue.id);
-
-    // Para withUnreadMessages, usar as filas do usuário ao invés das selecionadas
-    let userQueueCondition;
-    if (userQueueIds.length > 0) {
-      userQueueCondition = { [Op.or]: [{ [Op.in]: userQueueIds }, { [Op.is]: null }] };
-    } else {
-      userQueueCondition = { [Op.is]: null };
-    }
-
-    whereCondition = {
-      [Op.or]: [{ userId }, { status: "pending" }],
-      queueId: userQueueCondition,
-      unreadMessages: { [Op.gt]: 0 }
+    finalWhereCondition = {
+      [Op.and]: [
+        finalWhereCondition,
+        { unreadMessages: { [Op.gt]: 0 } }
+      ]
     };
   }
 
@@ -221,8 +358,8 @@ const ListTicketsService = async ({
 
     const ticketsIntersection: number[] = intersection(...ticketsTagFilter);
 
-    whereCondition = {
-      ...whereCondition,
+    finalWhereCondition = {
+      ...finalWhereCondition,
       id: {
         [Op.in]: ticketsIntersection
       }
@@ -242,8 +379,8 @@ const ListTicketsService = async ({
 
     const ticketsIntersection: number[] = intersection(...ticketsUserFilter);
 
-    whereCondition = {
-      ...whereCondition,
+    finalWhereCondition = {
+      ...finalWhereCondition,
       id: {
         [Op.in]: ticketsIntersection
       }
@@ -253,13 +390,10 @@ const ListTicketsService = async ({
   const limit = 40;
   const offset = limit * (+pageNumber - 1);
 
-  whereCondition = {
-    ...whereCondition,
-    companyId
-  };
+  console.log('FINAL whereCondition:', JSON.stringify(finalWhereCondition, null, 2));
 
   const { count, rows: tickets } = await Ticket.findAndCountAll({
-    where: whereCondition,
+    where: finalWhereCondition,
     include: includeCondition,
     distinct: true,
     limit,
