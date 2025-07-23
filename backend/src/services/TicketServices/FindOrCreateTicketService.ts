@@ -135,12 +135,30 @@ const FindOrCreateTicketService = async (
 
   ticket = await ShowTicketService(ticket.id, companyId);
 
-  // 🔔 Emissão de evento via socket
+  // 🔔 Emissão de evento via socket - CORRIGIDO
   const io = getIO();
-  io.to(`company-${companyId}`).emit(`company-${companyId}-ticket`, {
-    action: created ? "create" : "update",
-    ticket
-  });
+  
+  if (created) {
+    // Para tickets recém-criados, emitir para todas as salas relevantes
+    console.log(`🎫 Emitting new ticket creation for ticket ${ticket.id}`);
+    io.to(`company-${companyId}`)
+      .to("notification")
+      .to("pending")
+      .emit(`company-${companyId}-ticket`, {
+        action: "create",
+        ticket
+      });
+  } else {
+    // Para tickets atualizados, emitir normalmente
+    console.log(`🔄 Emitting ticket update for ticket ${ticket.id}`);
+    io.to(`company-${companyId}`)
+      .to("notification")
+      .to(`status:${ticket.status}`)
+      .emit(`company-${companyId}-ticket`, {
+        action: "update",
+        ticket
+      });
+  }
 
   return ticket;
 };
