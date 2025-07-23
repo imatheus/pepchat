@@ -273,29 +273,57 @@ const UpdateTicketService = async ({
 
     await ticketTraking.save();
 
-    // Sempre emitir eventos quando o status ou usuário mudou
+    // CORREÇÃO: Emissão de eventos melhorada
     if (ticket.status !== oldStatus || ticket.user?.id !== oldUserId) {
       // Remove da lista anterior se o status mudou
       if (ticket.status !== oldStatus) {
-        io.to(`status:${oldStatus}`).emit(`company-${companyId}-ticket`, {
-          action: "delete",
-          ticketId: ticket.id
-        });
+        console.log(`🔄 Removing ticket ${ticket.id} from status:${oldStatus}`);
+        io.to(`status:${oldStatus}`)
+          .to(`company-${companyId}`)
+          .emit(`company-${companyId}-ticket`, {
+            action: "delete",
+            ticketId: ticket.id
+          });
       }
 
       // Adiciona/atualiza na nova lista
+      console.log(`📝 Adding/updating ticket ${ticket.id} to status:${ticket.status}`);
       io.to(`status:${ticket.status}`)
         .to("notification")
         .to(`ticket:${ticketId}`)
+        .to(`company-${companyId}`)
         .emit(`company-${companyId}-ticket`, {
           action: "update",
           ticket
         });
+        
+      // Para tickets fechados, emitir também especificamente para a aba "closed"
+      if (ticket.status === "closed") {
+        console.log(`📁 Emitting closed ticket ${ticket.id} to closed room`);
+        io.to("closed")
+          .to(`company-${companyId}`)
+          .emit(`company-${companyId}-ticket`, {
+            action: "update",
+            ticket
+          });
+      }
+      
+      // Para tickets pendentes, emitir também para a aba "pending"
+      if (ticket.status === "pending") {
+        console.log(`⏳ Emitting pending ticket ${ticket.id} to pending room`);
+        io.to("pending")
+          .to(`company-${companyId}`)
+          .emit(`company-${companyId}-ticket`, {
+            action: "update",
+            ticket
+          });
+      }
     } else {
       // Se não houve mudança de status/usuário, apenas atualiza
       io.to(`status:${ticket.status}`)
         .to("notification")
         .to(`ticket:${ticketId}`)
+        .to(`company-${companyId}`)
         .emit(`company-${companyId}-ticket`, {
           action: "update",
           ticket
