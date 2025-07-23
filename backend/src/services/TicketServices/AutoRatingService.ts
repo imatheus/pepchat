@@ -25,19 +25,19 @@ const AutoRatingService = async ({
   try {
     logger.info(`AutoRatingService called for ticket ${ticket.id}, company ${companyId}`);
     
-    // Verificar se a avaliação automática está habilitada
-    const autoRatingSetting = await Setting.findOne({
+    // CORREÇÃO: Verificar se a avaliação está habilitada usando a configuração userRating
+    const userRatingSetting = await Setting.findOne({
       where: {
         companyId,
-        key: "autoRating"
+        key: "userRating"
       }
     });
 
-    logger.info(`AutoRating setting for company ${companyId}: ${autoRatingSetting?.value || 'NOT_FOUND'}`);
+    logger.info(`UserRating setting for company ${companyId}: ${userRatingSetting?.value || 'NOT_FOUND'}`);
 
     // Se a configuração não existe ou está desabilitada, não enviar avaliação
-    if (!autoRatingSetting || autoRatingSetting.value === "disabled") {
-      logger.info(`Auto rating disabled for company ${companyId}`);
+    if (!userRatingSetting || userRatingSetting.value === "disabled") {
+      logger.info(`User rating disabled for company ${companyId} - not sending auto rating`);
       return false;
     }
 
@@ -126,18 +126,18 @@ export const createAutoRatingSetting = async (companyId: number): Promise<void> 
     await Setting.findOrCreate({
       where: {
         companyId,
-        key: "autoRating"
+        key: "userRating"
       },
       defaults: {
         companyId,
-        key: "autoRating",
-        value: "enabled" // Por padrão, habilitar avaliação automática
+        key: "userRating",
+        value: "disabled" // Por padrão, desabilitar avaliação automática
       }
     });
 
-    logger.info(`Auto rating setting created for company ${companyId}`);
+    logger.info(`User rating setting created for company ${companyId}`);
   } catch (error) {
-    logger.error(error, `Error creating auto rating setting for company ${companyId}`);
+    logger.error(error, `Error creating user rating setting for company ${companyId}`);
   }
 };
 
@@ -149,13 +149,13 @@ export const isAutoRatingEnabled = async (companyId: number): Promise<boolean> =
     const setting = await Setting.findOne({
       where: {
         companyId,
-        key: "autoRating"
+        key: "userRating"
       }
     });
 
     return setting?.value === "enabled";
   } catch (error) {
-    logger.error(error, `Error checking auto rating setting for company ${companyId}`);
+    logger.error(error, `Error checking user rating setting for company ${companyId}`);
     return false;
   }
 };

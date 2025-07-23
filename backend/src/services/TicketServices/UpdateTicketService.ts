@@ -186,8 +186,9 @@ const UpdateTicketService = async ({
         console.log(`⏭️ Skipping auto rating for ticket ${ticketId} (justClose: true)`);
       }
 
-      // Enviar mensagem de finalização se configurada
-      if (!isNil(complationMessage) && complationMessage !== "") {
+      // CORREÇÃO: Enviar mensagem de finalização apenas se userRating estiver habilitado
+      if (!isNil(complationMessage) && complationMessage !== "" && setting?.value === "enabled") {
+        console.log(`📤 Sending completion message for ticket ${ticketId} (userRating enabled)`);
         const body = `\u200e${complationMessage}`;
         if (ticket.channel === "whatsapp") {
           await SendWhatsAppMessage({ body, ticket });
@@ -197,6 +198,10 @@ const UpdateTicketService = async ({
           console.log(`Checking if ${ticket.contact.number} is a valid ${ticket.channel} contact`)
           await sendFaceMessage({ body, ticket });
         }
+      } else if (setting?.value === "disabled") {
+        console.log(`🚫 Skipping completion message for ticket ${ticketId} (userRating disabled)`);
+      } else if (isNil(complationMessage) || complationMessage === "") {
+        console.log(`⚠️ No completion message configured for ticket ${ticketId}`);
       }
 
       // Finalizar o tracking
