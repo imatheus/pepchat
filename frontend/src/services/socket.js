@@ -18,8 +18,11 @@ export function socketConnection(params) {
     reconnection: true, // Enable reconnection
     reconnectionDelay: 1000, // Initial delay before reconnection
     reconnectionDelayMax: 5000, // Maximum delay between reconnections
-    maxReconnectionAttempts: 5, // Limit reconnection attempts
+    maxReconnectionAttempts: 10, // Increased reconnection attempts for production
+    upgrade: true, // Allow transport upgrades
+    rememberUpgrade: true, // Remember successful upgrades
     query: isObject(params) ? { ...params, userId } : { userId },
+    withCredentials: true, // Include credentials for CORS
   });
 
   // Add error handling for production

@@ -1,5 +1,5 @@
 interface SocketConfig {
-  transports: string[];
+  transports: ("websocket" | "polling")[];
   pingTimeout: number;
   pingInterval: number;
   connectTimeout: number;
@@ -25,7 +25,7 @@ export const socketConfig: SocketConfig = {
       (Array.isArray(process.env.FRONTEND_URL) ? 
         process.env.FRONTEND_URL : 
         [process.env.FRONTEND_URL]) : 
-      (isDevelopment ? ["http://localhost:3000"] : []),
+      (isDevelopment ? ["http://localhost:3000"] : ["https://pepchat.com.br"]),
     methods: ["GET", "POST"],
     credentials: true,
   },

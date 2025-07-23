@@ -305,7 +305,7 @@ const useStyles = makeStyles((theme) => ({
 
 const reducer = (state, action) => {
   if (action.type === "LOAD_MESSAGES") {
-    const messages = action.payload;
+    const messages = Array.isArray(action.payload) ? action.payload : [];
     const newMessages = [];
 
     messages.forEach((message) => {
@@ -390,7 +390,9 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
           });
 
           if (currentTicketId.current === ticketId) {
-            dispatch({ type: "LOAD_MESSAGES", payload: data.messages });
+            // Ensure data.messages is an array
+            const messages = Array.isArray(data.messages) ? data.messages : [];
+            dispatch({ type: "LOAD_MESSAGES", payload: messages });
             setHasMore(data.hasMore);
             setLoading(false);
           }
@@ -819,7 +821,7 @@ useEffect(() => {
 
 
   const renderMessages = () => {
-    if (messagesList.length > 0) {
+    if (Array.isArray(messagesList) && messagesList.length > 0) {
       const viewMessagesList = messagesList.map((message, index) => {
         if (!message.fromMe) {
           return (

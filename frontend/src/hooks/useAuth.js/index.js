@@ -39,18 +39,33 @@ const useAuth = () => {
       if (error?.response?.status === 403 && !originalRequest._retry) {
         originalRequest._retry = true;
 
-        const { data } = await api.post("/auth/refresh_token");
-        if (data) {
-          localStorage.setItem("token", JSON.stringify(data.token));
-          api.defaults.headers.Authorization = `Bearer ${data.token}`;
+        try {
+          const { data } = await api.post("/auth/refresh_token");
+          if (data) {
+            localStorage.setItem("token", JSON.stringify(data.token));
+            api.defaults.headers.Authorization = `Bearer ${data.token}`;
+          }
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Se falhar o refresh, limpar dados e redirecionar para login
+          console.warn("Token refresh failed in interceptor:", refreshError.message);
+          localStorage.removeItem("token");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("userId");
+          api.defaults.headers.Authorization = undefined;
+          setIsAuth(false);
+          setUser({});
+          history.push("/login");
+          return Promise.reject(refreshError);
         }
-        return api(originalRequest);
       }
       if (error?.response?.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("companyId");
+        localStorage.removeItem("userId");
         api.defaults.headers.Authorization = undefined;
         setIsAuth(false);
+        setUser({});
       }
       if (error?.response?.status === 402) {
         // Licença expirada tentando acessar rota restrita
@@ -75,10 +90,18 @@ const useAuth = () => {
         try {
           const { data } = await api.post("/auth/refresh_token");
           api.defaults.headers.Authorization = `Bearer ${data.token}`;
+          localStorage.setItem("token", JSON.stringify(data.token));
           setIsAuth(true);
           setUser(data.user);
         } catch (err) {
-          toastError(err);
+          // Se falhar o refresh, limpar dados de autenticação
+          console.warn("Token refresh failed, clearing auth data:", err.message);
+          localStorage.removeItem("token");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("userId");
+          api.defaults.headers.Authorization = undefined;
+          setIsAuth(false);
+          setUser({});
         }
       }
       setLoading(false);

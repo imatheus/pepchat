@@ -25,7 +25,7 @@ async function handleLoginStatus(job) {
       }
     );
 
-    if (affectedCount > 0) {
+    if (affectedCount && affectedCount > 0) {
       // Get updated users for socket emission
       const users: { id: number; companyId: number }[] = await sequelize.query(
         `SELECT id, "companyId" FROM "Users" WHERE online = false AND "updatedAt" >= NOW() - INTERVAL '1 minute'`,

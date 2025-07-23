@@ -35,7 +35,17 @@ export const RefreshTokenService = async (
     const user = await ShowUserService(id);
 
     if (user.tokenVersion !== tokenVersion) {
-      res.clearCookie("jrt");
+      // Clear cookie with proper options
+      const isProduction = process.env.NODE_ENV === "production";
+      res.clearCookie("jrt", {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "strict" : "lax",
+        path: "/",
+        ...(isProduction && {
+          domain: process.env.COOKIE_DOMAIN || undefined
+        })
+      });
       throw new AppError("ERR_SESSION_EXPIRED", 401);
     }
 
@@ -95,7 +105,17 @@ export const RefreshTokenService = async (
 
     return { user: serializedUser, newToken, refreshToken };
   } catch (err) {
-    res.clearCookie("jrt");
+    // Clear cookie with proper options
+    const isProduction = process.env.NODE_ENV === "production";
+    res.clearCookie("jrt", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "strict" : "lax",
+      path: "/",
+      ...(isProduction && {
+        domain: process.env.COOKIE_DOMAIN || undefined
+      })
+    });
     throw new AppError("ERR_SESSION_EXPIRED", 401);
   }
 };

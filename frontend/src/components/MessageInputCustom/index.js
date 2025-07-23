@@ -520,7 +520,11 @@ const MessageInputCustom = (props) => {
       try {
         const companyId = localStorage.getItem("companyId");
         const messages = await listQuickMessages({ companyId, userId: user.id });
-        const formattedMessages = messages.map((m) => ({
+        
+        // Ensure messages is an array
+        const messagesArray = Array.isArray(messages) ? messages : [];
+        
+        const formattedMessages = messagesArray.map((m) => ({
           shortcode: m.shortcode,
           message: m.message,
           value: m.message,
@@ -528,6 +532,7 @@ const MessageInputCustom = (props) => {
         setQuickMessages(formattedMessages);
       } catch (error) {
         console.error("Erro ao carregar mensagens rápidas:", error);
+        setQuickMessages([]); // Set empty array on error
       }
     };
 

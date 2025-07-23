@@ -41,6 +41,8 @@ export const update = async (
   const token: string = req.cookies.jrt;
 
   if (!token) {
+    // Log para debug em produção
+    console.warn("Refresh token cookie not found. Cookies available:", Object.keys(req.cookies));
     throw new AppError("ERR_SESSION_EXPIRED", 401);
   }
 
@@ -74,7 +76,17 @@ export const remove = async (
   const user = await User.findByPk(id);
   await user.update({ online: false });
 
-  res.clearCookie("jrt");
+  // Clear cookie with same options as when it was set
+  const isProduction = process.env.NODE_ENV === "production";
+  res.clearCookie("jrt", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "strict" : "lax",
+    path: "/",
+    ...(isProduction && {
+      domain: process.env.COOKIE_DOMAIN || undefined
+    })
+  });
 
   res.send();
 };

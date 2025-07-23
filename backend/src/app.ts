@@ -28,10 +28,15 @@ app.use(helmetConfig);
 // Rate limiting geral
 app.use(apiLimiter);
 
-// CORS mais restritivo
+// CORS configuration
 const allowedOrigins = process.env.FRONTEND_URL 
   ? [process.env.FRONTEND_URL] 
   : ["http://localhost:3000"];
+
+// Add development origins
+if (process.env.NODE_ENV === 'development') {
+  allowedOrigins.push("http://localhost:3000", "http://127.0.0.1:3000");
+}
 
 app.use(
   cors({
@@ -39,6 +44,11 @@ app.use(
     origin: (origin, callback) => {
       // Permitir requests sem origin (mobile apps, Postman, etc.)
       if (!origin) return callback(null, true);
+      
+      // Em desenvolvimento, ser mais permissivo
+      if (process.env.NODE_ENV === 'development') {
+        return callback(null, true);
+      }
       
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);

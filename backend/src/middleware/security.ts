@@ -17,12 +17,16 @@ export const loginLimiter = rateLimit({
 // Rate limiting geral para API
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 1000, // máximo 1000 requests por IP
+  max: process.env.NODE_ENV === 'development' ? 10000 : 1000, // mais permissivo em dev
   message: {
     error: "Muitas requisições. Tente novamente em 15 minutos."
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => {
+    // Pular rate limiting em desenvolvimento
+    return process.env.NODE_ENV === 'development';
+  }
 });
 
 // Rate limiting para webhooks
