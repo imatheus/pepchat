@@ -268,7 +268,6 @@ const UpdateTicketService = async ({
     if (ticket.status !== oldStatus || ticket.user?.id !== oldUserId) {
       // Remove da lista anterior se o status mudou
       if (ticket.status !== oldStatus) {
-        console.log(`🔄 Removing ticket ${ticket.id} from status:${oldStatus}`);
         io.to(`status:${oldStatus}`)
           .to(`company-${companyId}`)
           .emit(`company-${companyId}-ticket`, {
@@ -278,7 +277,6 @@ const UpdateTicketService = async ({
       }
 
       // Adiciona/atualiza na nova lista
-      console.log(`📝 Adding/updating ticket ${ticket.id} to status:${ticket.status}`);
       io.to(`status:${ticket.status}`)
         .to("notification")
         .to(`ticket:${ticketId}`)
@@ -290,7 +288,6 @@ const UpdateTicketService = async ({
         
       // Para tickets fechados, emitir também especificamente para a aba "closed"
       if (ticket.status === "closed") {
-        console.log(`📁 Emitting closed ticket ${ticket.id} to closed room`);
         io.to("closed")
           .to(`company-${companyId}`)
           .emit(`company-${companyId}-ticket`, {
@@ -301,7 +298,6 @@ const UpdateTicketService = async ({
       
       // Para tickets pendentes, emitir também para a aba "pending"
       if (ticket.status === "pending") {
-        console.log(`⏳ Emitting pending ticket ${ticket.id} to pending room`);
         io.to("pending")
           .to(`company-${companyId}`)
           .emit(`company-${companyId}-ticket`, {

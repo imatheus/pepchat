@@ -10,8 +10,6 @@ export function socketConnection(params) {
     userId = localStorage.getItem("userId");
   }
   
-  console.log(`[DEBUG] Creating socket connection - userId: ${userId}, params:`, params);
-  
   const socket = openSocket(import.meta.env.VITE_BACKEND_URL, {
     transports: ["websocket"], 
     pingTimeout: 30000,
@@ -29,17 +27,13 @@ export function socketConnection(params) {
     withCredentials: true, // Include credentials for CORS
   });
 
-  // Debug logging
-  socket.on('connect', () => {
-    console.log(`[DEBUG] Socket connected successfully - ID: ${socket.id}`);
+  // Silent error handling
+  socket.on('connect_error', () => {
+    // Silent in production
   });
 
-  socket.on('connect_error', (error) => {
-    console.log(`[DEBUG] Socket connection error:`, error);
-  });
-
-  socket.on('disconnect', (reason) => {
-    console.log(`[DEBUG] Socket disconnected - reason:`, reason);
+  socket.on('disconnect', () => {
+    // Silent in production
   });
 
   return socket;

@@ -121,8 +121,7 @@ interface IMe {
   id: string;
 }
 
-// Corrigir o tipo do writeFileAsync para aceitar Buffer
-const writeFileAsync = promisify(writeFile) as (path: string, data: Buffer | Uint8Array | string) => Promise<void>;
+const writeFileAsync = promisify(writeFile);
 
 const getTypeMessage = (msg: proto.IWebMessageInfo): string => {
   return getContentType(msg.message);
@@ -476,6 +475,14 @@ export const verifyMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, 
 
   const createdMessage = await CreateMessageService({ messageData, companyId: ticket.companyId });
 
+  // Emitir mensagem em tempo real
+  io.to(`ticket:${ticket.id}`).emit(`company-${ticket.companyId}-appMessage`, {
+    action: "create",
+    message: createdMessage,
+    ticket: ticket,
+    contact: ticket.contact
+  });
+
   if (!msg.key.fromMe && ticket.status === "closed") {
     await ticket.update({ status: "pending" });
     await ticket.reload({
@@ -548,8 +555,10 @@ const sendChatbotMessage = async (
     ];
 
     // Log para debug
+    logger.info(`Sending chatbot message - Type: ${chatbotType}, Options: ${allOptions.length}`);
 
     // Por enquanto, forçar uso de texto até resolver o problema das mensagens interativas
+    logger.info("Using text format (interactive messages temporarily disabled)");
     
     // Formato texto padrão
     let textOptions = "";
@@ -1101,6 +1110,7 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
     });
 
     if (shouldIgnore) {
+      logger.debug(`Message ignored: ${msg.key.id} - Reason: filtered by MessageFilterService`);
       return;
     }
 
@@ -1155,7 +1165,7 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
     }
 
     // Se o modo automático estiver desabilitado e o ticket não tem fila, 
-    // mas tem usuário atribuído, atribuir a fila do usu��rio
+    // mas tem usuário atribuído, atribuir a fila do usuário
     if (!chatbotAutoModeEnabled && !ticket.queueId && ticket.userId) {
       const user = await User.findByPk(ticket.userId, {
         include: [{ model: Queue, as: "queues" }]
@@ -1223,13 +1233,16 @@ const wbotMessageListener = async (wbot: Session, companyId: number): Promise<vo
       const messages = messageUpsert.messages.filter(filterMessages);
       if (!messages) return;
 
+      logger.info(`Processing ${messages.length} messages for company ${companyId}`);
 
       for (const message of messages) {
         try {
           const messageExists = await Message.count({ where: { id: message.key.id!, companyId } });
           if (!messageExists) {
+            logger.debug(`Processing new message: ${message.key.id} from ${message.key.remoteJid}`);
             await handleMessage(message, wbot, companyId);
           } else {
+            logger.debug(`Message already exists: ${message.key.id}`);
           }
         } catch (error) {
           logger.error(error, `Error processing message ${message.key.id}`);
