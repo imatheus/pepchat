@@ -9,7 +9,7 @@ export function socketConnection(params) {
     userId = localStorage.getItem("userId");
   }
   
-  const socket = openSocket(process.env.REACT_APP_BACKEND_URL, {
+  const socket = openSocket(import.meta.env.VITE_BACKEND_URL, {
     transports: ["websocket", "polling"], // Aligned with backend, removed deprecated flashsocket
     pingTimeout: 60000, // Aligned with backend
     pingInterval: 25000, // Aligned with backend

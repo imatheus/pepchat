@@ -31,16 +31,19 @@ export const initIO = (httpServer: Server): SocketIOServer => {
 
     socket.on("joinChatBox", (ticketId: string) => {
       socket.join(`ticket:${ticketId}`);
+      socket.join(`company-${companyId}-ticket:${ticketId}`);
       logger.info(`Client joined ticket chat ${ticketId}`);
     });
 
     socket.on("joinNotification", () => {
       socket.join("notification");
+      socket.join(`company-${companyId}-notification`);
       logger.info(`Client connected to notifications`);
     });
 
     socket.on("joinTickets", (status: string) => {
       socket.join(`status:${status}`);
+      socket.join(`company-${companyId}-${status}`);
       logger.info(`Client connected to ${status} tickets`);
     });
 

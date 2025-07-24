@@ -473,7 +473,15 @@ export const verifyMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, 
 
   await ticket.update({ lastMessage: body });
 
-  await CreateMessageService({ messageData, companyId: ticket.companyId });
+  const createdMessage = await CreateMessageService({ messageData, companyId: ticket.companyId });
+
+  // Emitir mensagem em tempo real
+  io.to(`ticket:${ticket.id}`).emit(`company-${ticket.companyId}-appMessage`, {
+    action: "create",
+    message: createdMessage,
+    ticket: ticket,
+    contact: ticket.contact
+  });
 
   if (!msg.key.fromMe && ticket.status === "closed") {
     await ticket.update({ status: "pending" });

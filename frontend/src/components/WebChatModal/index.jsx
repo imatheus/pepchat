@@ -120,7 +120,8 @@ const WebChatModal = ({ open, onClose }) => {
 
   const generateChatCode = () => {
     const chatId = `webchat_${Date.now()}`;
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8080";
+    // Use relative URL instead of exposing backend URL in generated code
+    // The backend should handle this endpoint properly
     
     return `<!-- PepChat - Chat Web -->
 <div id="${chatId}"></div>
@@ -129,7 +130,7 @@ const WebChatModal = ({ open, onClose }) => {
   // Configurações do Chat
   var chatConfig = {
     chatId: "${chatId}",
-    apiUrl: "${backendUrl}",
+    apiEndpoint: "/api/webchat/message", // Relative endpoint for security
     name: "${config.name}",
     welcomeMessage: "${config.welcomeMessage}",
     primaryColor: "${config.primaryColor}",
@@ -299,8 +300,8 @@ const WebChatModal = ({ open, onClose }) => {
     // Scroll para baixo
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    // Enviar para API
-    fetch(chatConfig.apiUrl + '/webchat/message', {
+    // Enviar para API usando endpoint relativo para segurança
+    fetch(chatConfig.apiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -516,7 +517,17 @@ const WebChatModal = ({ open, onClose }) => {
 
           <Box className={classes.instructionStep}>
             <Typography variant="subtitle1" gutterBottom>
-              <strong>Passo 4:</strong> Teste o Chat
+              <strong>Passo 4:</strong> Configure o Backend
+            </Typography>
+            <Typography variant="body2">
+              Certifique-se de que seu servidor está configurado para responder ao endpoint 
+              /api/webchat/message para processar as mensagens do chat.
+            </Typography>
+          </Box>
+
+          <Box className={classes.instructionStep}>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Passo 5:</strong> Teste o Chat
             </Typography>
             <Typography variant="body2">
               Acesse seu site e teste o chat. As mensagens aparecerão automaticamente 
@@ -525,8 +536,8 @@ const WebChatModal = ({ open, onClose }) => {
           </Box>
 
           <Typography variant="body2" color="textSecondary" style={{ marginTop: 16 }}>
-            <strong>Nota:</strong> O chat funciona em qualquer site HTML e é totalmente responsivo.
-            Não requer jQuery ou outras dependências.
+            <strong>Nota de Segurança:</strong> O código gerado usa endpoints relativos para maior segurança.
+            Certifique-se de que seu backend está configurado adequadamente para processar as requisições.
           </Typography>
         </TabPanel>
       </DialogContent>

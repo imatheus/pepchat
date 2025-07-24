@@ -634,26 +634,53 @@ const MessageInputCustom = (props) => {
     if (inputMessage.trim() === "") return;
     setLoading(true);
 
-const shouldSign = localStorage.getItem("signOption") === "true";
+    const shouldSign = localStorage.getItem("signOption") === "true";
+    const messageBody = shouldSign
+      ? `*${user?.name}:*\n${inputMessage.trim()}`
+      : inputMessage.trim();
+
     const message = {
       read: 1,
       fromMe: true,
       mediaUrl: "",
-      body: shouldSign
-        ? `*${user?.name}:*\n${inputMessage.trim()}`
-        : inputMessage.trim(),
+      body: messageBody,
       quotedMsg: replyingMessage,
     };
+
+    // Limpar input imediatamente para melhor UX
+    const currentMessage = inputMessage.trim();
+    setInputMessage("");
+    setShowEmoji(false);
+    setReplyingMessage(null);
+
     try {
-      await api.post(`/messages/${ticketId}`, message);
+      console.log("Sending message:", message);
+      const response = await api.post(`/messages/${ticketId}`, message);
+      console.log("Message sent successfully:", response.data);
+      
+      // Emitir evento personalizado para forçar atualização da lista de mensagens
+      // como fallback caso o socket não funcione
+      window.dispatchEvent(new CustomEvent('messageAdded', { 
+        detail: { 
+          ticketId: ticketId,
+          message: {
+            ...message,
+            id: Date.now().toString(), // ID temporário
+            createdAt: new Date().toISOString(),
+            fromMe: true,
+            ack: 1
+          }
+        } 
+      }));
+      
     } catch (err) {
+      console.error("Error sending message:", err);
+      // Se der erro, restaurar a mensagem no input
+      setInputMessage(currentMessage);
       toastError(err);
     }
 
-    setInputMessage("");
-    setShowEmoji(false);
     setLoading(false);
-    setReplyingMessage(null);
   };
 
   const disableOption = () => {

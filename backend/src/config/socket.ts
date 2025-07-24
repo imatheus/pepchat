@@ -15,11 +15,11 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
 export const socketConfig: SocketConfig = {
-  transports: ["websocket", "polling"], // Allow fallback for better compatibility
-  pingTimeout: isProduction ? 60000 : 30000, // Longer timeout in production
-  pingInterval: 25000, // Keep connection alive
-  connectTimeout: 45000, // Connection timeout
-  allowEIO3: true, // Backward compatibility
+  transports: ["websocket"],
+  pingTimeout: 30000,
+  pingInterval: 10000,
+  connectTimeout: 30000,
+  allowEIO3: true,
   cors: {
     origin: process.env.FRONTEND_URL ? 
       (Array.isArray(process.env.FRONTEND_URL) ? 

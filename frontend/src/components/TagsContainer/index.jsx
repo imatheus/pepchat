@@ -121,12 +121,6 @@ export function TagsContainer ({ ticket }) {
                         position: 'relative'
                     }
                 }}
-                PopperProps={{
-                    style: {
-                        zIndex: 9999
-                    },
-                    placement: 'bottom-start'
-                }}
             />
         </Paper>
     )

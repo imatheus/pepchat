@@ -10,6 +10,7 @@ import {
   Check as CheckIcon
 } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
+import DOMPurify from 'dompurify';
 
 const useStyles = makeStyles((theme) => ({
   codeContainer: {
@@ -130,7 +131,7 @@ const CodeBlock = ({ code, language = 'javascript', title }) => {
     return highlighted;
   };
 
-  const highlightedCode = highlightCode(code, language);
+  const highlightedCode = DOMPurify.sanitize(highlightCode(code, language));
 
   return (
     <Box className={classes.codeContainer}>

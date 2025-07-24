@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useCallback } from "react";
 import { AuthContext } from "../context/Auth/AuthContext";
 import moment from "moment";
-import { socketConnection } from "../services/socket";
+import { socketManager } from "../services/socketManager";
 import { toast } from "react-toastify";
 import { showUniqueSuccess, showUniqueInfo } from "../utils/toastManager";
 import api from "../services/api";
@@ -15,7 +15,7 @@ const useCompanyStatus = () => {
     daysRemaining: 0,
     message: ""
   });
-
+  
   const company = user?.company;
 
   // Função para calcular o status da empresa de forma consistente
@@ -155,85 +155,66 @@ const useCompanyStatus = () => {
     // Só executa se companyId for um número válido e positivo
     const companyIdNum = Number(companyId);
     if (!companyId || isNaN(companyIdNum) || companyIdNum <= 0) {
-      if (companyId !== undefined) {
-        }
       return;
     }
-    const socket = socketConnection({ companyId: companyIdNum });
 
-    // Listener para mudanças de status da empresa
-    socket.on(`company-${companyIdNum}-status-updated`, async (data) => {
+    // Conecta usando o socketManager (singleton)
+    socketManager.connect(companyIdNum);
+
+    // Define os handlers dos eventos
+    const handleStatusUpdate = async (data) => {
       if (data.action === "company_reactivated") {
-        // Não mostrar toast aqui pois já é mostrado no useAuth
-        
-        // Atualizar dados do usuário e sincronizar status
         await refreshUserData();
         await syncStatusWithBackend();
-        
-        // Recarregar a página após 2 segundos para garantir que tudo seja atualizado
-        setTimeout(() => {
-          window.location.reload();
-        }, 4000);
       } else if (data.action === "company_blocked") {
         toast.error(`🚫 Empresa bloqueada por falta de pagamento.`);
-        
-        // Atualizar dados do usuário e sincronizar status
         await refreshUserData();
         await syncStatusWithBackend();
-        
-        // Recarregar a página após 2 segundos
-        setTimeout(() => {
-          window.location.reload();
-        }, 4000);
       } else if (data.action === "company_due_date_updated") {
-        // Atualizar dados do usuário e sincronizar status
         await refreshUserData();
         await syncStatusWithBackend();
         
-        // Mostrar notificação sobre a mudança
         if (data.company.dueDate && moment(data.company.dueDate).isValid()) {
           showUniqueInfo(`Data de vencimento atualizada para ${moment(data.company.dueDate).format('DD/MM/YYYY')}`);
         } else {
           showUniqueInfo(`Data de vencimento atualizada`);
         }
       } else if (data.action === "subscription_updated") {
-        // Atualizar dados do usuário e sincronizar status
         await refreshUserData();
         await syncStatusWithBackend();
-        
-        // Mostrar notificação sobre a mudança na assinatura (sem data de vencimento)
         showUniqueInfo(`Assinatura atualizada`);
       }
-    });
+    };
 
-    // Listener para pagamentos confirmados
-    socket.on(`company-${companyIdNum}-invoice-paid`, async (data) => {
+    const handleInvoicePaid = async (data) => {
       if (data.action === "payment_confirmed") {
         showUniqueSuccess(`Pagamento confirmado!`);
         await refreshUserData();
         await syncStatusWithBackend();
-        setTimeout(() => {
-          window.location.reload();
-        }, 4000);
       }
-    });
+    };
 
-    // Listener para atualizações de data de vencimento específicas
-    socket.on(`company-${companyIdNum}-due-date-updated`, async (data) => {
+    const handleDueDateUpdate = async (data) => {
       if (data.action === "new_invoice_created") {
-        // Atualizar dados do usuário e sincronizar status
         await refreshUserData();
         await syncStatusWithBackend();
         
-        // Mostrar notificação sobre nova fatura
         if (data.company.newDueDate && moment(data.company.newDueDate).isValid()) {
           showUniqueInfo(`Nova fatura gerada - Vencimento: ${moment(data.company.newDueDate).format('DD/MM/YYYY')}`);
         }
       }
-    });
+    };
+
+    // Registra os listeners
+    socketManager.on(`company-${companyIdNum}-status-updated`, handleStatusUpdate);
+    socketManager.on(`company-${companyIdNum}-invoice-paid`, handleInvoicePaid);
+    socketManager.on(`company-${companyIdNum}-due-date-updated`, handleDueDateUpdate);
 
     return () => {
-      socket.disconnect();
+      // Remove apenas os listeners específicos deste hook
+      socketManager.off(`company-${companyIdNum}-status-updated`);
+      socketManager.off(`company-${companyIdNum}-invoice-paid`);
+      socketManager.off(`company-${companyIdNum}-due-date-updated`);
     };
   }, [companyId, refreshUserData, syncStatusWithBackend]);
 

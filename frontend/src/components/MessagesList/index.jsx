@@ -422,16 +422,32 @@ useEffect(() => {
   const socket = socketConnection({ companyId });
 
   // Conectar ao room específico do ticket
-  socket.on("connect", () => {
+  const handleConnect = () => {
+    console.log(`Attempting to join chat room for ticket: ${ticketId}`);
     socket.emit("joinChatBox", `${ticketId}`);
-  });
+    console.log(`Emitted joinChatBox for ticket: ${ticketId}`);
+  };
+
+  socket.on("connect", handleConnect);
+  
+  // Se já está conectado, entrar no room imediatamente
+  if (socket.connected) {
+    console.log("Socket already connected, joining room immediately");
+    handleConnect();
+  } else {
+    console.log("Socket not connected yet, waiting for connection");
+  }
 
   const messageListener = (data) => {
+    console.log("Message received:", data);
+    
     // Garantir que a comparação funcione com string e number
     const currentTicketId = parseInt(ticketId);
     const messageTicketId = parseInt(data.ticket?.id || data.message?.ticketId);
     
     if (data.action === "create" && messageTicketId === currentTicketId) {
+      console.log("Adding new message to chat:", data.message);
+      
       // Hide typing indicator when message is received
       setIsTyping(false);
       if (typingTimeoutRef.current) {
@@ -443,6 +459,7 @@ useEffect(() => {
       setTimeout(() => scrollToBottom(), 100); // Pequeno delay para garantir que a mensagem foi renderizada
     }
     if (data.action === "update" && parseInt(data.message?.ticketId) === currentTicketId) {
+      console.log("Updating message:", data.message);
       dispatch({ type: "UPDATE_MESSAGE", payload: data.message });
     }
   };
@@ -473,9 +490,28 @@ useEffect(() => {
   socket.on(`company-${companyId}-appMessage`, messageListener);
   socket.on(`company-${companyId}-typing`, typingListener);
 
+  // Log para debug
+  socket.on("connect", () => console.log("Socket connected to server"));
+  socket.on("disconnect", () => console.log("Socket disconnected from server"));
+
+  // Listener para evento personalizado como fallback
+  const handleCustomMessageEvent = (event) => {
+    const { ticketId: eventTicketId, message } = event.detail;
+    if (parseInt(eventTicketId) === parseInt(ticketId)) {
+      console.log("Received custom message event:", message);
+      dispatch({ type: "ADD_MESSAGE", payload: message });
+      setTimeout(() => scrollToBottom(), 100);
+    }
+  };
+
+  window.addEventListener('messageAdded', handleCustomMessageEvent);
+
   return () => {
+    console.log(`Cleaning up socket for ticket: ${ticketId}`);
     socket.off(`company-${companyId}-appMessage`, messageListener);
     socket.off(`company-${companyId}-typing`, typingListener);
+    socket.off("connect", handleConnect);
+    window.removeEventListener('messageAdded', handleCustomMessageEvent);
     socket.disconnect();
   };
 }, [ticketId]);

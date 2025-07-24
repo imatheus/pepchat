@@ -1,5 +1,5 @@
 import React from "react";
-import Routes from "./routes";
+import Routes from "./routes/index.jsx";
 import "react-toastify/dist/ReactToastify.css";
 
 import { ThemeProvider as MuiThemeProvider } from "@material-ui/core/styles";

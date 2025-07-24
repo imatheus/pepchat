@@ -8,8 +8,10 @@ import { showUniqueError, showUniqueSuccess } from "../../utils/toastManager";
 import { i18n } from "../../translate/i18n";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
-import { socketConnection } from "../../services/socket";
+import { socketManager } from "../../services/socketManager";
+import { tokenManager } from "../../utils/tokenManager";
 import moment from "moment";
+
 const useAuth = () => {
   const history = useHistory();
   const [isAuth, setIsAuth] = useState(false);
@@ -18,9 +20,9 @@ const useAuth = () => {
 
   api.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem("token");
+      const token = tokenManager.getToken();
       if (token) {
-        config.headers["Authorization"] = `Bearer ${JSON.parse(token)}`;
+        config.headers["Authorization"] = `Bearer ${token}`;
         setIsAuth(true);
       }
       return config;
@@ -42,16 +44,14 @@ const useAuth = () => {
         try {
           const { data } = await api.post("/auth/refresh_token");
           if (data) {
-            localStorage.setItem("token", JSON.stringify(data.token));
+            tokenManager.setToken(data.token);
             api.defaults.headers.Authorization = `Bearer ${data.token}`;
           }
           return api(originalRequest);
         } catch (refreshError) {
           // Se falhar o refresh, limpar dados e redirecionar para login
           console.warn("Token refresh failed in interceptor:", refreshError.message);
-          localStorage.removeItem("token");
-          localStorage.removeItem("companyId");
-          localStorage.removeItem("userId");
+          tokenManager.clearAll();
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
           setUser({});
@@ -60,9 +60,7 @@ const useAuth = () => {
         }
       }
       if (error?.response?.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("companyId");
-        localStorage.removeItem("userId");
+        tokenManager.clearAll();
         api.defaults.headers.Authorization = undefined;
         setIsAuth(false);
         setUser({});
@@ -84,21 +82,19 @@ const useAuth = () => {
   );
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = tokenManager.getToken();
     (async () => {
       if (token) {
         try {
           const { data } = await api.post("/auth/refresh_token");
           api.defaults.headers.Authorization = `Bearer ${data.token}`;
-          localStorage.setItem("token", JSON.stringify(data.token));
+          tokenManager.setToken(data.token);
           setIsAuth(true);
           setUser(data.user);
         } catch (err) {
           // Se falhar o refresh, limpar dados de autenticação
           console.warn("Token refresh failed, clearing auth data:", err.message);
-          localStorage.removeItem("token");
-          localStorage.removeItem("companyId");
-          localStorage.removeItem("userId");
+          tokenManager.clearAll();
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
           setUser({});
@@ -109,62 +105,55 @@ const useAuth = () => {
   }, []);
 
   useEffect(() => {
-    const companyId = localStorage.getItem("companyId");
-    const socket = socketConnection({ companyId });
+    const companyId = tokenManager.getCompanyId();
+    if (!companyId || !user.id) return;
 
-    socket.on(`company-${companyId}-user`, (data) => {
+    // Conecta usando o socketManager (singleton)
+    socketManager.connect(companyId);
+
+    const handleUserUpdate = (data) => {
       if (data.action === "update" && data.user.id === user.id) {
         setUser(data.user);
       }
-    });
+    };
 
-    // Listener para mudanças de status da empresa
-    socket.on(`company-${companyId}-status-updated`, (data) => {
+    const handleStatusUpdate = (data) => {
       if (data.action === "company_reactivated") {
-        // Mostrar notificação de reativação
         showUniqueSuccess(`✅ Empresa reativada! Todas as funcionalidades foram liberadas.`);
         
-        // Recarregar dados do usuário
         refreshUserData().then(() => {
-          // Redirecionar para dashboard após reativação se estiver no financeiro
           if (history.location.pathname === '/financeiro') {
             setTimeout(() => {
               history.push('/');
-              window.location.reload();
-            }, 4000);
-          } else {
-            // Se não estiver no financeiro, apenas recarregar a página
-            setTimeout(() => {
-              window.location.reload();
             }, 4000);
           }
         });
       } else if (data.action === "company_blocked") {
-        // Empresa foi bloqueada por vencimento
-        // Verificar se o usuário está carregado e não é super admin antes de bloquear
         if (user && user.profile && user.profile !== 'super' && !user.super) {
-          // Não mostrar avisos de vencimento para usuários de nível "user"
           if (user.profile !== 'user') {
             showUniqueError(`🚫 Empresa bloqueada por falta de pagamento. Redirecionando para o financeiro...`);
           }
           
-          // Recarregar dados do usuário
           refreshUserData().then(() => {
-            // Redirecionar para financeiro após bloqueio
             setTimeout(() => {
               history.push('/financeiro');
-              window.location.reload();
             }, 4000);
           });
         }
       }
-    });
+    };
+
+    // Registra os listeners usando o socketManager
+    socketManager.on(`company-${companyId}-user`, handleUserUpdate);
+    socketManager.on(`company-${companyId}-status-updated`, handleStatusUpdate);
 
     return () => {
-      socket.disconnect();
+      // Remove apenas os listeners específicos deste hook
+      socketManager.off(`company-${companyId}-user`);
+      socketManager.off(`company-${companyId}-status-updated`);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user.id]);
 
   const handleLogin = async (userData) => {
     setLoading(true);
@@ -182,10 +171,10 @@ const useAuth = () => {
         localStorage.removeItem("cshow"); // Remove se não tiver campanhas habilitadas
       }
 
-      // Sempre permitir login, mas verificar status da empresa
-      localStorage.setItem("token", JSON.stringify(data.token));
-      localStorage.setItem("companyId", companyId);
-      localStorage.setItem("userId", id);
+      // Usar tokenManager para armazenar dados de forma mais segura
+      tokenManager.setToken(data.token);
+      tokenManager.setCompanyId(companyId);
+      tokenManager.setUserId(id);
       api.defaults.headers.Authorization = `Bearer ${data.token}`;
       setUser(data.user);
       setIsAuth(true);
@@ -242,7 +231,6 @@ const useAuth = () => {
       
       setLoading(false);
 
-      //quebra linha 
     } catch (err) {
       toastError(err);
       setLoading(false);
@@ -265,11 +253,13 @@ const useAuth = () => {
       }
       
       setUser({});
-      localStorage.removeItem("token");
-      localStorage.removeItem("companyId");
-      localStorage.removeItem("userId");
+      tokenManager.clearAll();
       localStorage.removeItem("cshow");
       api.defaults.headers.Authorization = undefined;
+      
+      // Desconectar socket
+      socketManager.disconnect();
+      
       setLoading(false);
       history.push("/login");
     } catch (err) {

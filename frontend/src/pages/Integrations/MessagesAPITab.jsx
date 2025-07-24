@@ -125,7 +125,7 @@ const MessagesAPITab = () => {
   const [selectedFileName, setSelectedFileName] = useState('');
 
   const getEndpoint = () => {
-    return process.env.REACT_APP_BACKEND_URL + '/api/messages/send';
+    return import.meta.env.VITE_BACKEND_URL + '/api/messages/send';
   };
 
   const copyToClipboard = (text) => {
@@ -138,7 +138,7 @@ const MessagesAPITab = () => {
     const data = { number, body };
     const options = {
       method: 'POST',
-      url: `${process.env.REACT_APP_BACKEND_URL}/api/messages/send`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/api/messages/send`,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${values.token}`
@@ -164,7 +164,7 @@ const MessagesAPITab = () => {
       
       const options = {
         method: 'POST',
-        url: `${process.env.REACT_APP_BACKEND_URL}/api/messages/send`,
+        url: `${import.meta.env.VITE_BACKEND_URL}/api/messages/send`,
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${values.token}`

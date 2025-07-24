@@ -52,20 +52,18 @@ const CreateMessageService = async ({
 
   const io = getIO();
   
-  // CORREÇÃO: Emitir apenas para as salas apropriadas baseado no status e origem da mensagem
-  if (message.fromMe) {
-    // Mensagem do agente - emitir apenas para o ticket específico
-    io.to(`ticket:${message.ticketId}`)
-      .emit(`company-${companyId}-appMessage`, {
-        action: "create",
-        message,
-        ticket: message.ticket,
-        contact: message.ticket.contact
-      });
-  } else {
-    // Mensagem do cliente - emitir para notificações e status apropriado
-        io.to(`ticket:${message.ticketId}`)
-      .to("notification")
+  // Emitir para o room específico do ticket (sempre)
+  io.to(`ticket:${message.ticketId}`)
+    .emit(`company-${companyId}-appMessage`, {
+      action: "create",
+      message,
+      ticket: message.ticket,
+      contact: message.ticket.contact
+    });
+
+  // Se for mensagem do cliente, também emitir para notificações
+  if (!message.fromMe) {
+    io.to("notification")
       .to(`status:${message.ticket.status}`)
       .emit(`company-${companyId}-appMessage`, {
         action: "create",

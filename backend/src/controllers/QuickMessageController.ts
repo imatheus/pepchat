@@ -139,8 +139,9 @@ export const findList = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const params = req.query as FindParams;
-  const records: QuickMessage[] = await FindService(params);
+  const { userId } = req.query as FindParams;
+  const { companyId } = req.user;
+  const records: QuickMessage[] = await FindService({ companyId, userId });
 
   res.status(200).json(records);
 };

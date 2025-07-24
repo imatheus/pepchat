@@ -11,8 +11,7 @@
   }
 }
 
-/* Dark mode pulse animation */
-[data-theme="dark"] @keyframes pulse {
+@keyframes pulse-dark {
   0% {
     box-shadow: 0 0 0 0 rgba(102, 187, 106, 0.6);
   }
@@ -36,7 +35,7 @@
   }
 }
 
-[data-theme="dark"] @keyframes glow {
+@keyframes glow-dark {
   0% {
     box-shadow: 0 0 5px rgba(102, 187, 106, 0.5), 0 0 10px rgba(102, 187, 106, 0.3);
   }
@@ -50,6 +49,11 @@
 
 .tutorial-highlight {
   animation: pulse 2s infinite, glow 3s infinite;
+  position: relative !important;
+}
+
+[data-theme="dark"] .tutorial-highlight {
+  animation: pulse-dark 2s infinite, glow-dark 3s infinite;
   position: relative !important;
 }
 

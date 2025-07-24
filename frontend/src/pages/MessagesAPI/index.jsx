@@ -37,7 +37,7 @@ const MessagesAPI = () => {
   const [file, setFile] = useState({})
 
   const getEndpoint = () => {
-    return process.env.REACT_APP_BACKEND_URL + '/api/messages/send'
+    return import.meta.env.VITE_BACKEND_URL + '/api/messages/send'
   }
 
   const handleSendTextMessage = async (values) => {
@@ -45,7 +45,7 @@ const MessagesAPI = () => {
     const data = { number, body };
     var options = {
       method: 'POST',
-      url: `${process.env.REACT_APP_BACKEND_URL}/api/messages/send`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/api/messages/send`,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${values.token}`
@@ -69,7 +69,7 @@ const MessagesAPI = () => {
       data.append('medias', firstFile);
       var options = {
         method: 'POST',
-        url: `${process.env.REACT_APP_BACKEND_URL}/api/messages/send`,
+        url: `${import.meta.env.VITE_BACKEND_URL}/api/messages/send`,
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${values.token}`
