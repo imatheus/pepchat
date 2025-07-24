@@ -140,7 +140,6 @@ const FindOrCreateTicketService = async (
   
   if (created) {
     // Para tickets recém-criados, emitir para todas as salas relevantes
-    console.log(`🎫 Emitting new ticket creation for ticket ${ticket.id}`);
     io.to(`company-${companyId}`)
       .to("notification")
       .to("pending")
@@ -150,7 +149,6 @@ const FindOrCreateTicketService = async (
       });
   } else {
     // Para tickets atualizados, emitir normalmente
-    console.log(`🔄 Emitting ticket update for ticket ${ticket.id}`);
     io.to(`company-${companyId}`)
       .to("notification")
       .to(`status:${ticket.status}`)

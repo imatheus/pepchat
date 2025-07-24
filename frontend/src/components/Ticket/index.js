@@ -27,6 +27,7 @@ const useStyles = makeStyles((theme) => ({
     height: "100%",
     position: "relative",
     overflow: "hidden",
+    backgroundColor: theme.palette.background.default,
   },
 
   mainWrapper: {
@@ -39,6 +40,7 @@ const useStyles = makeStyles((theme) => ({
     borderBottomLeftRadius: 0,
     borderLeft: "0",
     marginRight: -drawerWidth,
+    backgroundColor: theme.palette.background.paper,
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,

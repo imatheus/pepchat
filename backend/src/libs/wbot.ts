@@ -38,8 +38,7 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
   const { id, name, companyId } = whatsapp;
   const io = getIO();
 
-  console.log(`--- Iniciando conexão para: ${name} ---`);
-  const { state, saveCreds } = await useStore(id);
+    const { state, saveCreds } = await useStore(id);
 
   const wbot: Session = makeWASocket({
     logger,
@@ -62,8 +61,7 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
 
   wbot.ev.on("connection.update", async (update) => {
     const { connection, lastDisconnect, qr } = update;
-    console.log(`Conexão para ${name}: ${connection}`);
-
+    
     if (qr) {
       try {
         // O QR Code é salvo no banco e enviado para o frontend.
@@ -106,8 +104,7 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
             const updatedWhatsapp = await whatsapp.reload();
             io.emit(`company-${companyId}-whatsappSession`, { action: "update", session: updatedWhatsapp });
             io.emit(`company-${companyId}-whatsapp`, { action: "update", whatsapp: updatedWhatsapp });
-            console.log(`-> CONEXÃO ABERTA PARA ${name} <-`);
-            wbotMessageListener(wbot as any, companyId);
+                        wbotMessageListener(wbot as any, companyId);
           } else {
             console.log(`Whatsapp ${id} não existe mais no banco de dados`);
             removeWbot(id);

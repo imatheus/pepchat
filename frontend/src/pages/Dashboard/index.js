@@ -75,18 +75,41 @@ const useStyles = makeStyles((theme) => ({
   },
     filterField: {
     "& .MuiOutlinedInput-root": {
-      backgroundColor: "#ffffff",
+      backgroundColor: theme.palette.background.paper,
       borderRadius: "8px",
+      color: theme.palette.text.primary,
       "&:hover": {
-        backgroundColor: "#ffffff",
+        backgroundColor: theme.palette.background.paper,
       },
       "&.Mui-focused": {
-        backgroundColor: "#ffffff",
+        backgroundColor: theme.palette.background.paper,
+      },
+      "& .MuiOutlinedInput-notchedOutline": {
+        borderColor: theme.palette.divider,
+      },
+      "&:hover .MuiOutlinedInput-notchedOutline": {
+        borderColor: theme.palette.primary.main,
+      },
+      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+        borderColor: theme.palette.primary.main,
       },
     },
     "& .MuiSelect-root": {
-      backgroundColor: "#ffffff",
+      backgroundColor: theme.palette.background.paper,
       borderRadius: "8px",
+      color: theme.palette.text.primary,
+    },
+    "& .MuiInputLabel-root": {
+      color: theme.palette.text.secondary,
+      "&.Mui-focused": {
+        color: theme.palette.primary.main,
+      },
+    },
+    "& .MuiFormHelperText-root": {
+      color: theme.palette.text.secondary,
+    },
+    "& .MuiSvgIcon-root": {
+      color: theme.palette.text.secondary,
     },
   },
 }));

@@ -55,12 +55,13 @@ const useStyles = makeStyles(theme => ({
 		},
 	},
 	welcomeMsg: {
-		backgroundColor: "#eee",
+		backgroundColor: theme.palette.background.default,
 		display: "flex",
 		justifyContent: "space-evenly",
 		alignItems: "center",
 		height: "100%",
 		textAlign: "center",
+		color: theme.palette.text.primary,
 	},
 }));
 

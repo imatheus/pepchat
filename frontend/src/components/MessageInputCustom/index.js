@@ -30,15 +30,15 @@ import LinearWithValueLabel from "./ProgressBarCustom";
 
 const useStyles = makeStyles((theme) => ({
   mainWrapper: {
-    background: "#eee",
+    background: theme.palette.background.default,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    borderTop: "1px solid rgba(0, 0, 0, 0.12)",
+    borderTop: `1px solid ${theme.palette.divider}`,
   },
 
   newMessageBox: {
-    background: "#eee",
+    background: theme.palette.background.default,
     width: "100%",
     display: "flex",
     padding: "7px",
@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
   messageInputWrapper: {
     padding: 6,
     marginRight: 7,
-    background: "#fff",
+    background: theme.palette.background.paper,
     display: "flex",
     borderRadius: 20,
     flex: 1,
@@ -74,8 +74,8 @@ const useStyles = makeStyles((theme) => ({
     position: "relative",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#eee",
-    borderTop: "1px solid rgba(0, 0, 0, 0.12)",
+    backgroundColor: theme.palette.background.default,
+    borderTop: `1px solid ${theme.palette.divider}`,
   },
 
   emojiBox: {

@@ -24,9 +24,7 @@ class SecureQueryService {
         replacements: options.replacements || [],
         type: options.type || QueryTypes.SELECT,
         plain: options.plain || false,
-        logging: (sql: string) => {
-          logger.info(`Executing query: ${sql}`);
-        }
+        logging: false
       });
       
       return result;

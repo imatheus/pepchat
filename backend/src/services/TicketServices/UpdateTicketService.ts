@@ -149,9 +149,7 @@ const UpdateTicketService = async ({
       queueOptionId = null;
     }
 
-    if (status !== undefined && ["closed"].indexOf(status) > -1) {
-      console.log(`🎯 Closing ticket ${ticketId} for company ${companyId}, justClose: ${justClose}`);
-      
+    if (status !== undefined && ["closed"].indexOf(status) > -1) {            
       const { complationMessage } = await ShowWhatsAppService(
         ticket.whatsappId,
         companyId
@@ -159,19 +157,14 @@ const UpdateTicketService = async ({
 
       // Tentar enviar avaliação automática se não foi enviada ainda e não é fechamento forçado
       if (!justClose) {
-        console.log(`📝 Attempting to send auto rating for ticket ${ticketId}`);
-        
         const ratingWasSent = await AutoRatingService({
           ticket,
           ticketTraking,
           companyId
         });
 
-        console.log(`📊 Auto rating result for ticket ${ticketId}: ${ratingWasSent}`);
-
         // Se a avaliação foi enviada, retornar para aguardar resposta
         if (ratingWasSent) {
-          console.log(`✅ Auto rating sent for ticket ${ticketId}, returning early`);
           
           io.to("status:open")
             .to(`ticket:${ticketId}`)
@@ -182,13 +175,10 @@ const UpdateTicketService = async ({
 
           return { ticket, oldStatus, oldUserId };
         }
-      } else {
-        console.log(`⏭️ Skipping auto rating for ticket ${ticketId} (justClose: true)`);
       }
 
       // CORREÇÃO: Enviar mensagem de finalização apenas se userRating estiver habilitado
       if (!isNil(complationMessage) && complationMessage !== "" && setting?.value === "enabled") {
-        console.log(`📤 Sending completion message for ticket ${ticketId} (userRating enabled)`);
         const body = `\u200e${complationMessage}`;
         if (ticket.channel === "whatsapp") {
           await SendWhatsAppMessage({ body, ticket });
@@ -198,10 +188,6 @@ const UpdateTicketService = async ({
           console.log(`Checking if ${ticket.contact.number} is a valid ${ticket.channel} contact`)
           await sendFaceMessage({ body, ticket });
         }
-      } else if (setting?.value === "disabled") {
-        console.log(`🚫 Skipping completion message for ticket ${ticketId} (userRating disabled)`);
-      } else if (isNil(complationMessage) || complationMessage === "") {
-        console.log(`⚠️ No completion message configured for ticket ${ticketId}`);
       }
 
       // Finalizar o tracking

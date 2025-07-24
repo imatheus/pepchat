@@ -9,6 +9,10 @@ import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import IconButton from "@material-ui/core/IconButton";
+import Visibility from "@material-ui/icons/Visibility";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
 import { i18n } from "../../translate/i18n";
 
@@ -44,14 +48,16 @@ const useStyles = makeStyles(theme => ({
 		textAlign: "center",
 	},
 	paper: {
-		backgroundColor: "white",
+		backgroundColor: theme.palette.background.paper,
 		display: "flex",
 		flexDirection: "column",
 		alignItems: "center",
 		padding: "55px 30px",
 		borderRadius: "16px",
-		boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-		border: "1px solid #e9ecef",
+		boxShadow: theme.palette.type === 'dark' 
+			? "0 8px 24px rgba(0, 0, 0, 0.4)" 
+			: "0 8px 24px rgba(0, 0, 0, 0.15)",
+		border: `1px solid ${theme.palette.divider}`,
 	},
 	avatar: {
 		margin: theme.spacing(1),  
@@ -63,12 +69,19 @@ const useStyles = makeStyles(theme => ({
 		"& .MuiTextField-root": {
 			"& .MuiOutlinedInput-root": {
 				borderRadius: "12px",
-				backgroundColor: "#f8f9fa",
+				backgroundColor: theme.palette.type === 'dark' ? '#424242' : "#f8f9fa",
+				color: theme.palette.text.primary,
 				"&:hover": {
-					backgroundColor: "#f8f9fa",
+					backgroundColor: theme.palette.type === 'dark' ? '#424242' : "#f8f9fa",
 				},
 				"&.Mui-focused": {
-					backgroundColor: "#ffffff",
+					backgroundColor: theme.palette.type === 'dark' ? '#525252' : "#ffffff",
+				},
+				"& .MuiIconButton-root": {
+					color: theme.palette.text.primary,
+					"&:hover": {
+						backgroundColor: theme.palette.action.hover,
+					},
 				},
 			},
 		},
@@ -89,6 +102,7 @@ const Login = () => {
 	const classes = useStyles();
 
 	const [user, setUser] = useState({ email: "", password: "" });
+	const [showPassword, setShowPassword] = useState(false);
 
 	const { handleLogin } = useContext(AuthContext);
 
@@ -99,6 +113,14 @@ const Login = () => {
 	const handlSubmit = e => {
 		e.preventDefault();
 		handleLogin(user);
+	};
+
+	const handleClickShowPassword = () => {
+		setShowPassword(!showPassword);
+	};
+
+	const handleMouseDownPassword = (event) => {
+		event.preventDefault();
 	};
 
 	return (
@@ -133,11 +155,25 @@ const Login = () => {
 						fullWidth
 						name="password"
 						label={i18n.t("login.form.password")}
-						type="password"
+						type={showPassword ? 'text' : 'password'}
 						id="password"
 						value={user.password}
 						onChange={handleChangeInput}
 						autoComplete="current-password"
+						InputProps={{
+							endAdornment: (
+								<InputAdornment position="end">
+									<IconButton
+										aria-label="toggle password visibility"
+										onClick={handleClickShowPassword}
+										onMouseDown={handleMouseDownPassword}
+										edge="end"
+									>
+										{showPassword ? <VisibilityOff /> : <Visibility />}
+									</IconButton>
+								</InputAdornment>
+							),
+						}}
 					/>
 					<Button
 						type="submit"

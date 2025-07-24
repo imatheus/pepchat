@@ -80,13 +80,16 @@ const useStyles = makeStyles((theme) => ({
   mainContainer: {
     display: "flex",
     gap: theme.spacing(3),
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(3),
+    paddingTop: theme.spacing(2),
     [theme.breakpoints.down("md")]: {
       flexDirection: "column",
     },
   },
   leftColumn: {
     flex: "0 0 320px",
+    position: "relative",
     [theme.breakpoints.down("md")]: {
       flex: "1 1 auto",
     },
@@ -97,83 +100,102 @@ const useStyles = makeStyles((theme) => ({
   },
   planCard: {
     borderRadius: "16px",
-    padding: theme.spacing(2.5),
-    backgroundColor: "#ffffff",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-    border: "2px solid #4caf50",
+    padding: theme.spacing(3),
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.palette.type === 'dark' 
+      ? "0 8px 32px rgba(0, 0, 0, 0.3)" 
+      : "0 8px 32px rgba(0, 0, 0, 0.08)",
+    border: `1px solid ${theme.palette.divider}`,
     position: "relative",
     height: "fit-content",
+    overflow: "hidden",
   },
   activeBadge: {
     position: "absolute",
-    top: "-12px",
+    top: "-8px",
     left: "50%",
     transform: "translateX(-50%)",
-    backgroundColor: "#4caf50",
+    backgroundColor: "#44b774",
     color: "#ffffff",
-    padding: theme.spacing(0.5, 2),
-    borderRadius: "20px",
+    padding: theme.spacing(0.8, 3),
+    borderRadius: "25px",
     fontSize: "0.75rem",
-    fontWeight: "bold",
+    fontWeight: "700",
     textTransform: "uppercase",
-    letterSpacing: "0.5px",
+    letterSpacing: "1px",
+    boxShadow: "0 4px 12px rgba(68, 183, 116, 0.3)",
+    fontFamily: "'Inter', 'Roboto', sans-serif",
+    zIndex: 10,
   },
   planHeader: {
     textAlign: "center",
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(3),
+    position: "relative",
+    zIndex: 1,
   },
   planTitle: {
-    fontSize: "1.25rem",
-    fontWeight: "bold",
-    marginBottom: theme.spacing(1.5),
-    color: "#333333",
+    fontSize: "1.5rem",
+    fontWeight: "700",
+    marginBottom: theme.spacing(2),
+    color: theme.palette.text.primary,
+    fontFamily: "'Inter', 'Roboto', sans-serif",
   },
   planPrice: {
-    fontSize: "2rem",
-    fontWeight: "bold",
+    fontSize: "2.5rem",
+    fontWeight: "800",
     marginBottom: theme.spacing(0.5),
-    color: "#333333",
+    color: "#44b774",
+    fontFamily: "'Inter', 'Roboto', sans-serif",
+    lineHeight: 1,
   },
   planPriceUnit: {
-    fontSize: "0.8rem",
+    fontSize: "0.9rem",
     opacity: 0.7,
-    color: "#666666",
+    color: theme.palette.text.secondary,
+    fontFamily: "'Inter', 'Roboto', sans-serif",
+    fontWeight: "500",
   },
   featuresList: {
-    marginBottom: theme.spacing(1.5),
+    marginBottom: theme.spacing(2),
+    position: "relative",
+    zIndex: 1,
   },
   featureItem: {
     display: "flex",
     alignItems: "center",
-    marginBottom: theme.spacing(1),
-    fontSize: "0.8rem",
-    fontFamily: "'Lato', sans-serif",
+    marginBottom: theme.spacing(1.2),
+    fontSize: "0.9rem",
+    fontFamily: "'Inter', 'Roboto', sans-serif",
+    fontWeight: "500",
+    color: theme.palette.text.primary,
   },
   featureIcon: {
-    marginRight: theme.spacing(0.8),
+    marginRight: theme.spacing(1),
     color: "#ffffff",
-    fontSize: "0.8rem",
-    backgroundColor: "#4caf50",
+    fontSize: "1rem",
+    backgroundColor: "#44b774",
     borderRadius: "50%",
-    padding: "3px",
-    width: "16px",
-    height: "16px",
+    padding: "4px",
+    width: "20px",
+    height: "20px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    boxShadow: "0 2px 8px rgba(68, 183, 116, 0.2)",
   },
   featureIconMissing: {
-    marginRight: theme.spacing(0.8),
+    marginRight: theme.spacing(1),
     color: "#ffffff",
-    fontSize: "0.8rem",
+    fontSize: "1rem",
     backgroundColor: "#f44336",
     borderRadius: "50%",
-    padding: "3px",
-    width: "16px",
-    height: "16px",
+    padding: "4px",
+    width: "20px",
+    height: "20px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    boxShadow: "0 2px 8px rgba(244, 67, 54, 0.2)",
   },
   cancelNotice: {
     marginTop: theme.spacing(1.5),
@@ -200,9 +222,10 @@ const useStyles = makeStyles((theme) => ({
   invoicesTitle: {
     marginBottom: theme.spacing(2),
     padding: theme.spacing(2),
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.palette.type === 'dark' ? '#424242' : '#f5f5f5',
     margin: `-${theme.spacing(2)}px -${theme.spacing(2)}px ${theme.spacing(2)}px -${theme.spacing(2)}px`,
     borderRadius: "16px 16px 0 0",
+    color: theme.palette.text.primary,
   },
   paidStatusBadge: {
     display: "inline-flex",
@@ -557,12 +580,12 @@ const Invoices = () => {
       <div className={classes.mainContainer}>
         {/* Left Column - Plan Information */}
         <div className={classes.leftColumn}>
+          {/* Active Plan Badge */}
+          <div className={classes.activeBadge}>
+            Plano Ativo
+          </div>
+          
           <Paper className={classes.planCard} elevation={0}>
-            {/* Active Plan Badge */}
-            <div className={classes.activeBadge}>
-              Plano Ativo
-            </div>
-
             <div className={classes.planHeader}>
               <Typography className={classes.planTitle}>
                 {user?.company?.plan?.name || "Plano Não Identificado"}
@@ -591,7 +614,8 @@ const Invoices = () => {
                   )}
                   <span 
                     style={{ 
-                      fontFamily: "'Lato', sans-serif",
+                      fontFamily: "'Inter', 'Roboto', sans-serif",
+                      fontWeight: "500",
                       opacity: feature.included ? 1 : 0.6,
                       textDecoration: feature.included ? 'none' : 'line-through'
                     }}

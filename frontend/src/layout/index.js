@@ -150,12 +150,12 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: "nowrap",
     width: drawerWidth,
     backgroundColor: "#44b774 !important",
-    borderRadius: "35px !important",
+    borderRadius: "0 !important",
     boxShadow: "0 4px 12px rgba(0,0,0,0.08) !important",
     border: "none !important",
-    margin: "16px",
-    height: "calc(100vh - 96px)",
-    marginTop: "70px",
+    margin: "0",
+    height: "calc(100vh - 50px)",
+    marginTop: "50px",
     transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -247,12 +247,12 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: "nowrap",
     width: 72,
     backgroundColor: "#44b774 !important",
-    borderRadius: "30px !important",
+    borderRadius: "0 !important",
     boxShadow: "0 4px 12px rgba(0,0,0,0.08) !important",
     border: "none !important",
-    margin: "16px",
-    height: "calc(100vh - 96px)",
-    marginTop: "70px",
+    margin: "0",
+    height: "calc(100vh - 64px)",
+    marginTop: "50px",
     overflowX: "hidden",
     overflowY: "auto",
     transition: theme.transitions.create("width", {
@@ -295,18 +295,12 @@ const useStyles = makeStyles((theme) => ({
   },
   content: {
     flexGrow: 1,
-    padding: theme.spacing(3),
+    padding: 0,
     overflow: "auto",
     backgroundColor: theme.palette.background.default,
     color: theme.palette.text.primary,
     transition: 'background-color 0.3s ease, color 0.3s ease',
     ...theme.scrollbarStyles,
-    [theme.breakpoints.between("sm", "md")]: {
-      padding: theme.spacing(2),
-    },
-    [theme.breakpoints.down("sm")]: {
-      padding: theme.spacing(1),
-    },
   },
   container: {
     paddingTop: theme.spacing(4),
@@ -608,8 +602,8 @@ const LoggedInLayout = ({ children }) => {
         }}
         PaperProps={{
           style: {
-            height: "calc(100vh - 96px)",
-            marginTop: "70px",
+            height: "calc(100vh - 50px)",
+            marginTop: "50px",
           }
         }}
         open={drawerOpen}

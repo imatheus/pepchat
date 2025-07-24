@@ -21,8 +21,7 @@ export const initIO = (httpServer: Server): SocketIOServer => {
           await user.save();
           socket.join(`user:${userId}`);
           socket.join(`company:${companyId}`);
-          logger.info(`User ${user.name} (ID: ${userId}) connected`);
-        }
+                  }
       } catch (err) {
         logger.error(err, `Error connecting user ${userId}`);
       }
@@ -96,8 +95,7 @@ export const initIO = (httpServer: Server): SocketIOServer => {
               updatedAt: new Date()
             });
             
-            logger.info(`User ${user.name} (ID: ${userId}) disconnected`);
-          }
+                      }
         } catch (err) {
           logger.error(err, `Error disconnecting user ${userId}`);
         }

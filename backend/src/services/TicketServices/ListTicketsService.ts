@@ -79,25 +79,12 @@ const ListTicketsService = async ({
   });
   const isChatbotDisabled = chatbotAutoModeSetting?.value === 'disabled';
   
-  // Log para debug
-  console.log('DEBUG ListTicketsService:', {
-    isChatbotDisabled,
-    status,
-    queueIds,
-    queueCondition,
-    userQueueIds,
-    userId,
-    includeNoQueue,
-    numericQueueIds,
-    showAll
-  });
-  
+    
   // LÓGICA SIMPLIFICADA E FUNCIONAL
   let whereCondition: Filterable["where"];
   
   if (status === "closed") {
     // Para tickets fechados, mostrar tickets fechados
-    console.log('🗂️ Showing closed tickets');
     whereCondition = {
       companyId,
       status: "closed"
@@ -202,8 +189,7 @@ const ListTicketsService = async ({
     }
   }
   
-  console.log('whereCondition after main logic:', JSON.stringify(whereCondition, null, 2));
-
+  
   // Tratar showAll
   if (showAll === "true") {
     let showAllCondition: any = { companyId };
@@ -247,8 +233,7 @@ const ListTicketsService = async ({
     whereCondition = showAllCondition;
   }
   
-  console.log('FINAL whereCondition:', JSON.stringify(whereCondition, null, 2));
-
+  
   let includeCondition: Includeable[];
 
   includeCondition = [
