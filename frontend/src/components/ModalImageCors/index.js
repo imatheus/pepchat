@@ -125,25 +125,43 @@ const ModalImageCors = ({ imageUrl }) => {
 	// Função para extrair nome do arquivo e construir URLs possíveis
 	const generateImageUrls = () => {
 		if (!imageUrl) return [];
-		
-		// Extrair apenas o nome do arquivo
-		let filename = imageUrl;
-		if (filename.includes('/')) {
-			filename = filename.split('/').pop();
-		}
-		
-		// Remover qualquer "undefined" do filename
-		if (filename.includes('undefined')) {
-			filename = filename.replace(/.*undefined[/\\]?/, '');
-		}
-		
-		// Gerar URLs possíveis
+
 		const baseUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080';
-		const urls = [
-			`${baseUrl}/public/${filename}`,
-			`http://localhost:8080/public/${filename}`,
-			`${window.location.origin}/public/${filename}`,
+		
+		// Pega só o nome do arquivo
+		let filename = imageUrl.split('/').pop();
+		
+		// Adiciona extensão .jpg se não tiver nenhuma extensão
+		if (!filename.includes('.')) {
+			filename = `${filename}.jpg`;
+		}
+		
+		const fullPath = imageUrl.startsWith('/') 
+			? imageUrl.includes('.') 
+				? imageUrl 
+				: `${imageUrl}.jpg`
+			: `/uploads/1/chat/95/${filename}`;
+		
+		// Array com todos os domínios possíveis
+		const domains = [
+			baseUrl,
+			'http://localhost:8080',
+			window.location.origin
 		];
+		
+		// Se já é uma URL completa, tentar ela primeiro
+		const urls = imageUrl.startsWith('http') ? [imageUrl] : [];
+		
+		// Adicionar todas as combinações possíveis
+		domains.forEach(domain => {
+			urls.push(
+				`${domain}${fullPath}`, // Com /uploads/
+				`${domain}/public${fullPath}` // Tentativa com /public/uploads/
+			);
+		});
+		
+		// Log para debug
+		console.log('Tentando URLs:', urls);
 		
 		// Se a URL original já é completa e válida, adicionar também
 		if (imageUrl.startsWith('http') && !imageUrl.includes('undefined')) {
@@ -177,10 +195,20 @@ const ModalImageCors = ({ imageUrl }) => {
 					if (blob.size > 0) {
 						const downloadUrl = window.URL.createObjectURL(blob);
 						
+						// Determinar a extensão baseada no tipo MIME
+						let extension = '.jpg';  // padrão
+						const mimeType = blob.type;
+						if (mimeType) {
+							const mimeExtension = mimeType.split('/')[1];
+							if (mimeExtension) {
+								extension = `.${mimeExtension}`;
+							}
+						}
+						
 						// Criar link temporário para download
 						const link = document.createElement('a');
 						link.href = downloadUrl;
-						link.download = `imagem_${Date.now()}.jpg`;
+						link.download = `imagem_${Date.now()}${extension}`;
 						document.body.appendChild(link);
 						link.click();
 						document.body.removeChild(link);
@@ -204,22 +232,32 @@ const ModalImageCors = ({ imageUrl }) => {
 		}
 	};
 
-	const handleImageError = () => {
-		console.error('Erro ao carregar imagem');
+	const handleImageError = async (e) => {
+		console.error('Erro ao carregar imagem:', e.target.src);
 		setImageError(true);
+
+		// Tentar verificar se o arquivo existe
+		try {
+			const response = await fetch(e.target.src, { method: 'HEAD' });
+			console.log('Status da imagem:', response.status, response.statusText);
+		} catch (error) {
+			console.error('Erro ao verificar arquivo:', error);
+		}
 	};
 
 	const handleImageLoad = () => {
+		console.log('Imagem carregada com sucesso');
 		setImageError(false);
 	};
 
 	// Funções para controlar carregamento da imagem no chat
 	const handleChatImageLoad = () => {
+		console.log('Preview carregado com sucesso');
 		setShowPlaceholder(false);
 	};
 
-	const handleChatImageError = () => {
-		console.error('Erro ao carregar imagem do chat');
+	const handleChatImageError = (e) => {
+		console.error('Erro ao carregar preview:', e.target.src);
 		setShowPlaceholder(true);
 	};
 
