@@ -32,6 +32,7 @@ import whatsBackground from "../../assets/wa-background.png";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
 import { socketConnection } from "../../services/socket";
+import { getCompanyId } from "../../utils/authUtils";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -407,7 +408,7 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
         }
       };
       fetchMessages();
-    }, 500);
+    }, 200); // Reduzido de 500ms para 200ms
     return () => {
       clearTimeout(delayDebounceFn);
     };
@@ -418,35 +419,37 @@ useEffect(() => {
     return;
   }
   
-  const companyId = localStorage.getItem("companyId");
+  // Usar getCompanyId() que tem fallback para localStorage
+  const companyId = getCompanyId() || "1"; // Fallback para company 1
   const socket = socketConnection({ companyId });
+
+  console.log(`[DEBUG] Setting up socket for ticket ${ticketId}, company ${companyId}`);
 
   // Conectar ao room específico do ticket
   const handleConnect = () => {
-    console.log(`Attempting to join chat room for ticket: ${ticketId}`);
+    console.log(`[DEBUG] Socket connected, joining ticket room: ${ticketId}`);
     socket.emit("joinChatBox", `${ticketId}`);
-    console.log(`Emitted joinChatBox for ticket: ${ticketId}`);
   };
 
   socket.on("connect", handleConnect);
   
   // Se já está conectado, entrar no room imediatamente
   if (socket.connected) {
-    console.log("Socket already connected, joining room immediately");
+    console.log(`[DEBUG] Socket already connected, joining room immediately`);
     handleConnect();
-  } else {
-    console.log("Socket not connected yet, waiting for connection");
   }
 
   const messageListener = (data) => {
-    console.log("Message received:", data);
+    console.log(`[DEBUG] Message received via socket:`, data);
     
     // Garantir que a comparação funcione com string e number
     const currentTicketId = parseInt(ticketId);
     const messageTicketId = parseInt(data.ticket?.id || data.message?.ticketId);
     
+    console.log(`[DEBUG] Current ticket: ${currentTicketId}, Message ticket: ${messageTicketId}, Action: ${data.action}`);
+    
     if (data.action === "create" && messageTicketId === currentTicketId) {
-      console.log("Adding new message to chat:", data.message);
+      console.log(`[DEBUG] Adding message to chat:`, data.message);
       
       // Hide typing indicator when message is received
       setIsTyping(false);
@@ -456,10 +459,11 @@ useEffect(() => {
       }
       
       dispatch({ type: "ADD_MESSAGE", payload: data.message });
-      setTimeout(() => scrollToBottom(), 100); // Pequeno delay para garantir que a mensagem foi renderizada
+      // Usar requestAnimationFrame para scroll mais rápido e suave
+      requestAnimationFrame(() => scrollToBottom());
     }
     if (data.action === "update" && parseInt(data.message?.ticketId) === currentTicketId) {
-      console.log("Updating message:", data.message);
+      console.log(`[DEBUG] Updating message:`, data.message);
       dispatch({ type: "UPDATE_MESSAGE", payload: data.message });
     }
   };
@@ -490,24 +494,22 @@ useEffect(() => {
   socket.on(`company-${companyId}-appMessage`, messageListener);
   socket.on(`company-${companyId}-typing`, typingListener);
 
-  // Log para debug
-  socket.on("connect", () => console.log("Socket connected to server"));
-  socket.on("disconnect", () => console.log("Socket disconnected from server"));
+  console.log(`[DEBUG] Socket listeners registered for company-${companyId}-appMessage and company-${companyId}-typing`);
 
   // Listener para evento personalizado como fallback
   const handleCustomMessageEvent = (event) => {
     const { ticketId: eventTicketId, message } = event.detail;
     if (parseInt(eventTicketId) === parseInt(ticketId)) {
-      console.log("Received custom message event:", message);
+      console.log(`[DEBUG] Received custom message event:`, message);
       dispatch({ type: "ADD_MESSAGE", payload: message });
-      setTimeout(() => scrollToBottom(), 100);
+      requestAnimationFrame(() => scrollToBottom());
     }
   };
 
   window.addEventListener('messageAdded', handleCustomMessageEvent);
 
   return () => {
-    console.log(`Cleaning up socket for ticket: ${ticketId}`);
+    console.log(`[DEBUG] Cleaning up socket for ticket: ${ticketId}`);
     socket.off(`company-${companyId}-appMessage`, messageListener);
     socket.off(`company-${companyId}-typing`, typingListener);
     socket.off("connect", handleConnect);
@@ -523,7 +525,7 @@ useEffect(() => {
 
   const scrollToBottom = () => {
     if (lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({});
+      lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
 

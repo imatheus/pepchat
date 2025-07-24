@@ -52,6 +52,8 @@ const CreateMessageService = async ({
 
   const io = getIO();
   
+  console.log(`[DEBUG] Emitting message for ticket ${message.ticketId}, fromMe: ${message.fromMe}, companyId: ${companyId}`);
+  
   // Emitir para o room específico do ticket (sempre)
   io.to(`ticket:${message.ticketId}`)
     .emit(`company-${companyId}-appMessage`, {
@@ -63,6 +65,7 @@ const CreateMessageService = async ({
 
   // Se for mensagem do cliente, também emitir para notificações
   if (!message.fromMe) {
+    console.log(`[DEBUG] Emitting to notification and status rooms for incoming message`);
     io.to("notification")
       .to(`status:${message.ticket.status}`)
       .emit(`company-${companyId}-appMessage`, {
@@ -72,6 +75,8 @@ const CreateMessageService = async ({
         contact: message.ticket.contact
       });
   }
+  
+  console.log(`[DEBUG] Message emission completed for ticket ${message.ticketId}`);
 
   return message;
 };

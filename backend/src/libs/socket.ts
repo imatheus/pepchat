@@ -13,6 +13,8 @@ export const initIO = (httpServer: Server): SocketIOServer => {
   io.on("connection", async (socket) => {
     const { userId, companyId } = socket.handshake.query;
     
+    console.log(`[DEBUG] New socket connection - userId: ${userId}, companyId: ${companyId}`);
+    
     if (userId && userId !== "undefined" && userId !== "null") {
       try {
         const user = await User.findByPk(userId as string);
@@ -21,7 +23,8 @@ export const initIO = (httpServer: Server): SocketIOServer => {
           await user.save();
           socket.join(`user:${userId}`);
           socket.join(`company:${companyId}`);
-                  }
+          console.log(`[DEBUG] User ${userId} joined company room: company:${companyId}`);
+        }
       } catch (err) {
         logger.error(err, `Error connecting user ${userId}`);
       }
@@ -32,18 +35,22 @@ export const initIO = (httpServer: Server): SocketIOServer => {
     socket.on("joinChatBox", (ticketId: string) => {
       socket.join(`ticket:${ticketId}`);
       socket.join(`company-${companyId}-ticket:${ticketId}`);
+      console.log(`[DEBUG] Client joined ticket chat ${ticketId} for company ${companyId}`);
+      console.log(`[DEBUG] Socket rooms: ticket:${ticketId}, company-${companyId}-ticket:${ticketId}`);
       logger.info(`Client joined ticket chat ${ticketId}`);
     });
 
     socket.on("joinNotification", () => {
       socket.join("notification");
       socket.join(`company-${companyId}-notification`);
+      console.log(`[DEBUG] Client joined notification rooms for company ${companyId}`);
       logger.info(`Client connected to notifications`);
     });
 
     socket.on("joinTickets", (status: string) => {
       socket.join(`status:${status}`);
       socket.join(`company-${companyId}-${status}`);
+      console.log(`[DEBUG] Client joined ${status} tickets for company ${companyId}`);
       logger.info(`Client connected to ${status} tickets`);
     });
 
@@ -84,6 +91,7 @@ export const initIO = (httpServer: Server): SocketIOServer => {
     });
 
     socket.on("disconnect", async () => {
+      console.log(`[DEBUG] Socket disconnected - userId: ${userId}, companyId: ${companyId}`);
       if (userId && userId !== "undefined" && userId !== "null") {
         try {
           const user = await User.findByPk(userId as string);
@@ -97,8 +105,7 @@ export const initIO = (httpServer: Server): SocketIOServer => {
               online: false,
               updatedAt: new Date()
             });
-            
-                      }
+          }
         } catch (err) {
           logger.error(err, `Error disconnecting user ${userId}`);
         }
@@ -108,11 +115,13 @@ export const initIO = (httpServer: Server): SocketIOServer => {
     });
 
     socket.on("error", (error) => {
+      console.log(`[DEBUG] Socket error:`, error);
       logger.error(error, `Socket error for client: ${socket.id}`);
     });
   });
 
   io.on("connect_error", (error) => {
+    console.log(`[DEBUG] Socket.IO connection error:`, error);
     logger.error(error, "Socket.IO connection error");
   });
 
