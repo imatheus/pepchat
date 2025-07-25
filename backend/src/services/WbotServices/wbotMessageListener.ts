@@ -295,11 +295,18 @@ export const makeid = (length: number): string => {
 export const verifyRating = (ticketTraking: TicketTraking): boolean => {
   if (
     ticketTraking &&
-    ticketTraking.finishedAt === null &&
     ticketTraking.ratingAt !== null &&
     !ticketTraking.rated
   ) {
-    return true;
+    // Verificar se ainda está dentro do período de avaliação (ex: 24 horas após ratingAt)
+    const ratingTime = moment(ticketTraking.ratingAt);
+    const now = moment();
+    const hoursDiff = now.diff(ratingTime, 'hours');
+    
+    // Permitir avaliação até 24 horas após o ratingAt ser definido
+    if (hoursDiff <= 24) {
+      return true;
+    }
   }
   return false;
 };
@@ -1026,7 +1033,6 @@ const handleRating = async (
   ticket: Ticket,
   ticketTraking: TicketTraking
 ) => {
-  const io = getIO();
   const bodyMessage = getBodyMessage(msg);
   let rate: number | null = null;
 
@@ -1035,11 +1041,6 @@ const handleRating = async (
   }
 
   if (!Number.isNaN(rate) && Number.isInteger(rate) && !isNull(rate)) {
-    const { complationMessage } = await ShowWhatsAppService(
-      ticket.whatsappId,
-      ticket.companyId
-    );
-
     let finalRate = rate;
 
     if (rate < 1) {
@@ -1056,37 +1057,24 @@ const handleRating = async (
       rate: finalRate,
     });
 
-    const body = formatBody(`\u200e${complationMessage}`, ticket.contact);
-    await SendWhatsAppMessage({ body, ticket });
-
     await ticketTraking.update({
-      finishedAt: moment().toDate(),
       rated: true,
+      finishedAt: moment().toDate() // Finalizar o tracking agora que foi avaliado
     });
 
+    // Agora que o usuário avaliou, finalizar definitivamente o ticket
+    // Isso enviará a mensagem de finalização e fechará completamente o ticket
     setTimeout(async () => {
-      await ticket.update({
-        queueId: null,
-        chatbot: null,
-        queueOptionId: null,
-        userId: null,
-        status: "closed",
-      });
-
-      io.to("open").emit(`company-${ticket.companyId}-ticket`, {
-        action: "delete",
-        ticket,
-        ticketId: ticket.id,
-      });
-
-      io.to(ticket.status)
-        .to(ticket.id.toString())
-        .emit(`company-${ticket.companyId}-ticket`, {
-          action: "update",
-          ticket,
+      try {
+        await UpdateTicketService({
+          ticketData: { status: "closed", justClose: true }, // justClose=true para forçar finalização
           ticketId: ticket.id,
+          companyId: ticket.companyId
         });
-    }, 4000);
+      } catch (error) {
+        logger.error(error, "Error closing ticket after rating");
+      }
+    }, 500);
   }
 };
 
@@ -1124,19 +1112,17 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
     const contact = await verifyContact(msgContact, wbot, companyId);
     const ticket = await FindOrCreateTicketService(contact, wbot.id!, 0, companyId, groupContact);
 
-    // Verificar se é uma avaliação antes de processar outras lógicas (apenas se modo automático estiver habilitado)
-    if (chatbotAutoModeEnabled) {
-      const ticketTraking = await FindOrCreateATicketTrakingService({
-        ticketId: ticket.id,
-        companyId,
-        whatsappId: wbot.id!
-      });
+    // Verificar se é uma avaliação antes de processar outras lógicas
+    const ticketTraking = await FindOrCreateATicketTrakingService({
+      ticketId: ticket.id,
+      companyId,
+      whatsappId: wbot.id!
+    });
 
-      if (!msg.key.fromMe) {
-        if (ticketTraking !== null && verifyRating(ticketTraking)) {
-          await handleRating(msg, ticket, ticketTraking);
-          return;
-        }
+    if (!msg.key.fromMe) {
+      if (ticketTraking !== null && verifyRating(ticketTraking)) {
+        await handleRating(msg, ticket, ticketTraking);
+        return;
       }
     }
 

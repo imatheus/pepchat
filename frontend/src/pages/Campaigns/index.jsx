@@ -37,7 +37,7 @@ import TableRowSkeleton from "../../components/TableRowSkeleton";
 import CampaignModal from "../../components/CampaignModal";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
-import { Grid, Fab } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
 import { isArray } from "lodash";
 import { useDate } from "../../hooks/useDate";
 import { socketConnection } from "../../services/socket";
@@ -252,7 +252,12 @@ const Campaigns = () => {
         
         // Mostrar toast de atualização ou criação
         if (data.action === "update") {
-          toast.info(`Campanha "${data.record.name}" foi atualizada - Status: ${formatStatus(data.record.status)}`);
+          // Verificar se é uma mudança de status para EM_ANDAMENTO (reprocessamento)
+          if (data.record.status === "EM_ANDAMENTO") {
+            toast.success(`Campanha "${data.record.name}" foi iniciada!`);
+          } else {
+            toast.info(`Campanha "${data.record.name}" foi atualizada - Status: ${formatStatus(data.record.status)}`);
+          }
         } else if (data.action === "create") {
           toast.success(`Campanha "${data.record.name}" foi criada com sucesso!`);
         }
@@ -391,17 +396,42 @@ const Campaigns = () => {
     }
   };
 
-  const processPendingCampaigns = async () => {
+  const processSingleCampaign = async (campaignId) => {
     setIsProcessing(true);
+    
+    // Atualização otimista - atualizar o status localmente primeiro
+    dispatch({ 
+      type: "UPDATE_CAMPAIGNS", 
+      payload: { 
+        ...campaigns.find(c => c.id === campaignId), 
+        status: "EM_ANDAMENTO" 
+      } 
+    });
+    
     try {
-      await api.post("/campaigns/process-pending");
-      toast.success("Campanhas pendentes processadas com sucesso!");
+      await api.post(`/campaigns/${campaignId}/restart`);
+      toast.success("Campanha reprocessada com sucesso!");
+      
+      // Forçar uma atualização da lista para garantir sincronização
+      setTimeout(() => {
+        fetchCampaigns();
+      }, 1000);
+      
     } catch (err) {
-      toast.error("Erro ao processar campanhas pendentes: " + err.message);
+      toast.error("Erro ao reprocessar campanha: " + err.message);
+      
+      // Em caso de erro, reverter a atualização otimista
+      const originalCampaign = campaigns.find(c => c.id === campaignId);
+      if (originalCampaign) {
+        dispatch({ 
+          type: "UPDATE_CAMPAIGNS", 
+          payload: originalCampaign 
+        });
+      }
     } finally {
       setTimeout(() => {
         setIsProcessing(false);
-      }, 1000); // Manter animação por 1 segundo extra para feedback visual
+      }, 1000);
     }
   };
 
@@ -485,6 +515,9 @@ const Campaigns = () => {
                 {i18n.t("campaigns.table.whatsapp")}
               </TableCell>
               <TableCell align="center">
+                Criação
+              </TableCell>
+              <TableCell align="center">
                 {i18n.t("campaigns.table.scheduledAt")}
               </TableCell>
               <TableCell align="center">
@@ -520,6 +553,11 @@ const Campaigns = () => {
                         : "Não definido"}
                     </TableCell>
                     <TableCell align="center">
+                      {campaign.createdAt
+                        ? datetimeToClient(campaign.createdAt)
+                        : "Não informado"}
+                    </TableCell>
+                    <TableCell align="center">
                       {campaign.scheduledAt
                         ? datetimeToClient(campaign.scheduledAt)
                         : "Sem agendamento"}
@@ -542,16 +580,27 @@ const Campaigns = () => {
                     {campaign.status === "CANCELADA" && (
                       <IconButton
                         onClick={() => restartCampaign(campaign)}
-                        title="Parar Campanha"
+                        title="Reiniciar Campanha"
                         size="small"
                       >
                         <PlayCircleOutlineIcon />
+                      </IconButton>
+                    )}
+                    {campaign.status === "PROGRAMADA" && (
+                      <IconButton
+                        onClick={() => processSingleCampaign(campaign.id)}
+                        title="Reprocessar Campanha"
+                        size="small"
+                        disabled={isProcessing}
+                      >
+                        <RefreshIcon className={isProcessing ? classes.spinning : ""} />
                       </IconButton>
                     )}
                     <IconButton
                       onClick={() =>
                         history.push(`/campaign/${campaign.id}/report`)
                       }
+                      title="Ver Relatório"
                       size="small"
                     >
                       <DescriptionIcon />
@@ -559,6 +608,7 @@ const Campaigns = () => {
                     <IconButton
                       size="small"
                       onClick={() => handleEditCampaign(campaign)}
+                      title="Editar Campanha"
                     >
                       <EditIcon />
                     </IconButton>
@@ -570,6 +620,7 @@ const Campaigns = () => {
                           setConfirmModalOpen(true);
                           setDeletingCampaign(campaign);
                         }}
+                        title="Excluir Campanha"
                       >
                         <DeleteOutlineIcon />
                       </IconButton>
@@ -578,20 +629,11 @@ const Campaigns = () => {
                 </TableRow>
                 );
               })}
-              {loading && <TableRowSkeleton columns={6} />}
+              {loading && <TableRowSkeleton columns={7} />}
             </>
           </TableBody>
         </Table>
       </Paper>
-      
-      <Fab 
-        className={classes.fab}
-        onClick={processPendingCampaigns}
-        title="Processar Campanhas Pendentes"
-        disabled={isProcessing}
-      >
-        {isProcessing ? <SyncIcon className={classes.spinning} /> : <RefreshIcon />}
-      </Fab>
     </MainContainer>
   );
 };

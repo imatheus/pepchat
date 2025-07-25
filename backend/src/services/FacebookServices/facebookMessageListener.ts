@@ -634,7 +634,6 @@ export const handleRating = async (
   ticket: Ticket,
   ticketTraking: TicketTraking
 ) => {
-  const io = getIO();
   let rate: number | null = null;
 
   if (msg.text) {
@@ -642,12 +641,6 @@ export const handleRating = async (
   }
 
   if (!Number.isNaN(rate) && Number.isInteger(rate) && !isNull(rate)) {
-    const { complationMessage } = await ShowWhatsAppService(
-      ticket.whatsappId,
-      ticket.companyId
-    );
-
-
     let finalRate = rate;
 
     if (rate < 1) {
@@ -663,45 +656,23 @@ export const handleRating = async (
       userId: ticketTraking.userId,
       rate: finalRate,
     });
-    const body = formatBody(`\u200e${complationMessage}`, ticket.contact);
-
-    await sendFaceMessage({
-      ticket,
-      body: body
-    })
 
     await ticketTraking.update({
-      finishedAt: moment().toDate(),
       rated: true,
     });
 
-
-
+    // Usar UpdateTicketService para finalizar o ticket corretamente
+    // Isso garantirá que a mensagem de finalização seja enviada
     setTimeout(async () => {
-      await ticket.update({
-        queueId: null,
-        chatbot: null,
-        queueOptionId: null,
-        userId: null,
-        status: "closed",
-      });
-
-      io.to("open").emit(`company-${ticket.companyId}-ticket`, {
-        action: "delete",
-        ticket,
-        ticketId: ticket.id,
-      });
-
-      io.to(ticket.status)
-        .to(ticket.id.toString())
-        .emit(`company-${ticket.companyId}-ticket`, {
-          action: "update",
-          ticket,
+      try {
+        await UpdateTicketService({
+          ticketData: { status: "closed" },
           ticketId: ticket.id,
+          companyId: ticket.companyId
         });
-
-    }, 2000)
-
+      } catch (error) {
+        console.error("Error closing ticket after rating:", error);
+      }
+    }, 500);
   }
-
 };

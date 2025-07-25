@@ -140,6 +140,13 @@ const Ticket = () => {
     setDrawerOpen(false);
   };
 
+  const handleTicketUpdate = (updatedTicket) => {
+    setTicket(prevTicket => ({
+      ...prevTicket,
+      ...updatedTicket
+    }));
+  };
+
   const renderTicketInfo = () => {
     if (ticket.user !== undefined) {
       return (
@@ -176,7 +183,7 @@ const Ticket = () => {
       >
         <TicketHeader loading={loading}>
           {renderTicketInfo()}
-          <TicketActionButtons ticket={ticket} />
+          <TicketActionButtons ticket={ticket} onTicketUpdate={handleTicketUpdate} />
         </TicketHeader>
         <Paper style={{ position: 'relative', zIndex: 2, overflow: 'visible' }}>
           <TagsContainer ticket={ticket} />

@@ -155,45 +155,46 @@ const UpdateTicketService = async ({
         companyId
       );
 
-      // Tentar enviar avaliação automática se não foi enviada ainda e não é fechamento forçado
+      // CORREÇÃO: Enviar avaliação automática sem bloquear o fechamento do ticket
       if (!justClose) {
-        const ratingWasSent = await AutoRatingService({
+        // Enviar avaliação em background, sem aguardar resposta
+        AutoRatingService({
           ticket,
           ticketTraking,
           companyId
+        }).catch(error => {
+          logger.error(error, `Error sending auto rating for ticket ${ticketId}`);
         });
-
-        // Se a avaliação foi enviada, retornar para aguardar resposta
-        if (ratingWasSent) {
-          
-          io.to("status:open")
-            .to(`ticket:${ticketId}`)
-            .emit(`company-${ticket.companyId}-ticket`, {
-              action: "delete",
-              ticketId: ticket.id
-            });
-
-          return { ticket, oldStatus, oldUserId };
-        }
       }
 
-      // CORREÇÃO: Enviar mensagem de finalização apenas se userRating estiver habilitado
-      if (!isNil(complationMessage) && complationMessage !== "" && setting?.value === "enabled") {
-        const body = `\u200e${complationMessage}`;
-        if (ticket.channel === "whatsapp") {
-          await SendWhatsAppMessage({ body, ticket });
+      // NOVO FLUXO: Não finalizar imediatamente se avaliaç��o estiver habilitada
+      if (setting?.value === "enabled" && !justClose && !ticketTraking.rated) {
+        // Se avaliação está habilitada e não é fechamento forçado e usuário ainda não avaliou:
+        // - NÃO enviar mensagem de finalização ainda
+        // - NÃO definir finishedAt ainda
+        // - Ticket fica "closed" mas aguardando avaliação
+        logger.info(`Ticket ${ticketId} closed but waiting for rating`);
+      } else {
+        // Se avaliação está desabilitada OU é fechamento forçado OU usuário já avaliou:
+        // - Enviar mensagem de finalização
+        // - Finalizar o tracking
+        if (!isNil(complationMessage) && complationMessage !== "") {
+          const body = `\u200e${complationMessage}`;
+          if (ticket.channel === "whatsapp") {
+            await SendWhatsAppMessage({ body, ticket });
+          }
+
+          if (["facebook", "instagram"].includes(ticket.channel)) {
+            console.log(`Checking if ${ticket.contact.number} is a valid ${ticket.channel} contact`)
+            await sendFaceMessage({ body, ticket });
+          }
         }
 
-        if (["facebook", "instagram"].includes(ticket.channel)) {
-          console.log(`Checking if ${ticket.contact.number} is a valid ${ticket.channel} contact`)
-          await sendFaceMessage({ body, ticket });
-        }
+        // Finalizar o tracking apenas se não estiver aguardando avaliação
+        ticketTraking.finishedAt = moment().toDate();
+        ticketTraking.whatsappId = ticket.whatsappId;
+        ticketTraking.userId = ticket.userId;
       }
-
-      // Finalizar o tracking
-      ticketTraking.finishedAt = moment().toDate();
-      ticketTraking.whatsappId = ticket.whatsappId;
-      ticketTraking.userId = ticket.userId;
 
       queueId = null;
       userId = null;

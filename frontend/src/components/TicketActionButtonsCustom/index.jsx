@@ -30,14 +30,14 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-const TicketActionButtonsCustom = ({ ticket }) => {
+const TicketActionButtonsCustom = ({ ticket, onTicketUpdate }) => {
 	const classes = useStyles();
 	const history = useHistory();
 	const [anchorEl, setAnchorEl] = useState(null);
 	const [loading, setLoading] = useState(false);
 	const ticketOptionsMenuOpen = Boolean(anchorEl);
 	const { user } = useContext(AuthContext);
-	const { setCurrentTicket } = useContext(TicketsContext);
+	const { setCurrentTicket, triggerRefresh } = useContext(TicketsContext);
 
 	const customTheme = createTheme({
 		palette: {
@@ -57,14 +57,26 @@ const TicketActionButtonsCustom = ({ ticket }) => {
 		setLoading(true);
 		try {
 			const updateData = {
-			status: status,
-			userId: userId || null,
+				status: status,
+				userId: userId || null,
 			};
 			
 			// Não adicionar justClose para permitir o envio da pesquisa de avaliação
 			// justClose deve ser usado apenas em casos específicos onde não queremos a pesquisa
 
-			await api.put(`/tickets/${ticket.id}`, updateData);
+			const response = await api.put(`/tickets/${ticket.id}`, updateData);
+
+			// Atualizar o estado local imediatamente com os dados retornados
+			if (onTicketUpdate && response.data) {
+				// Garantir que o ticket seja atualizado com todos os dados necessários
+				const updatedTicket = {
+					...ticket,
+					...response.data,
+					status: status, // Garantir que o status seja atualizado
+					userId: userId || null
+				};
+				onTicketUpdate(updatedTicket);
+			}
 
 			setLoading(false);
 			if (status === "open") {
@@ -73,6 +85,10 @@ const TicketActionButtonsCustom = ({ ticket }) => {
 				setCurrentTicket({ id: null, code: null })
 				history.push("/tickets");
 			}
+			
+			// Forçar atualização da lista de tickets
+			triggerRefresh();
+			
 		} catch (err) {
 			setLoading(false);
 			toastError(err);

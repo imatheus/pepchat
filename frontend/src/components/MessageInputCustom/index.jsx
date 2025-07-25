@@ -664,6 +664,13 @@ const MessageInputCustom = (props) => {
     }
 
     setLoading(false);
+    
+    // Manter o foco no campo de input após enviar a mensagem
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 100);
   };
 
   const disableOption = () => {
