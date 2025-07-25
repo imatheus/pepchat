@@ -327,17 +327,16 @@ const reducer = (state, action) => {
     const messageIndex = state.findIndex((m) => m.id === newMessage.id);
 
     if (messageIndex !== -1) {
-      // Atualizar mensagem existente
-      state[messageIndex] = newMessage;
+      // Mensagem já existe, apenas atualizar sem duplicar
+      const updatedState = [...state];
+      updatedState[messageIndex] = newMessage;
+      return updatedState;
     } else {
       // Adicionar nova mensagem no final da lista
-      state.push(newMessage);
+      const newState = [...state, newMessage];
+      // Ordenar mensagens por data de criação para garantir ordem correta
+      return newState.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     }
-
-    // Ordenar mensagens por data de criação para garantir ordem correta
-    const sortedState = state.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    
-    return [...sortedState];
   }
 
   if (action.type === "UPDATE_MESSAGE") {
@@ -345,10 +344,12 @@ const reducer = (state, action) => {
     const messageIndex = state.findIndex((m) => m.id === messageToUpdate.id);
 
     if (messageIndex !== -1) {
-      state[messageIndex] = messageToUpdate;
+      const updatedState = [...state];
+      updatedState[messageIndex] = messageToUpdate;
+      return updatedState;
     }
 
-    return [...state];
+    return state;
   }
 
   if (action.type === "RESET") {
@@ -448,6 +449,7 @@ useEffect(() => {
         typingTimeoutRef.current = null;
       }
       
+      // O reducer já verifica se a mensagem existe, então podemos enviar diretamente
       dispatch({ type: "ADD_MESSAGE", payload: data.message });
       // Usar requestAnimationFrame para scroll mais rápido e suave
       requestAnimationFrame(() => scrollToBottom());
@@ -483,22 +485,10 @@ useEffect(() => {
   socket.on(`company-${companyId}-appMessage`, messageListener);
   socket.on(`company-${companyId}-typing`, typingListener);
 
-  // Listener para evento personalizado como fallback
-  const handleCustomMessageEvent = (event) => {
-    const { ticketId: eventTicketId, message } = event.detail;
-    if (parseInt(eventTicketId) === parseInt(ticketId)) {
-      dispatch({ type: "ADD_MESSAGE", payload: message });
-      requestAnimationFrame(() => scrollToBottom());
-    }
-  };
-
-  window.addEventListener('messageAdded', handleCustomMessageEvent);
-
   return () => {
     socket.off(`company-${companyId}-appMessage`, messageListener);
     socket.off(`company-${companyId}-typing`, typingListener);
     socket.off("connect", handleConnect);
-    window.removeEventListener('messageAdded', handleCustomMessageEvent);
     socket.disconnect();
   };
 }, [ticketId]);

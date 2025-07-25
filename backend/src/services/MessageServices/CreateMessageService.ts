@@ -42,17 +42,17 @@ const CreateMessageService = async ({
     ]
   });
 
-  if (message.ticket.queueId !== null && message.queueId === null) {
-    await message.update({ queueId: message.ticket.queueId });
-  }
-
   if (!message) {
     throw new Error("ERR_CREATING_MESSAGE");
   }
 
+  if (message.ticket.queueId !== null && message.queueId === null) {
+    await message.update({ queueId: message.ticket.queueId });
+  }
+
   const io = getIO();
   
-  // Emitir para o room específico do ticket (sempre)
+  // Emitir apenas uma vez para o room específico do ticket
   io.to(`ticket:${message.ticketId}`)
     .emit(`company-${companyId}-appMessage`, {
       action: "create",
@@ -61,7 +61,7 @@ const CreateMessageService = async ({
       contact: message.ticket.contact
     });
 
-  // Se for mensagem do cliente, também emitir para notificações
+  // Se for mensagem do cliente, também emitir para notificações (mas não duplicar)
   if (!message.fromMe) {
     io.to("notification")
       .to(`status:${message.ticket.status}`)

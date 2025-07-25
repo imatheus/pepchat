@@ -654,24 +654,7 @@ const MessageInputCustom = (props) => {
     setReplyingMessage(null);
 
     try {
-      console.log("Sending message:", message);
       const response = await api.post(`/messages/${ticketId}`, message);
-      console.log("Message sent successfully:", response.data);
-      
-      // Emitir evento personalizado para forçar atualização da lista de mensagens
-      // como fallback caso o socket não funcione
-      window.dispatchEvent(new CustomEvent('messageAdded', { 
-        detail: { 
-          ticketId: ticketId,
-          message: {
-            ...message,
-            id: Date.now().toString(), // ID temporário
-            createdAt: new Date().toISOString(),
-            fromMe: true,
-            ack: 1
-          }
-        } 
-      }));
       
     } catch (err) {
       console.error("Error sending message:", err);

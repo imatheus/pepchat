@@ -99,17 +99,10 @@ export const store = async (req: Request, res: Response): Promise<void> => {
     }
 
     if (channel === "whatsapp") {
-      const message = await SendWhatsAppMessage({ body, ticket, quotedMsg });
+      await SendWhatsAppMessage({ body, ticket, quotedMsg });
       
       // A emissão da mensagem já é feita no CreateMessageService
-      // Apenas emitir atualização do ticket se necessário
-      const io = getIO();
-      io.to(ticket.status)
-        .to(ticket.id.toString())
-        .emit(`company-${ticket.companyId}-ticket`, {
-          action: "update",
-          ticket: ticket
-        });
+      // Não precisamos emitir novamente aqui para evitar duplicação
     }
   }
 
