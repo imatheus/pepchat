@@ -185,13 +185,6 @@ const Dashboard = () => {
       }
     }
     
-    // Check if user is authenticated
-    const token = localStorage.getItem('token');
-    if (!token) {
-      toast.error("Sessão expirada. Faça login novamente.");
-      return;
-    }
-    
     // Timeout to allow system to load properly
     setTimeout(() => {
       firstLoad();

@@ -49,21 +49,26 @@ const useAuth = () => {
           }
           return api(originalRequest);
         } catch (refreshError) {
-          // Se falhar o refresh, limpar dados e redirecionar para login
+          // Se falhar o refresh, limpar dados e redirecionar para login apenas se o usuário estava autenticado
           console.warn("Token refresh failed in interceptor:", refreshError.message);
-          tokenManager.clearAll();
-          api.defaults.headers.Authorization = undefined;
-          setIsAuth(false);
-          setUser({});
-          history.push("/login");
+          if (isAuth) {
+            tokenManager.clearAll();
+            api.defaults.headers.Authorization = undefined;
+            setIsAuth(false);
+            setUser({});
+            history.push("/login");
+          }
           return Promise.reject(refreshError);
         }
       }
       if (error?.response?.status === 401) {
-        tokenManager.clearAll();
-        api.defaults.headers.Authorization = undefined;
-        setIsAuth(false);
-        setUser({});
+        // Só limpar auth se o usuário estava previamente autenticado
+        if (isAuth) {
+          tokenManager.clearAll();
+          api.defaults.headers.Authorization = undefined;
+          setIsAuth(false);
+          setUser({});
+        }
       }
       if (error?.response?.status === 402) {
         // Licença expirada tentando acessar rota restrita
