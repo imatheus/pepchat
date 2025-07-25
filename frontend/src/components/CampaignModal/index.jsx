@@ -207,6 +207,9 @@ const CampaignModal = ({
         if (onSave) {
           onSave(data);
         }
+        if (resetPagination) {
+          resetPagination();
+        }
         handleClose();
       }
       toast.success(i18n.t("campaigns.toasts.success"));

@@ -14,6 +14,8 @@ import DeleteService from "../services/CampaignService/DeleteService";
 import FindService from "../services/CampaignService/FindService";
 
 import Campaign from "../models/Campaign";
+import ContactList from "../models/ContactList";
+import Whatsapp from "../models/Whatsapp";
 
 import AppError from "../errors/AppError";
 import { CancelService } from "../services/CampaignService/CancelService";
@@ -74,10 +76,18 @@ export const store = async (req: Request, res: Response): Promise<void> => {
     companyId
   });
 
+  // Recarregar a campanha com todas as associações para o evento
+  const recordWithAssociations = await record.reload({
+    include: [
+      { model: ContactList },
+      { model: Whatsapp, attributes: ["id", "name"] }
+    ]
+  });
+
   const io = getIO();
   io.emit(`company-${companyId}-campaign`, {
     action: "create",
-    record
+    record: recordWithAssociations
   });
 
   res.status(200).json(record);

@@ -7,9 +7,7 @@ import { logger } from "../../utils/logger";
 
 const ProcessPendingSchedules = async (): Promise<void> => {
   try {
-    logger.info("Checking pending schedules...");
-
-    // Buscar agendamentos pendentes
+    // Reduced logging - only log when schedules are found
     const pendingSchedules = await Schedule.findAll({
       where: {
         status: "PENDENTE",
@@ -20,9 +18,7 @@ const ProcessPendingSchedules = async (): Promise<void> => {
       }
     });
 
-    if (pendingSchedules.length === 0) {
-      logger.info("No pending schedules found");
-    } else {
+    if (pendingSchedules.length > 0) {
       logger.info(`Found ${pendingSchedules.length} pending schedules`);
 
       // Reagendar cada um
@@ -39,6 +35,7 @@ const ProcessPendingSchedules = async (): Promise<void> => {
 
       logger.info("Schedule processing completed");
     }
+    // Removed "No pending schedules found" log to reduce noise
 
   } catch (error) {
     logger.error("Error processing schedules:", error);

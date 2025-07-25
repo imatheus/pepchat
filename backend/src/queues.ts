@@ -76,7 +76,7 @@ const initializeQueues = async () => {
       
       logger.info("Background job queues initialized successfully with Redis");
     } else {
-      logger.warn("Redis not available - campaigns will be processed directly");
+      // Redis not available - campaigns will be processed directly (logging removed)
     }
   } catch (error) {
     logger.warn("Failed to initialize Redis queues:", error.message);
@@ -92,10 +92,10 @@ export { scheduleQueue, campaignQueue, autoAssignQueue, redisAvailable };
 
 export const startQueueProcess = async () => {
   try {
-    logger.info("Starting background job processors...");
+    // Reduced logging for queue initialization
     
     if (!redisAvailable || !scheduleQueue || !campaignQueue || !autoAssignQueue) {
-      logger.warn("Redis not available - using direct processing for jobs");
+      // Only log Redis unavailability once during startup
       return;
     }
 

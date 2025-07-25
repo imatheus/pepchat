@@ -21,9 +21,7 @@ const ProcessCampaignJob = async (job: Job<ProcessCampaignData>): Promise<void> 
   try {
     const { id } = job.data;
     
-    logger.info(`Processing campaign job ${job.id} for campaign ${id}`);
-    
-    // Buscar a campanha
+    // Reduced logging for campaign processing
     const campaign = await Campaign.findByPk(id);
 
     if (!campaign) {
@@ -50,7 +48,7 @@ const ProcessCampaignJob = async (job: Job<ProcessCampaignData>): Promise<void> 
       return;
     }
 
-    logger.info(`Found ${contacts.length} contacts for campaign ${id}`);
+    logger.info(`Processing campaign ${id} with ${contacts.length} contacts`);
 
     // Buscar WhatsApp da campanha ou padrão da empresa
     let whatsapp;
@@ -77,7 +75,7 @@ const ProcessCampaignJob = async (job: Job<ProcessCampaignData>): Promise<void> 
         });
 
         if (existingShipping && existingShipping.deliveredAt) {
-          logger.info(`Message already sent to contact ${contact.id} for campaign ${id}`);
+          // Reduced logging for already sent messages
           continue;
         }
 
@@ -87,8 +85,6 @@ const ProcessCampaignJob = async (job: Job<ProcessCampaignData>): Promise<void> 
         // Processar variáveis na mensagem
         const rawMessage = campaign.message1 || "Mensagem de campanha";
         const message = MessageVariables.processVariables(rawMessage, contactData);
-        
-        logger.info(`Processed message for ${contact.name}: ${message.substring(0, 100)}...`);
 
         // Criar ou atualizar registro de envio
         const [shipping] = await CampaignShipping.findOrCreate({
@@ -119,7 +115,7 @@ const ProcessCampaignJob = async (job: Job<ProcessCampaignData>): Promise<void> 
         });
 
         successCount++;
-        logger.info(`Message sent successfully to ${contact.number} for campaign ${id}`);
+        // Reduced individual message success logging
 
         // Delay entre mensagens para evitar spam (2 segundos)
         await new Promise(resolve => setTimeout(resolve, 2000));

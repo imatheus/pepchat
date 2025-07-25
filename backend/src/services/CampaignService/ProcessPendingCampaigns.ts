@@ -9,9 +9,7 @@ import { redisAvailable } from "../../queues";
 
 const ProcessPendingCampaigns = async (): Promise<void> => {
   try {
-    logger.info("Checking pending campaigns...");
-
-    // Buscar campanhas programadas que já passaram da hora de execução
+    // Reduced logging - only log when campaigns are found
     const pendingCampaigns = await Campaign.findAll({
       where: {
         status: "PROGRAMADA",
@@ -21,9 +19,7 @@ const ProcessPendingCampaigns = async (): Promise<void> => {
       }
     });
 
-    if (pendingCampaigns.length === 0) {
-      logger.info("No pending campaigns found");
-    } else {
+    if (pendingCampaigns.length > 0) {
       logger.info(`Found ${pendingCampaigns.length} pending campaigns`);
 
       // Iniciar cada campanha
@@ -37,7 +33,6 @@ const ProcessPendingCampaigns = async (): Promise<void> => {
           } else {
             // Processar diretamente sem fila
             await campaign.update({ status: "EM_ANDAMENTO" });
-            logger.info(`Processing campaign ${campaign.id} directly (no Redis)`);
             
             // Processar com delay para não sobrecarregar
             setTimeout(async () => {
@@ -60,6 +55,7 @@ const ProcessPendingCampaigns = async (): Promise<void> => {
 
       logger.info("Campaign processing completed");
     }
+    // Removed "No pending campaigns found" log to reduce noise
 
   } catch (error) {
     logger.error("Error processing campaigns:", error);

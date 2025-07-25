@@ -39,7 +39,7 @@ const server = app.listen(process.env.PORT, async () => {
     // Configurar verificação periódica de expiração de empresas (a cada 10 minutos)
     setInterval(async () => {
       try {
-        logger.info("Running periodic company expiration check...");
+        // Removed verbose logging for periodic checks
         await CheckCompanyExpirationService();
       } catch (error) {
         logger.error("Error in periodic company expiration check:", error);
@@ -49,7 +49,7 @@ const server = app.listen(process.env.PORT, async () => {
     // Executar verificação inicial de expiração após 30 segundos
     setTimeout(async () => {
       try {
-        logger.info("Running initial company expiration check...");
+        // Removed verbose logging for initial check
         await CheckCompanyExpirationService();
       } catch (error) {
         logger.error("Error in initial company expiration check:", error);

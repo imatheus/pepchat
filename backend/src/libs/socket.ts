@@ -32,19 +32,19 @@ export const initIO = (httpServer: Server): SocketIOServer => {
     socket.on("joinChatBox", (ticketId: string) => {
       socket.join(`ticket:${ticketId}`);
       socket.join(`company-${companyId}-ticket:${ticketId}`);
-      logger.info(`Client joined ticket chat ${ticketId}`);
+      // Removed verbose logging for ticket chat joins
     });
 
     socket.on("joinNotification", () => {
       socket.join("notification");
       socket.join(`company-${companyId}-notification`);
-      logger.info(`Client connected to notifications`);
+      // Removed verbose logging for notification connections
     });
 
     socket.on("joinTickets", (status: string) => {
       socket.join(`status:${status}`);
       socket.join(`company-${companyId}-${status}`);
-      logger.info(`Client connected to ${status} tickets`);
+      // Removed verbose logging for ticket status connections
     });
 
     socket.on("typing", (data: { ticketId: string; fromMe: boolean; typing: boolean }) => {
@@ -57,7 +57,7 @@ export const initIO = (httpServer: Server): SocketIOServer => {
         typing
       });
       
-      logger.info(`Typing event: Ticket ${ticketId}, fromMe: ${fromMe}, typing: ${typing}`);
+      // Removed verbose typing event logging
     });
 
     socket.on("userStatus", async () => {
@@ -75,7 +75,7 @@ export const initIO = (httpServer: Server): SocketIOServer => {
               updatedAt: new Date()
             });
             
-            logger.info(`User status updated: ${user.name} (ID: ${userId}) is online`);
+            // Removed verbose user status logging
           }
         } catch (err) {
           logger.error(err, `Error updating user status ${userId}`);

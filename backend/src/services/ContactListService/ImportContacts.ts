@@ -157,31 +157,34 @@ export async function ImportContacts(
       status: 'validating'
     });
     
-    logger.info(`Validando número ${current}/${totalToValidate}: ${newContact.number}`);
+    // Reduced logging - only log validation progress every 10 contacts or for errors
+    if (current % 10 === 0 || current === totalToValidate) {
+      logger.info(`Validating contacts: ${current}/${totalToValidate} (${percentage}%)`);
+    }
     
     const checkResult = await CheckContactNumberSafe(newContact.number, companyId);
     
     if (!checkResult.isValid) {
       // Erro de sistema/conexão - manter contato mas marcar como não validado
-      logger.warn(`Erro de sistema ao validar ${newContact.number}: ${checkResult.error}. Mantendo contato como não validado.`);
+      logger.warn(`System error validating ${newContact.number}: ${checkResult.error}. Keeping as unvalidated.`);
       newContact.isWhatsappValid = false;
       await newContact.save();
       validatedContacts.push(newContact);
     } else if (!checkResult.exists) {
       // Número não existe no WhatsApp - DESCARTAR apenas se temos certeza
       if (checkResult.error === "Número não encontrado no WhatsApp") {
-        logger.warn(`Número de contato inválido descartado (não existe no WhatsApp): ${newContact.number}`);
+        // Only log discarded numbers in debug mode or batch summary
         invalidNumbers.push(newContact.number);
         
         try {
           await newContact.destroy();
           discardedCount++;
         } catch (deleteError) {
-          logger.error(`Erro ao remover contato inválido: ${newContact.number}`, deleteError);
+          logger.error(`Error removing invalid contact: ${newContact.number}`, deleteError);
         }
       } else {
         // Incerteza - manter como não validado
-        logger.warn(`Incerteza sobre validade do número ${newContact.number}: ${checkResult.error}. Mantendo como não validado.`);
+        logger.warn(`Uncertainty about number validity ${newContact.number}: ${checkResult.error}. Keeping as unvalidated.`);
         newContact.isWhatsappValid = false;
         await newContact.save();
         validatedContacts.push(newContact);
@@ -195,7 +198,7 @@ export async function ImportContacts(
       }
       await newContact.save();
       validatedContacts.push(newContact);
-      logger.info(`Número validado com sucesso: ${newContact.number}`);
+      // Reduced success logging
     }
     
     // Pequena pausa para não sobrecarregar o sistema
@@ -214,6 +217,9 @@ export async function ImportContacts(
   // Contar contatos descartados por filtros iniciais
   const initiallyDiscarded = contacts.length - validContacts.length;
   const totalDiscarded = discardedCount + initiallyDiscarded + (validContacts.length - contactsToImport.length);
+
+  // Log final summary
+  logger.info(`Contact import completed: ${validatedContacts.length} imported, ${invalidNumbers.length} invalid numbers discarded, ${totalDiscarded} total discarded`);
 
   return {
     imported: validatedContacts,

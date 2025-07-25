@@ -250,9 +250,11 @@ const Campaigns = () => {
           });
         }, 4000);
         
-        // Mostrar toast de atualização
+        // Mostrar toast de atualização ou criação
         if (data.action === "update") {
           toast.info(`Campanha "${data.record.name}" foi atualizada - Status: ${formatStatus(data.record.status)}`);
+        } else if (data.action === "create") {
+          toast.success(`Campanha "${data.record.name}" foi criada com sucesso!`);
         }
       }
       if (data.action === "delete") {
@@ -477,9 +479,6 @@ const Campaigns = () => {
                 {i18n.t("campaigns.table.name")}
               </TableCell>
               <TableCell align="center">
-                {i18n.t("campaigns.table.status")}
-              </TableCell>
-              <TableCell align="center">
                 {i18n.t("campaigns.table.contactList")}
               </TableCell>
               <TableCell align="center">
@@ -489,7 +488,7 @@ const Campaigns = () => {
                 {i18n.t("campaigns.table.scheduledAt")}
               </TableCell>
               <TableCell align="center">
-                {i18n.t("campaigns.table.completedAt")}
+                {i18n.t("campaigns.table.status")}
               </TableCell>
               <TableCell align="center">
                 {i18n.t("campaigns.table.actions")}
@@ -511,29 +510,26 @@ const Campaigns = () => {
                       </span>
                     </TableCell>
                     <TableCell align="center">
+                      {campaign.contactListId
+                        ? (campaign.contactList?.name || "Lista não encontrada")
+                        : "Não definida"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {campaign.whatsappId
+                        ? (campaign.whatsapp?.name || "WhatsApp não encontrado")
+                        : "Não definido"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {campaign.scheduledAt
+                        ? datetimeToClient(campaign.scheduledAt)
+                        : "Sem agendamento"}
+                    </TableCell>
+                    <TableCell align="center">
                       <span className={`${getStatusClass(campaign.status)} ${isUpdating ? classes.pulseAnimation : ""}`}>
                         {formatStatus(campaign.status)}
                       </span>
                     </TableCell>
-                  <TableCell align="center">
-                    {campaign.contactListId
-                      ? campaign.contactList.name
-                      : "Não definida"}
-                  </TableCell>
-                  <TableCell align="center">
-                    {campaign.whatsappId
-                      ? campaign.whatsapp.name
-                      : "Não definido"}
-                  </TableCell>
-                  <TableCell align="center">
-                    {campaign.scheduledAt
-                      ? datetimeToClient(campaign.scheduledAt)
-                      : "Sem agendamento"}
-                  </TableCell>
-                  <TableCell align="center">
-                    {renderCompletedStatus(campaign.completedAt)}
-                  </TableCell>
-                  <TableCell align="center">
+                    <TableCell align="center">
                     {campaign.status === "EM_ANDAMENTO" && (
                       <IconButton
                         onClick={() => cancelCampaign(campaign)}
@@ -582,7 +578,7 @@ const Campaigns = () => {
                 </TableRow>
                 );
               })}
-              {loading && <TableRowSkeleton columns={7} />}
+              {loading && <TableRowSkeleton columns={6} />}
             </>
           </TableBody>
         </Table>

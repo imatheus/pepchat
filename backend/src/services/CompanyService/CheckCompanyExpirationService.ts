@@ -35,8 +35,7 @@ const CheckCompanyExpirationService = async (): Promise<Response> => {
       details: []
     };
 
-    logger.info(`Verificando expiração de ${companies.length} empresas`);
-
+    // Reduced logging - only log summary at the end
     for (const company of companies) {
       try {
         let shouldUpdate = false;
@@ -204,7 +203,10 @@ const CheckCompanyExpirationService = async (): Promise<Response> => {
       }
     }
 
-    logger.info(`Verificação concluída: ${result.expired} expiradas, ${result.activated} ativadas, ${result.inTrial} em trial`);
+    // Only log summary if there were changes
+    if (result.expired > 0 || result.activated > 0) {
+      logger.info(`Company expiration check: ${result.expired} expired, ${result.activated} activated, ${result.inTrial} in trial`);
+    }
 
     return result;
 
