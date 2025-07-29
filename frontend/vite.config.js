@@ -9,7 +9,16 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
-    sourcemap: false
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
+      },
+    },
   },
   define: {
     global: 'globalThis',

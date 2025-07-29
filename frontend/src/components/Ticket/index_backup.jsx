@@ -70,60 +70,28 @@ const Ticket = () => {
   const [contact, setContact] = useState({});
   const [ticket, setTicket] = useState({});
 
-  console.log('🎫 [Ticket] Component rendered with ticketId:', ticketId);
-
   useEffect(() => {
-    console.log('🎫 [Ticket] useEffect triggered for ticketId:', ticketId);
-    console.log('👤 [Ticket] Current user:', user);
-    console.log('🔍 [Ticket] User object keys:', Object.keys(user));
-    
     setLoading(true);
     const delayDebounceFn = setTimeout(() => {
       const fetchTicket = async () => {
-        console.log('📞 [Ticket] Fetching ticket data for ID:', ticketId);
-        console.log('🔍 [Ticket] Current API base URL:', api.defaults.baseURL);
-        console.log('🔍 [Ticket] Current API headers:', api.defaults.headers);
-        
         try {
-          console.log('📤 [Ticket] Making API call to /tickets/u/' + ticketId);
           const { data } = await api.get("/tickets/u/" + ticketId);
-          console.log('✅ [Ticket] API call successful, data received:', data ? 'YES' : 'NO');
-          console.log('✅ [Ticket] Ticket data:', data);
-          
           const { queueId } = data;
           const { queues, profile } = user;
-
-          console.log('🔍 [Ticket] Queue ID from ticket:', queueId);
-          console.log('🔍 [Ticket] User queues:', queues);
-          console.log('🔍 [Ticket] User profile:', profile);
 
           const queueAllowed = queues.find((q) => q.id === queueId);
           // Permitir visualizar tickets pending mesmo sem acesso à fila
           // mas bloquear envio de mensagens até aceitar o ticket
           if (queueAllowed === undefined && profile !== "admin" && data.status !== "pending") {
-            console.log('🚫 [Ticket] Access denied - redirecting to tickets');
             toast.error("Acesso não permitido");
             history.push("/tickets");
             return;
           }
 
-          console.log('✅ [Ticket] Setting contact and ticket data');
           setContact(data.contact);
           setTicket(data);
           setLoading(false);
         } catch (err) {
-          console.error('❌ [Ticket] API call failed:', err);
-          console.error('❌ [Ticket] Error status:', err.response?.status);
-          console.error('❌ [Ticket] Error statusText:', err.response?.statusText);
-          console.error('❌ [Ticket] Error message:', err.message);
-          console.error('❌ [Ticket] Error config URL:', err.config?.url);
-          console.error('❌ [Ticket] Error config headers:', err.config?.headers);
-          console.error('❌ [Ticket] Full error object:', err);
-          
-          if (err.response?.status === 401) {
-            console.log('🚫 [Ticket] 401 Unauthorized - token issue detected');
-          }
-          
           setLoading(false);
           toastError(err);
         }
@@ -134,17 +102,12 @@ const Ticket = () => {
   }, [ticketId, user, history]);
 
   useEffect(() => {
-    console.log('🔌 [Ticket] Socket useEffect triggered');
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
 
-    socket.on("connect", () => {
-      console.log('🔌 [Ticket] Socket connected, joining chat box:', ticket.id);
-      socket.emit("joinChatBox", `${ticket.id}`);
-    });
+    socket.on("connect", () => socket.emit("joinChatBox", `${ticket.id}`));
 
     socket.on(`company-${companyId}-ticket`, (data) => {
-      console.log('🎫 [Ticket] Socket ticket event received:', data);
       if (data.action === "update") {
         setTicket(data.ticket);
       }
@@ -156,7 +119,6 @@ const Ticket = () => {
     });
 
     socket.on(`company-${companyId}-contact`, (data) => {
-      console.log('👤 [Ticket] Socket contact event received:', data);
       if (data.action === "update") {
         setContact((prevState) => {
           if (prevState.id === data.contact?.id) {
@@ -168,7 +130,6 @@ const Ticket = () => {
     });
 
     return () => {
-      console.log('🔌 [Ticket] Disconnecting socket');
       socket.disconnect();
     };
   }, [ticketId, ticket, history]);

@@ -27,7 +27,6 @@ const encryptData = (data) => {
     const key = getEncryptionKey();
     return CryptoJS.AES.encrypt(JSON.stringify(data), key).toString();
   } catch (error) {
-    console.error('Encryption error:', error);
     return null;
   }
 };
@@ -40,7 +39,6 @@ const decryptData = (encryptedData) => {
     const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
     return JSON.parse(decryptedData);
   } catch (error) {
-    console.error('Decryption error:', error);
     return null;
   }
 };
@@ -53,6 +51,8 @@ export const tokenManager = {
     const encryptedToken = encryptData(token);
     if (encryptedToken) {
       sessionStorage.setItem(TOKEN_KEY, encryptedToken);
+      // Also store in localStorage as backup for page refreshes
+      localStorage.setItem('token', JSON.stringify(token));
       return true;
     }
     return false;
@@ -60,19 +60,41 @@ export const tokenManager = {
 
   getToken: () => {
     try {
+      // First try sessionStorage
       const encryptedToken = sessionStorage.getItem(TOKEN_KEY);
-      if (!encryptedToken) return null;
+      if (encryptedToken) {
+        const decryptedToken = decryptData(encryptedToken);
+        if (decryptedToken) return decryptedToken;
+      }
       
-      return decryptData(encryptedToken);
+      // Fallback to localStorage
+      const localToken = localStorage.getItem('token');
+      if (localToken) {
+        try {
+          return JSON.parse(localToken);
+        } catch (e) {
+          return localToken;
+        }
+      }
+      
+      return null;
     } catch (error) {
-      console.error('Error retrieving token:', error);
+      // Try localStorage as final fallback
+      const localToken = localStorage.getItem('token');
+      if (localToken) {
+        try {
+          return JSON.parse(localToken);
+        } catch (e) {
+          return localToken;
+        }
+      }
       return null;
     }
   },
 
   removeToken: () => {
     sessionStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem('token'); // Remove old localStorage token if exists
+    localStorage.removeItem('token');
   },
 
   setCompanyId: (companyId) => {
@@ -90,20 +112,18 @@ export const tokenManager = {
     try {
       const encryptedId = sessionStorage.getItem(COMPANY_ID_KEY);
       if (!encryptedId) {
-        // Fallback to localStorage for compatibility
         return localStorage.getItem('companyId');
       }
       
       return decryptData(encryptedId);
     } catch (error) {
-      console.error('Error retrieving company ID:', error);
-      return localStorage.getItem('companyId'); // Fallback
+      return localStorage.getItem('companyId');
     }
   },
 
   removeCompanyId: () => {
     sessionStorage.removeItem(COMPANY_ID_KEY);
-    localStorage.removeItem('companyId'); // Remove old localStorage value
+    localStorage.removeItem('companyId');
   },
 
   setUserId: (userId) => {
@@ -121,20 +141,18 @@ export const tokenManager = {
     try {
       const encryptedId = sessionStorage.getItem(USER_ID_KEY);
       if (!encryptedId) {
-        // Fallback to localStorage for compatibility
         return localStorage.getItem('userId');
       }
       
       return decryptData(encryptedId);
     } catch (error) {
-      console.error('Error retrieving user ID:', error);
-      return localStorage.getItem('userId'); // Fallback
+      return localStorage.getItem('userId');
     }
   },
 
   removeUserId: () => {
     sessionStorage.removeItem(USER_ID_KEY);
-    localStorage.removeItem('userId'); // Remove old localStorage value
+    localStorage.removeItem('userId');
   },
 
   clearAll: () => {
@@ -169,10 +187,8 @@ export const tokenManager = {
       if (oldUserId) {
         tokenManager.setUserId(oldUserId);
       }
-
-      // Don't remove old values immediately for compatibility
     } catch (error) {
-      console.error('Migration error:', error);
+      // Silent fail
     }
   }
 };

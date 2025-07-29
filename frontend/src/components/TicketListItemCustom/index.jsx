@@ -24,8 +24,6 @@ import toastError from "../../errors/toastError";
 import { v4 as uuidv4 } from "uuid";
 import WhatsAppIcon from "@material-ui/icons/WhatsApp";
 import AdbIcon from "@material-ui/icons/Adb";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import TicketMessagesDialog from "../TicketMessagesDialog";
 import DoneIcon from '@material-ui/icons/Done';
 import ClearOutlinedIcon from '@material-ui/icons/ClearOutlined';
 import { socketConnection } from "../../services/socket";
@@ -54,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
   },
 
   pendingTicket: {
-    cursor: "unset",
+    cursor: "pointer",
     borderRadius: "12px",
     margin: "8px 0px",
     paddingLeft: "16px",
@@ -65,6 +63,10 @@ const useStyles = makeStyles((theme) => ({
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
     backgroundColor: theme.palette.background.paper,
     border: "1px solid rgba(0, 0, 0, 0.05)",
+    "&:hover": {
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+      transform: "translateY(-1px)",
+    },
   },
 
   noTicketsDiv: {
@@ -179,8 +181,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   const [whatsAppName, setWhatsAppName] = useState(null);
   const [currentTicketTags, setCurrentTicketTags] = useState(ticket.tags || []);
 
-  const [openTicketMessageDialog, setOpenTicketMessageDialog] = useState(false);
-  const { ticketId } = useParams();
+    const { ticketId } = useParams();
   const isMounted = useRef(true);
   const { setCurrentTicket, triggerRefresh } = useContext(TicketsContext);
   const { user } = useContext(AuthContext);
@@ -378,28 +379,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               />
             </Tooltip>
           )}
-          {profile === "admin" && (
-            <Tooltip title="Espiar Conversa">
-              <VisibilityIcon
-                onClick={() => setOpenTicketMessageDialog(true)}
-                fontSize="small"
-                style={{
-                  padding: 2,
-                  height: 23,
-                  width: 23,
-                  fontSize: 12,
-                  color: '#fff',
-                  cursor: "pointer",
-                  backgroundColor: blue[700],
-                  borderRadius: 50,
-                  position: 'absolute',
-                  right: 36,
-                  top: -8
-                }}
-              />
-            </Tooltip>
-          )}
-          {ticket.chatbot && (
+                    {ticket.chatbot && (
             <Tooltip title="Chatbot">
               <AdbIcon
                 fontSize="small"
@@ -520,28 +500,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
             </Tooltip>
           )}
 
-          {profile === "admin" && (
-            <Tooltip title="Espiar Conversa">
-              <VisibilityIcon
-                onClick={() => setOpenTicketMessageDialog(true)}
-                fontSize="small"
-                style={{
-                  padding: 2,
-                  height: 23,
-                  width: 23,
-                  fontSize: 12,
-                  color: '#fff',
-                  cursor: "pointer",
-                  backgroundColor: blue[700],
-                  borderRadius: 50,
-                  right: 8,
-                  top: -8,
-                  position: 'absolute',
-                }}
-              />
-            </Tooltip>
-          )}
-
+          
         </>
       );
     }
@@ -549,16 +508,10 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
 
   return (
     <React.Fragment key={ticket.id}>
-      <TicketMessagesDialog
-        open={openTicketMessageDialog}
-        handleClose={() => setOpenTicketMessageDialog(false)}
-        ticketId={ticket.id}
-      ></TicketMessagesDialog>
       <ListItem
         dense
         button
         onClick={(e) => {
-          if (ticket.status === "pending") return;
           handleSelectTicket(ticket);
         }}
         selected={ticketId && +ticketId === ticket.id}
@@ -583,24 +536,34 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
             className={classes.ticketQueueColor}
           ></span>
         </Tooltip>
-        <ListItemAvatar>
+        <ListItemAvatar style={{ position: 'relative' }}>
           <Avatar src={ticket?.contact?.profilePicUrl} />
+          {ticket.channel === "whatsapp" && (
+            <WhatsAppIcon 
+              style={{ 
+                position: 'inherit',
+                top: -28,
+                right: -165,
+                fontSize: 20,
+                color: '#25D366',
+                backgroundColor: 'white',
+                borderRadius: '50%',
+                padding: 2,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+              }} 
+            />
+          )}
         </ListItemAvatar>
         <ListItemText
           disableTypography
           primary={
             <span className={classes.contactNameWrapper}>
-              <Typography
+            <Typography
                 noWrap
                 component="span"
                 variant="body2"
                 color="textPrimary"
               >
-                {ticket.channel === "whatsapp" && (
-                  <Tooltip title={`Atribuido à ${ticketUser}`}>
-                    <WhatsAppIcon fontSize="inherit" style={{ color: grey[700] }} />
-                  </Tooltip>
-                )}{' '}
                 {ticket.contact.name}
               </Typography>
             </span>
@@ -616,7 +579,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               > {ticket.lastMessage.includes('data:image/png;base64') ? <MarkdownWrapper> Localização</MarkdownWrapper> : <MarkdownWrapper>{ticket.lastMessage}</MarkdownWrapper>}
                 {/* {ticket.lastMessage === "" ? <br /> : <MarkdownWrapper>{ticket.lastMessage}</MarkdownWrapper>} */}
               </Typography>
-              <ListItemSecondaryAction style={{ left: 73 }}>
+              <ListItemSecondaryAction style={{ left: 16 }}>
                 <Box className={classes.ticketInfo1}>{renderTicketInfo()}</Box>
               </ListItemSecondaryAction>
             </span>

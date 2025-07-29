@@ -247,6 +247,30 @@ const TicketsManagerTabs = () => {
         </div>
       </Paper>
       <Paper square elevation={0} className={classes.ticketOptionsBox}>
+        <Can
+          role={user.profile}
+          perform="tickets-manager:showall"
+          yes={() => (
+            <TicketsQueueSelect
+              style={{ marginRight: 6 }}
+              selectedQueueIds={selectedQueueIds}
+              userQueues={user?.queues}
+              onChange={handleQueueIdsChange}
+              showAllOption={true}
+              onShowAllChange={setShowAllTickets}
+              showAllTickets={showAllTickets}
+            />
+          )}
+          no={() => (
+            <TicketsQueueSelect
+              style={{ marginRight: 6 }}
+              selectedQueueIds={selectedQueueIds}
+              userQueues={user?.queues}
+              onChange={handleQueueIdsChange}
+              showAllOption={false}
+            />
+          )}
+        />
         {tab === "search" ? (
           <div className={classes.searchInputWrapper}>
             <SearchIcon className={classes.searchIcon} />
@@ -261,30 +285,6 @@ const TicketsManagerTabs = () => {
         ) : (
           <div style={{ flex: 1 }}></div>
         )}
-        <Can
-          role={user.profile}
-          perform="tickets-manager:showall"
-          yes={() => (
-            <TicketsQueueSelect
-              style={{ marginLeft: 6 }}
-              selectedQueueIds={selectedQueueIds}
-              userQueues={user?.queues}
-              onChange={handleQueueIdsChange}
-              showAllOption={true}
-              onShowAllChange={setShowAllTickets}
-              showAllTickets={showAllTickets}
-            />
-          )}
-          no={() => (
-            <TicketsQueueSelect
-              style={{ marginLeft: 6 }}
-              selectedQueueIds={selectedQueueIds}
-              userQueues={user?.queues}
-              onChange={handleQueueIdsChange}
-              showAllOption={false}
-            />
-          )}
-        />
       </Paper>
       <TabPanel value={tab} name="open" className={classes.ticketsWrapper}>
         <Tabs

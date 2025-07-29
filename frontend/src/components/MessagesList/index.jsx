@@ -137,8 +137,8 @@ const useStyles = makeStyles((theme) => ({
     },
 
     whiteSpace: "pre-wrap",
-    backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : "#dcf8c6",
-    color: theme.palette.type === 'dark' ? theme.palette.primary.contrastText : "#303030",
+    backgroundColor: theme.palette.type === 'dark' ? "#2d5a3d" : "#dcf8c6",
+    color: theme.palette.type === 'dark' ? "#ffffff" : "#303030",
     alignSelf: "flex-end",
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
@@ -154,7 +154,7 @@ const useStyles = makeStyles((theme) => ({
   quotedContainerRight: {
     margin: "-3px -80px 6px -6px",
     overflowY: "hidden",
-    backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.main : "#cfe9ba",
+    backgroundColor: theme.palette.type === 'dark' ? "#1e3a26" : "#cfe9ba",
     borderRadius: "7.5px",
     display: "flex",
     position: "relative",

@@ -79,7 +79,7 @@ export function TagsContainer ({ ticket }) {
     }
 
     return (
-        <Paper style={{padding: 12, position: 'relative', zIndex: 1}}>
+        <div style={{padding: '8px 0', position: 'relative', zIndex: 1}}>
             <Autocomplete
                 multiple
                 size="small"
@@ -89,26 +89,36 @@ export function TagsContainer ({ ticket }) {
                 onChange={(e, v, r) => onChange(v, r)}
                 getOptionLabel={(option) => option.name}
                 renderTags={(value, getTagProps) => {
-                    return value.map((option, index) => {
-                        const backgroundColor = darkenColor(option.color || '#eee', 0.2);
-                        const textColor = getContrastColor(backgroundColor);
-                        return (
-                            <Chip
-                                variant="outlined"
-                                style={{
-                                    backgroundColor: backgroundColor,
-                                    color: textColor,
-                                    border: `1px solid ${darkenColor(backgroundColor, 0.1)}`
-                                }}
-                                label={option.name}
-                                {...getTagProps({ index })}
-                                size="small"
-                            />
-                        );
-                    });
+                    return (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                            {value.map((option, index) => {
+                                const backgroundColor = darkenColor(option.color || '#eee', 0.2);
+                                const textColor = getContrastColor(backgroundColor);
+                                return (
+                                    <Chip
+                                        variant="outlined"
+                                        style={{
+                                            backgroundColor: backgroundColor,
+                                            color: textColor,
+                                            border: `1px solid ${darkenColor(backgroundColor, 0.1)}`,
+                                            margin: 0
+                                        }}
+                                        label={option.name}
+                                        {...getTagProps({ index })}
+                                        size="small"
+                                    />
+                                );
+                            })}
+                        </div>
+                    );
                 }}
                 renderInput={(params) => (
-                    <TextField {...params} variant="outlined" placeholder="Tags" />
+                    <TextField 
+                        {...params} 
+                        variant="outlined" 
+                        placeholder="Tags"
+                        style={{ minWidth: '300px' }}
+                    />
                 )}
                 PaperComponent={({ children }) => (
                     <Paper style={{width: 400, marginLeft: 12, zIndex: 9999, position: 'relative'}}>
@@ -122,6 +132,6 @@ export function TagsContainer ({ ticket }) {
                     }
                 }}
             />
-        </Paper>
+        </div>
     )
 }

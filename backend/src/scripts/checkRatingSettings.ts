@@ -1,4 +1,5 @@
 import sequelize from "../database";
+import { Op } from "sequelize";
 import Setting from "../models/Setting";
 
 const checkRatingSettings = async () => {
@@ -48,7 +49,7 @@ const checkRatingSettings = async () => {
     const allSettings = await Setting.findAll({
       where: {
         key: {
-          [sequelize.Op.like]: '%rating%'
+          [Op.like]: '%rating%'
         }
       }
     });

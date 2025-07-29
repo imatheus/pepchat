@@ -40,7 +40,7 @@ const TicketsQueueSelect = ({
 	const isAllSelected = showAllTickets || (userQueues?.length > 0 && selectedQueueIds.length === userQueues.length);
 
 	return (
-		<div style={{ width: 120, marginTop: -4 }}>
+		<div style={{ width: 180, marginTop: -4 }}>
 			<FormControl fullWidth margin="dense">
 				<Select
 					multiple

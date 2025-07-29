@@ -50,14 +50,49 @@ const useStyles = makeStyles((theme) => ({
     marginRight: 7,
     background: theme.palette.background.paper,
     display: "flex",
-    borderRadius: 20,
+    borderRadius: 50,
     flex: 1,
+    border: "1px solid #35cd96",
+    "&:focus-within": {
+      outline: "none !important",
+      boxShadow: "none !important",
+    },
+    "& *": {
+      outline: "none !important",
+      "&:focus": {
+        outline: "none !important",
+        boxShadow: "none !important",
+      },
+      "&:focus-visible": {
+        outline: "none !important",
+        boxShadow: "none !important",
+      },
+    },
   },
 
   messageInput: {
     paddingLeft: 10,
     flex: 1,
     border: "none",
+    outline: "none !important",
+    "&:focus": {
+      outline: "none !important",
+      border: "none !important",
+      boxShadow: "none !important",
+    },
+    "&:focus-visible": {
+      outline: "none !important",
+      border: "none !important",
+      boxShadow: "none !important",
+    },
+    "& input": {
+      outline: "none !important",
+      "&:focus": {
+        outline: "none !important",
+        border: "none !important",
+        boxShadow: "none !important",
+      },
+    },
   },
 
   sendMessageIcons: {
@@ -544,14 +579,17 @@ const MessageInputCustom = (props) => {
   const handleAddEmoji = (e) => {
     let emoji = e.native;
     setInputMessage((prevState) => prevState + emoji);
+    // Focar imediatamente após adicionar emoji
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   const handleSelectQuickMessage = (message) => {
     setInputMessage(message);
+    // Focar imediatamente após selecionar mensagem rápida
     if (inputRef.current) {
-      setTimeout(() => {
-        inputRef.current.focus();
-      }, 100);
+      inputRef.current.focus();
     }
   };
 
@@ -632,8 +670,7 @@ const MessageInputCustom = (props) => {
 
   const handleSendMessage = async () => {
     if (inputMessage.trim() === "") return;
-    setLoading(true);
-
+    
     const shouldSign = localStorage.getItem("signOption") === "true";
     const messageBody = shouldSign
       ? `*${user?.name}:*\n${inputMessage.trim()}`
@@ -647,34 +684,51 @@ const MessageInputCustom = (props) => {
       quotedMsg: replyingMessage,
     };
 
-    // Limpar input imediatamente para melhor UX
+    // Salvar mensagem atual para caso de erro
     const currentMessage = inputMessage.trim();
+    
+    // Limpar input e focar IMEDIATAMENTE para UX instantânea
     setInputMessage("");
     setShowEmoji(false);
     setReplyingMessage(null);
+    
+    // Usar requestAnimationFrame para garantir que o DOM seja atualizado antes do foco
+    requestAnimationFrame(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    });
+
+    // Definir loading após focar para não interferir
+    setLoading(true);
 
     try {
-      const response = await api.post(`/messages/${ticketId}`, message);
-      
+      await api.post(`/messages/${ticketId}`, message);
     } catch (err) {
       console.error("Error sending message:", err);
       // Se der erro, restaurar a mensagem no input
       setInputMessage(currentMessage);
       toastError(err);
+      // Focar novamente após restaurar a mensagem
+      requestAnimationFrame(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      });
     }
 
     setLoading(false);
     
-    // Manter o foco no campo de input após enviar a mensagem
-    setTimeout(() => {
+    // Garantir foco após loading terminar
+    requestAnimationFrame(() => {
       if (inputRef.current) {
         inputRef.current.focus();
       }
-    }, 100);
+    });
   };
 
   const disableOption = () => {
-    return loading || ticketStatus !== "open";
+    return ticketStatus !== "open";
   };
 
   const renderReplyingMessage = (message) => {
