@@ -78,14 +78,21 @@ export const remove = async (
 
   // Clear cookie with same options as when it was set
   const isProduction = process.env.NODE_ENV === "production";
+  
+  // Configure domain for cookie clearing - use dot notation for subdomain compatibility
+  let cookieDomain = undefined;
+  if (isProduction && process.env.COOKIE_DOMAIN) {
+    cookieDomain = process.env.COOKIE_DOMAIN.startsWith('.') 
+      ? process.env.COOKIE_DOMAIN 
+      : `.${process.env.COOKIE_DOMAIN}`;
+  }
+  
   res.clearCookie("jrt", {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? "strict" : "lax",
+    sameSite: isProduction ? "lax" : "lax",
     path: "/",
-    ...(isProduction && {
-      domain: process.env.COOKIE_DOMAIN || undefined
-    })
+    ...(cookieDomain && { domain: cookieDomain })
   });
 
   res.send();

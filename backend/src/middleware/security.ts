@@ -23,6 +23,13 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => {
+    // Usar o IP real do cliente, considerando proxies
+    const forwarded = req.headers['x-forwarded-for'] as string;
+    const realIp = req.headers['x-real-ip'] as string;
+    const clientIp = forwarded?.split(',')[0] || realIp || req.ip || req.socket.remoteAddress || 'unknown';
+    return clientIp;
+  },
   skip: (req) => {
     // Pular rate limiting em desenvolvimento
     return process.env.NODE_ENV === 'development';

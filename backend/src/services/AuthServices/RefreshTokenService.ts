@@ -37,14 +37,21 @@ export const RefreshTokenService = async (
     if (user.tokenVersion !== tokenVersion) {
       // Clear cookie with proper options
       const isProduction = process.env.NODE_ENV === "production";
+      
+      // Configure domain for cookie clearing - use dot notation for subdomain compatibility
+      let cookieDomain = undefined;
+      if (isProduction && process.env.COOKIE_DOMAIN) {
+        cookieDomain = process.env.COOKIE_DOMAIN.startsWith('.') 
+          ? process.env.COOKIE_DOMAIN 
+          : `.${process.env.COOKIE_DOMAIN}`;
+      }
+      
       res.clearCookie("jrt", {
         httpOnly: true,
         secure: isProduction,
-        sameSite: isProduction ? "strict" : "lax",
+        sameSite: isProduction ? "lax" : "lax",
         path: "/",
-        ...(isProduction && {
-          domain: process.env.COOKIE_DOMAIN || undefined
-        })
+        ...(cookieDomain && { domain: cookieDomain })
       });
       throw new AppError("ERR_SESSION_EXPIRED", 401);
     }
@@ -107,14 +114,21 @@ export const RefreshTokenService = async (
   } catch (err) {
     // Clear cookie with proper options
     const isProduction = process.env.NODE_ENV === "production";
+    
+    // Configure domain for cookie clearing - use dot notation for subdomain compatibility
+    let cookieDomain = undefined;
+    if (isProduction && process.env.COOKIE_DOMAIN) {
+      cookieDomain = process.env.COOKIE_DOMAIN.startsWith('.') 
+        ? process.env.COOKIE_DOMAIN 
+        : `.${process.env.COOKIE_DOMAIN}`;
+    }
+    
     res.clearCookie("jrt", {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? "strict" : "lax",
+      sameSite: isProduction ? "lax" : "lax",
       path: "/",
-      ...(isProduction && {
-        domain: process.env.COOKIE_DOMAIN || undefined
-      })
+      ...(cookieDomain && { domain: cookieDomain })
     });
     throw new AppError("ERR_SESSION_EXPIRED", 401);
   }

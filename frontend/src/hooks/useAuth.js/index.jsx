@@ -42,10 +42,12 @@ const useAuth = () => {
         originalRequest._retry = true;
 
         try {
+          console.debug("Attempting token refresh due to 403 error");
           const { data } = await api.post("/auth/refresh_token");
-          if (data) {
+          if (data && data.token) {
             tokenManager.setToken(data.token);
             api.defaults.headers.Authorization = `Bearer ${data.token}`;
+            console.debug("Token refreshed successfully");
           }
           return api(originalRequest);
         } catch (refreshError) {
@@ -62,12 +64,18 @@ const useAuth = () => {
         }
       }
       if (error?.response?.status === 401) {
-        // Só limpar auth se o usuário estava previamente autenticado
-        if (isAuth) {
+        console.warn("401 Unauthorized error:", error.response?.data?.message || error.message);
+        // Só limpar auth se o usuário estava previamente autenticado e não é uma tentativa de login
+        if (isAuth && !originalRequest.url?.includes('/auth/login')) {
+          console.debug("Clearing authentication due to 401 error");
           tokenManager.clearAll();
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
           setUser({});
+          // Don't redirect if already on login page
+          if (history.location.pathname !== '/login') {
+            history.push("/login");
+          }
         }
       }
       if (error?.response?.status === 402) {

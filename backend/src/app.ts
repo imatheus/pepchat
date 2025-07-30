@@ -22,6 +22,9 @@ import {
 
 const app = express();
 
+// Configurar trust proxy para funcionar corretamente atrás de proxy reverso (nginx)
+app.set('trust proxy', true);
+
 // Configurações de segurança
 app.use(helmetConfig);
 
@@ -38,6 +41,16 @@ if (process.env.NODE_ENV === 'development') {
   allowedOrigins.push("http://localhost:3000", "http://127.0.0.1:3000");
 }
 
+// Adicionar origens de produção
+if (process.env.NODE_ENV === 'production') {
+  allowedOrigins.push(
+    "https://app.pepchat.com.br",
+    "https://www.app.pepchat.com.br",
+    "https://pepchat.com.br",
+    "https://www.pepchat.com.br"
+  );
+}
+
 app.use(
   cors({
     credentials: true,
@@ -50,14 +63,27 @@ app.use(
         return callback(null, true);
       }
       
-      if (allowedOrigins.includes(origin)) {
+      // Verificar se a origem está na lista de permitidas
+      if (allowedOrigins.some(allowed => origin.includes(allowed.replace(/^https?:\/\//, '')))) {
         return callback(null, true);
       }
       
+      // Log para debug em produção
+      logger.warn(`CORS blocked origin: ${origin}`);
       return callback(new Error("Não permitido pelo CORS"));
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-hub-signature-256", "asaas-access-token"]
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type", 
+      "Authorization", 
+      "x-hub-signature-256", 
+      "asaas-access-token",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+      "Cache-Control",
+      "Pragma"
+    ]
   })
 );
 
