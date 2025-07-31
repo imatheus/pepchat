@@ -32,7 +32,7 @@ import BackdropLoading from "../components/BackdropLoading";
 import { i18n } from "../translate/i18n";
 import toastError from "../errors/toastError";
 import logo from "../assets/logo.png"; 
-import { socketConnection } from "../services/socket";
+import { socketManager } from "../services/socketManager";
 // moment removido - não utilizado
 import TrialNotifications from "../components/TrialNotifications";
 
@@ -403,25 +403,47 @@ const LoggedInLayout = ({ children }) => {
     const companyId = localStorage.getItem("companyId");
     const userId = localStorage.getItem("userId");
 
-    const socket = socketConnection({ companyId });
+    if (!companyId || !userId) {
+      console.warn("Layout: Missing companyId or userId");
+      return;
+    }
 
-    socket.on(`company-${companyId}-auth`, (data) => {
-      if (data.user.id === +userId) {
-        toastError("Sua conta foi acessada em outro computador.");
-        setTimeout(() => {
-          localStorage.clear();
-          window.location.reload();
-        }, 1000);
+    // Conectar usando o socketManager (singleton)
+    const connectSocket = async () => {
+      try {
+        await socketManager.connect(companyId);
+        
+        // Configurar listener para auth
+        socketManager.on(`company-${companyId}-auth`, (data) => {
+          if (data.user.id === +userId) {
+            toastError("Sua conta foi acessada em outro computador.");
+            setTimeout(() => {
+              localStorage.clear();
+              window.location.reload();
+            }, 1000);
+          }
+        });
+
+        // Emitir status do usuário
+        socketManager.emit("userStatus");
+        
+      } catch (error) {
+        console.error("Layout: Failed to connect socket", error);
       }
-    });
+    };
 
-    socket.emit("userStatus");
+    connectSocket();
+
+    // Intervalo para manter status do usuário ativo
     const interval = setInterval(() => {
-      socket.emit("userStatus");
+      if (socketManager.isConnected()) {
+        socketManager.emit("userStatus");
+      }
     }, 1000 * 60 * 5);
 
     return () => {
-      socket.disconnect();
+      // Remover apenas o listener específico, não desconectar o socket
+      socketManager.off(`company-${companyId}-auth`);
       clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

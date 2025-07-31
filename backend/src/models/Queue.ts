@@ -73,8 +73,8 @@ class Queue extends Model<Queue> {
   users: Array<User & { UserQueue: UserQueue }>;
 
   @HasMany(() => QueueOption, {
-    onDelete: "DELETE",
-    onUpdate: "DELETE",
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
     hooks: true
   })
   options: QueueOption[];

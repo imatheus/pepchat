@@ -5,7 +5,7 @@ module.exports = {
       const tableDescription = await queryInterface.describeTable("Users");
       if (!tableDescription.profileImage) {
         return queryInterface.addColumn("Users", "profileImage", {
-          type: Sequelize.TEXT,
+          type: Sequelize.STRING,
           allowNull: true,
           defaultValue: null
         });

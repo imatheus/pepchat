@@ -28,12 +28,11 @@ import invoiceRoutes from "./invoicesRoutes";
 import subscriptionRoutes from "./subScriptionRoutes";
 import companyPlanRoutes from "./companyPlanRoutes";
 import migrationRoutes from "./migrationRoutes";
-import webHookMetaRoutes from "./WebHookMetaRoutes";
-import webChatRoutes from "./webChatRoutes";
 import asaasRoutes from "./asaasRoutes";
 import autoRatingRoutes from "./autoRatingRoutes";
 import securityRoutes from "./securityRoutes";
 import systemStatsRoutes from "./systemStatsRoutes";
+import healthRoutes from "./healthRoutes";
 
 const routes = Router();
 
@@ -65,11 +64,10 @@ routes.use(chatRoutes);
 routes.use(subscriptionRoutes);
 routes.use(companyPlanRoutes);
 routes.use(invoiceRoutes);
-routes.use("/webhook/meta", webHookMetaRoutes);
-routes.use(webChatRoutes);
 routes.use(asaasRoutes);
 routes.use(autoRatingRoutes);
 routes.use(securityRoutes);
 routes.use(systemStatsRoutes);
+routes.use(healthRoutes);
 
 export default routes;

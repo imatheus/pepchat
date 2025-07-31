@@ -44,8 +44,8 @@ export const SECURITY_CONFIG = {
   RATE_LIMITING: {
     // Login attempts
     LOGIN: {
-      maxAttempts: 5,
-      windowMs: 15 * 60 * 1000, // 15 minutes
+      maxAttempts: 0,
+      windowMs: 0 * 60 * 1000, // 5 minutes
     },
     
     // API requests

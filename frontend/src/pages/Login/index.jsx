@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 	root: {
 		width: "100vw",
 		height: "100vh",
-		backgroundImage: "url(http://www.kophex.com.br/fundo.jpg)",
+		background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
 		backgroundRepeat: "no-repeat",
 		backgroundSize: "100% 100%",
 		backgroundPosition: "center",

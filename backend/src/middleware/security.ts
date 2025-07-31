@@ -4,10 +4,10 @@ import { Request, Response, NextFunction } from "express";
 
 // Rate limiting para login
 export const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
+  windowMs: 5 * 60 * 1000, // 5 minutos
   max: 5, // máximo 5 tentativas por IP
   message: {
-    error: "Muitas tentativas de login. Tente novamente em 15 minutos."
+    error: "Muitas tentativas de login. Tente novamente em 5 minutos."
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -16,10 +16,10 @@ export const loginLimiter = rateLimit({
 
 // Rate limiting geral para API
 export const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
+  windowMs: 5 * 60 * 1000, // 5 minutos
   max: process.env.NODE_ENV === 'development' ? 10000 : 1000, // mais permissivo em dev
   message: {
-    error: "Muitas requisições. Tente novamente em 15 minutos."
+    error: "Muitas requisições. Tente novamente em 5 minutos."
   },
   standardHeaders: true,
   legacyHeaders: false,
