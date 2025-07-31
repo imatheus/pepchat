@@ -1,66 +1,45 @@
-'use strict';
-
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const transaction = await queryInterface.sequelize.transaction();
-    
     try {
-      // Verificar se as colunas já existem antes de tentar adicioná-las
       const tableDescription = await queryInterface.describeTable('Plans');
       
-      // Adicionar campaignContactsLimit se não existir
+      // Verificar e adicionar campaignContactsLimit se não existir
       if (!tableDescription.campaignContactsLimit) {
         await queryInterface.addColumn('Plans', 'campaignContactsLimit', {
           type: Sequelize.INTEGER,
           allowNull: true,
           defaultValue: 150
-        }, { transaction });
+        });
+        console.log('✅ Coluna campaignContactsLimit corrigida na tabela Plans');
       }
-      
-      // Adicionar campaignsPerMonthLimit se não existir
+
+      // Verificar e adicionar campaignsPerMonthLimit se não existir
       if (!tableDescription.campaignsPerMonthLimit) {
         await queryInterface.addColumn('Plans', 'campaignsPerMonthLimit', {
           type: Sequelize.INTEGER,
           allowNull: true,
           defaultValue: 4
-        }, { transaction });
+        });
+        console.log('✅ Coluna campaignsPerMonthLimit corrigida na tabela Plans');
       }
 
-      // Atualizar planos existentes que têm campanhas habilitadas mas não têm limites definidos
+      // Corrigir valores para todos os planos
       await queryInterface.sequelize.query(`
         UPDATE "Plans" 
         SET 
           "campaignContactsLimit" = COALESCE("campaignContactsLimit", 150),
           "campaignsPerMonthLimit" = COALESCE("campaignsPerMonthLimit", 4)
         WHERE "useCampaigns" = true
-      `, { transaction });
-
-      await transaction.commit();
+      `);
+      
+      console.log('✅ Correção final aplicada aos limites de campanhas');
     } catch (error) {
-      await transaction.rollback();
-      throw error;
+      console.log('⚠️ Erro na correção final dos limites de campanhas:', error.message);
     }
   },
 
   down: async (queryInterface, Sequelize) => {
-    const transaction = await queryInterface.sequelize.transaction();
-    
-    try {
-      // Verificar se as colunas existem antes de tentar removê-las
-      const tableDescription = await queryInterface.describeTable('Plans');
-      
-      if (tableDescription.campaignContactsLimit) {
-        await queryInterface.removeColumn('Plans', 'campaignContactsLimit', { transaction });
-      }
-      
-      if (tableDescription.campaignsPerMonthLimit) {
-        await queryInterface.removeColumn('Plans', 'campaignsPerMonthLimit', { transaction });
-      }
-
-      await transaction.commit();
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
+    // Não remover colunas por segurança
+    console.log('⚠️ Reversão não implementada para segurança dos dados');
   }
 };

@@ -8,23 +8,57 @@ import ProcessPendingSchedules from "./services/ScheduleServices/ProcessPendingS
 import ProcessPendingCampaigns from "./services/CampaignService/ProcessPendingCampaigns";
 import CheckCompanyExpirationService from "./services/CompanyService/CheckCompanyExpirationService";
 import Company from "./models/Company";
+import sequelize from "./database";
 
 const server = app.listen(process.env.PORT, async () => {
-  const companies = await Company.findAll();
-  const allPromises: any[] = [];
-  companies.map(async c => {
-    const promise = StartAllWhatsAppsSessions(c.id);
-    allPromises.push(promise);
-  });
+  logger.info(`Application server started successfully on port ${process.env.PORT}`);
+  
+  try {
+    // Aguardar um pouco para garantir que o banco esteja pronto
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Verificar se a tabela Companies existe antes de tentar buscar
+    const companies = await Company.findAll().catch(error => {
+      logger.warn("Companies table not ready yet, skipping WhatsApp sessions initialization:", error.message);
+      return [];
+    });
+    
+    if (companies.length > 0) {
+      const allPromises: any[] = [];
+      companies.forEach(c => {
+        const promise = StartAllWhatsAppsSessions(c.id).catch(error => {
+          logger.error(`Error starting WhatsApp session for company ${c.id}:`, error);
+        });
+        allPromises.push(promise);
+      });
 
-  Promise.all(allPromises).then(async () => {
+      await Promise.allSettled(allPromises);
+      logger.info("WhatsApp sessions initialization completed");
+    }
+
     // Inicializar sistema de filas
-    startQueueProcess();
+    try {
+      startQueueProcess();
+      logger.info("Queue system started");
+    } catch (error) {
+      logger.error("Error starting queue system:", error);
+    }
     
     // Processar agendamentos e campanhas pendentes após inicialização
     setTimeout(async () => {
-      await ProcessPendingSchedules();
-      await ProcessPendingCampaigns();
+      try {
+        await ProcessPendingSchedules();
+        logger.info("Pending schedules processed");
+      } catch (error) {
+        logger.error("Error processing pending schedules:", error);
+      }
+      
+      try {
+        await ProcessPendingCampaigns();
+        logger.info("Pending campaigns processed");
+      } catch (error) {
+        logger.error("Error processing pending campaigns:", error);
+      }
     }, 5000); // Aguardar 5 segundos para garantir que tudo esteja inicializado
 
     // Configurar processamento periódico de campanhas programadas (a cada minuto)
@@ -39,7 +73,6 @@ const server = app.listen(process.env.PORT, async () => {
     // Configurar verificação periódica de expiração de empresas (a cada 10 minutos)
     setInterval(async () => {
       try {
-        // Removed verbose logging for periodic checks
         await CheckCompanyExpirationService();
       } catch (error) {
         logger.error("Error in periodic company expiration check:", error);
@@ -49,14 +82,15 @@ const server = app.listen(process.env.PORT, async () => {
     // Executar verificação inicial de expiração após 30 segundos
     setTimeout(async () => {
       try {
-        // Removed verbose logging for initial check
         await CheckCompanyExpirationService();
       } catch (error) {
         logger.error("Error in initial company expiration check:", error);
       }
     }, 30000); // 30 segundos
-  });
-  logger.info(`Application server started successfully on port ${process.env.PORT}`);
+    
+  } catch (error) {
+    logger.error("Error during server initialization:", error);
+  }
 });
 
 initIO(server);

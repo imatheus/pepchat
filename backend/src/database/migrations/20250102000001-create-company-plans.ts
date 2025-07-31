@@ -72,6 +72,16 @@ module.exports = {
         allowNull: false,
         defaultValue: false
       },
+      campaignContactsLimit: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 150
+      },
+      campaignsPerMonthLimit: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 4
+      },
       isActive: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

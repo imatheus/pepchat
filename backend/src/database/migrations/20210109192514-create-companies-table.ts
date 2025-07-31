@@ -22,6 +22,57 @@ module.exports = {
         type: DataTypes.STRING,
         allowNull: true
       },
+      fullName: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
+      document: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
+      status: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+        defaultValue: true
+      },
+      dueDate: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },
+      recurrence: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
+      trialExpiration: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },
+      asaasCustomerId: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      asaasSubscriptionId: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      asaasSyncedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },
+      schedules: {
+        type: DataTypes.JSONB,
+        allowNull: true
+      },
+      planId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: "Plans",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL"
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false

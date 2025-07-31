@@ -9,17 +9,6 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      companyId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        unique: true,
-        references: {
-          model: 'Companies',
-          key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
-      },
       apiKey: {
         type: Sequelize.STRING,
         allowNull: false
@@ -28,18 +17,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
+      webhookToken: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
       environment: {
         type: Sequelize.STRING,
         allowNull: false,
         defaultValue: 'sandbox'
-      },
-      asaasCustomerId: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      asaasSubscriptionId: {
-        type: Sequelize.STRING,
-        allowNull: true
       },
       enabled: {
         type: Sequelize.BOOLEAN,
@@ -55,11 +40,6 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
-
-    // Adicionar índices
-    await queryInterface.addIndex('AsaasConfigs', ['companyId']);
-    await queryInterface.addIndex('AsaasConfigs', ['asaasCustomerId']);
-    await queryInterface.addIndex('AsaasConfigs', ['asaasSubscriptionId']);
   },
 
   down: async (queryInterface, Sequelize) => {
