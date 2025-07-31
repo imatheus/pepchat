@@ -12,7 +12,16 @@ export const index = async (req: Request, res: Response): Promise<void> => {
   const asaasConfig = await AsaasConfig.findOne();
 
   if (!asaasConfig) {
-    res.json({});
+    res.json({
+      id: null,
+      webhookUrl: null,
+      webhookToken: null,
+      environment: 'sandbox',
+      enabled: false,
+      hasApiKey: false,
+      apiKey: ''
+    });
+    return;
   }
 
   // Retornar dados sem expor a API Key, mas indicando se ela existe

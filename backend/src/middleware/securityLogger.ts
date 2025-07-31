@@ -63,7 +63,14 @@ class SecurityLogger {
 
 // Middleware para logar tentativas de autenticação falhadas
 export const logAuthFailure = (req: Request, res: Response, next: NextFunction) => {
+  // Verificar se já foi interceptado
+  if ((res as any)._securityLoggerIntercepted) {
+    next();
+    return;
+  }
+
   const originalSend = res.send;
+  (res as any)._securityLoggerIntercepted = true;
   
   res.send = function(data) {
     if (res.statusCode === 401 || res.statusCode === 403) {
@@ -87,7 +94,14 @@ export const logAuthFailure = (req: Request, res: Response, next: NextFunction) 
 
 // Middleware para logar rate limiting
 export const logRateLimit = (req: Request, res: Response, next: NextFunction) => {
+  // Verificar se já foi interceptado
+  if ((res as any)._securityLoggerIntercepted) {
+    next();
+    return;
+  }
+
   const originalSend = res.send;
+  (res as any)._securityLoggerIntercepted = true;
   
   res.send = function(data) {
     if (res.statusCode === 429) {
@@ -160,7 +174,14 @@ export const logSuspiciousActivity = (req: Request, res: Response, next: NextFun
 
 // Middleware para logar acesso negado
 export const logAccessDenied = (req: Request, res: Response, next: NextFunction) => {
+  // Verificar se já foi interceptado
+  if ((res as any)._securityLoggerIntercepted) {
+    next();
+    return;
+  }
+
   const originalSend = res.send;
+  (res as any)._securityLoggerIntercepted = true;
   
   res.send = function(data) {
     if (res.statusCode === 403) {
