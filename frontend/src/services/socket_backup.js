@@ -1,4 +1,4 @@
-import openSocket from "socket.io-client";
+import { io } from "socket.io-client";
 
 // Função nativa para verificar se é objeto
 const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -9,7 +9,7 @@ export function socketConnection(params) {
     userId = localStorage.getItem("userId");
   }
   
-  const socket = openSocket(import.meta.env.VITE_BACKEND_URL, {
+  const socket = io(import.meta.env.VITE_BACKEND_URL, {
     transports: ["websocket", "polling"], // Aligned with backend, removed deprecated flashsocket
     pingTimeout: 60000, // Aligned with backend
     pingInterval: 25000, // Aligned with backend
@@ -31,7 +31,8 @@ export function socketConnection(params) {
 
   socket.on('disconnect', (reason) => {
     if (process.env.NODE_ENV === 'development') {
-      }
+      console.log('Socket disconnected:', reason);
+    }
   });
 
   return socket;

@@ -166,6 +166,7 @@ export const tokenManager = {
     localStorage.removeItem('companyId');
     localStorage.removeItem('userId');
     localStorage.removeItem('cshow');
+    localStorage.removeItem('companyDueDate');
   },
 
   // Migration function to move from localStorage to encrypted sessionStorage

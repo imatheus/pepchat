@@ -33,6 +33,7 @@ import { i18n } from "../translate/i18n";
 import toastError from "../errors/toastError";
 import logo from "../assets/logo.png"; 
 import { socketManager } from "../services/socketManager";
+import { tokenManager } from "../utils/tokenManager";
 // moment removido - não utilizado
 import TrialNotifications from "../components/TrialNotifications";
 
@@ -400,11 +401,12 @@ const LoggedInLayout = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const companyId = localStorage.getItem("companyId");
-    const userId = localStorage.getItem("userId");
+    // Get companyId and userId from tokenManager first, fallback to localStorage
+    const companyId = tokenManager.getCompanyId() || localStorage.getItem("companyId");
+    const userId = tokenManager.getUserId() || localStorage.getItem("userId");
 
-    if (!companyId || !userId) {
-      console.warn("Layout: Missing companyId or userId");
+    if (!companyId || !userId || companyId === "null" || userId === "null" || companyId === "undefined" || userId === "undefined") {
+      console.warn("Layout: Missing companyId or userId", { companyId, userId });
       return;
     }
 
@@ -418,6 +420,7 @@ const LoggedInLayout = ({ children }) => {
           if (data.user.id === +userId) {
             toastError("Sua conta foi acessada em outro computador.");
             setTimeout(() => {
+              tokenManager.clearAll();
               localStorage.clear();
               window.location.reload();
             }, 1000);
@@ -447,7 +450,7 @@ const LoggedInLayout = ({ children }) => {
       clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user.id]); // Add user.id as dependency to re-run when user changes
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);

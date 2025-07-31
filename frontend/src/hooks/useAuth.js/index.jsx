@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { has } from "lodash";
 
@@ -17,6 +17,14 @@ const useAuth = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({});
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   api.interceptors.request.use(
     (config) => {
@@ -103,20 +111,39 @@ const useAuth = () => {
           api.defaults.headers.Authorization = `Bearer ${token}`;
           
           const { data } = await api.post("/auth/refresh_token");
-          api.defaults.headers.Authorization = `Bearer ${data.token}`;
-          tokenManager.setToken(data.token);
-          setIsAuth(true);
-          setUser(data.user);
+          
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            api.defaults.headers.Authorization = `Bearer ${data.token}`;
+            tokenManager.setToken(data.token);
+            
+            // Ensure companyId and userId are stored for backward compatibility
+            if (data.user && data.user.companyId) {
+              tokenManager.setCompanyId(data.user.companyId);
+              localStorage.setItem("companyId", data.user.companyId);
+            }
+            if (data.user && data.user.id) {
+              tokenManager.setUserId(data.user.id);
+              localStorage.setItem("userId", data.user.id);
+            }
+            
+            setIsAuth(true);
+            setUser(data.user);
+          }
         } catch (err) {
           // Se falhar o refresh, limpar dados de autenticação
           console.warn("Token refresh failed, clearing auth data:", err.message);
-          tokenManager.clearAll();
-          api.defaults.headers.Authorization = undefined;
-          setIsAuth(false);
-          setUser({});
+          if (isMountedRef.current) {
+            tokenManager.clearAll();
+            api.defaults.headers.Authorization = undefined;
+            setIsAuth(false);
+            setUser({});
+          }
         }
       }
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     })();
   }, []);
 
@@ -128,19 +155,25 @@ const useAuth = () => {
     socketManager.connect(companyId);
 
     const handleUserUpdate = (data) => {
+      if (!isMountedRef.current) return;
+      
       if (data.action === "update" && data.user.id === user.id) {
         setUser(data.user);
       }
     };
 
     const handleStatusUpdate = (data) => {
+      if (!isMountedRef.current) return;
+      
       if (data.action === "company_reactivated") {
         showUniqueSuccess(`✅ Empresa reativada! Todas as funcionalidades foram liberadas.`);
         
         refreshUserData().then(() => {
-          if (history.location.pathname === '/financeiro') {
+          if (isMountedRef.current && history.location.pathname === '/financeiro') {
             setTimeout(() => {
-              history.push('/');
+              if (isMountedRef.current) {
+                history.push('/');
+              }
             }, 4000);
           }
         });
@@ -151,9 +184,13 @@ const useAuth = () => {
           }
           
           refreshUserData().then(() => {
-            setTimeout(() => {
-              history.push('/financeiro');
-            }, 4000);
+            if (isMountedRef.current) {
+              setTimeout(() => {
+                if (isMountedRef.current) {
+                  history.push('/financeiro');
+                }
+              }, 4000);
+            }
           });
         }
       }
@@ -191,6 +228,11 @@ const useAuth = () => {
       tokenManager.setToken(data.token);
       tokenManager.setCompanyId(companyId);
       tokenManager.setUserId(id);
+      
+      // Also store in localStorage for backward compatibility
+      localStorage.setItem("companyId", companyId);
+      localStorage.setItem("userId", id);
+      
       api.defaults.headers.Authorization = `Bearer ${data.token}`;
       setUser(data.user);
       setIsAuth(true);
@@ -270,7 +312,10 @@ const useAuth = () => {
       
       setUser({});
       tokenManager.clearAll();
+      // Clear additional localStorage items
       localStorage.removeItem("cshow");
+      localStorage.removeItem("companyId");
+      localStorage.removeItem("userId");
       api.defaults.headers.Authorization = undefined;
       
       // Desconectar socket

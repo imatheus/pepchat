@@ -1,4 +1,5 @@
 import { socketConnection, clearSocketCache } from './socket';
+import { isSocketIODisabled, createFallbackSocket } from './socketFallback';
 
 // Singleton para gerenciar uma única conexão WebSocket
 class SocketManager {
@@ -11,13 +12,20 @@ class SocketManager {
     this.retryCount = 0;
     this.maxRetries = 3;
     this.retryDelay = 2000;
+    this.lastError = null;
   }
 
   async connect(companyId) {
     // Validar companyId
     if (!companyId || companyId === "null" || companyId === "undefined") {
-      console.warn("SocketManager: Invalid companyId provided");
       return null;
+    }
+
+    // Se Socket.IO foi desabilitado, retornar fallback
+    if (isSocketIODisabled()) {
+      this.socket = createFallbackSocket();
+      this.currentCompanyId = companyId;
+      return this.socket;
     }
 
     // Se já está conectado com a mesma empresa, retorna a conexão existente
@@ -64,11 +72,14 @@ class SocketManager {
         }
       });
 
-      // Aguardar conexão ou erro
+      // Aguardar conexão ou erro com timeout maior para produção
+      const isProduction = import.meta.env.PROD;
+      const connectionTimeout = isProduction ? 30000 : 10000;
+
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
-          reject(new Error('Connection timeout'));
-        }, 10000);
+          reject(new Error(`Connection timeout after ${connectionTimeout}ms`));
+        }, connectionTimeout);
 
         this.socket.on('connect', () => {
           clearTimeout(timeout);
@@ -89,7 +100,6 @@ class SocketManager {
     } catch (error) {
       this.isConnecting = false;
       this.connectionPromise = null;
-      console.error('SocketManager connection error:', error);
       throw error;
     }
   }
@@ -98,13 +108,10 @@ class SocketManager {
     if (!this.socket) return;
 
     this.socket.on('connect', () => {
-      console.info('SocketManager: Connected successfully');
       this.retryCount = 0;
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.info('SocketManager: Disconnected -', reason);
-      
       // Auto-reconectar apenas em casos específicos
       if (reason === 'io server disconnect' || reason === 'transport close') {
         this._handleReconnection();
@@ -112,19 +119,21 @@ class SocketManager {
     });
 
     this.socket.on('connect_error', (error) => {
-      console.warn('SocketManager: Connection error -', error.message);
       this._handleReconnection();
     });
   }
 
   _handleReconnection() {
+    // Não tentar reconectar se o erro for 400 (Bad Request)
+    if (this.lastError && this.lastError.description === 400) {
+      return;
+    }
+
     if (this.retryCount >= this.maxRetries) {
-      console.warn('SocketManager: Max reconnection attempts reached');
       return;
     }
 
     this.retryCount++;
-    console.info(`SocketManager: Attempting reconnection ${this.retryCount}/${this.maxRetries}`);
     
     setTimeout(() => {
       if (this.currentCompanyId && !this.isConnecting) {
@@ -173,7 +182,6 @@ class SocketManager {
       this.socket.emit(event, data);
       return true;
     }
-    console.warn('SocketManager: Cannot emit - socket not connected');
     return false;
   }
 

@@ -14,12 +14,12 @@ export const loginLimiter = rateLimit({
   skipSuccessfulRequests: true
 });
 
-// Rate limiting geral para API
+// Rate limiting geral para API - CORRIGIDO
 export const apiLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutos
-  max: process.env.NODE_ENV === 'development' ? 10000 : 1000, // mais permissivo em dev
+  windowMs: 1 * 60 * 1000, // 1 minuto (reduzido de 5 para 1)
+  max: process.env.NODE_ENV === 'development' ? 10000 : 5000, // aumentado de 1000 para 5000
   message: {
-    error: "Muitas requisições. Tente novamente em 5 minutos."
+    error: "Muitas requisições. Tente novamente em 1 minuto."
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -32,7 +32,26 @@ export const apiLimiter = rateLimit({
   },
   skip: (req) => {
     // Pular rate limiting em desenvolvimento
-    return process.env.NODE_ENV === 'development';
+    if (process.env.NODE_ENV === 'development') {
+      return true;
+    }
+    
+    // Pular rate limiting para Socket.IO
+    if (req.path.startsWith('/socket.io/')) {
+      return true;
+    }
+    
+    // Pular rate limiting para health checks
+    if (req.path === '/health' || req.path === '/api/health') {
+      return true;
+    }
+    
+    // Pular rate limiting para webhooks
+    if (req.path.startsWith('/webhook/')) {
+      return true;
+    }
+    
+    return false;
   }
 });
 

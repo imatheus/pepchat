@@ -1,5 +1,6 @@
-import openSocket from "socket.io-client";
+import { io } from "socket.io-client";
 import { tokenManager } from "../utils/tokenManager";
+import { disableSocketIO, isSocketIODisabled, createFallbackSocket } from "./socketFallback";
 
 // Função nativa para verificar se é objeto
 const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -9,6 +10,11 @@ let socketCache = null;
 let currentCompanyId = null;
 
 export function socketConnection(params) {
+  // Se Socket.IO foi desabilitado devido a erro 400, retornar fallback
+  if (isSocketIODisabled()) {
+    return createFallbackSocket();
+  }
+
   let userId = tokenManager.getUserId();
   if (!userId) {
     userId = localStorage.getItem("userId");
@@ -24,7 +30,6 @@ export function socketConnection(params) {
 
   // Se não conseguir obter companyId, não criar conexão
   if (!companyId || companyId === "null" || companyId === "undefined") {
-    console.warn("Socket connection aborted: companyId is required");
     return null;
   }
 
@@ -42,26 +47,46 @@ export function socketConnection(params) {
   // APIs HTTP usam /api, mas WebSocket conecta diretamente no domínio base
   const backendUrl = import.meta.env.VITE_BACKEND_URL.replace('/api', '');
   
-  const socket = openSocket(backendUrl, {
-    transports: ["websocket"], 
-    pingTimeout: 30000,
-    pingInterval: 10000,
-    timeout: 30000,
-    forceNew: false, // Permitir reutilização de conexão
+  // Detectar se está em produção
+  const isProduction = import.meta.env.PROD;
+  
+  // Configurações diferentes para desenvolvimento e produção
+  const socketConfig = {
+    // Usar polling primeiro e depois upgrade para websocket
+    transports: ["polling", "websocket"],
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    timeout: 45000,
+    forceNew: false,
     reconnection: true,
-    reconnectionAttempts: 5, // Limitar tentativas de reconexão
+    reconnectionAttempts: 3,
     reconnectionDelay: 2000,
     reconnectionDelayMax: 10000,
-    maxReconnectionAttempts: 5,
     upgrade: true,
-    rememberUpgrade: true,
+    rememberUpgrade: false, // Sempre tentar upgrade
     query: { companyId, userId },
     withCredentials: true,
-  });
+    autoConnect: true,
+    // Configurações específicas para produção
+    ...(isProduction && {
+      forceBase64: false,
+      enablesXDR: false,
+    })
+  };
+
+  const socket = io(backendUrl, socketConfig);
 
   // Controle de erro mais robusto
   socket.on('connect_error', (error) => {
-    console.warn('Socket connection error:', error.message);
+    // Se for erro 400, desabilitar Socket.IO completamente
+    if (error.description === 400) {
+      disableSocketIO();
+      socket.disconnect();
+      socketCache = null;
+      currentCompanyId = null;
+      return;
+    }
+    
     // Limpar cache em caso de erro
     if (socketCache === socket) {
       socketCache = null;
@@ -70,16 +95,11 @@ export function socketConnection(params) {
   });
 
   socket.on('disconnect', (reason) => {
-    console.info('Socket disconnected:', reason);
     // Limpar cache apenas se foi desconexão intencional
     if (reason === 'io client disconnect') {
       socketCache = null;
       currentCompanyId = null;
     }
-  });
-
-  socket.on('connect', () => {
-    console.info('Socket connected successfully');
   });
 
   // Atualizar cache

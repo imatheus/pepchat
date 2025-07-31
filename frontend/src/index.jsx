@@ -6,6 +6,7 @@ import App from "./App.jsx";
 import { AuthProvider } from "./context/Auth/AuthContext"; 
 import process from 'process';
 import './index.css';
+import './utils/authDebug.js'; // Debug utility for auth issues
 
 // PASSO 2: O código do polyfill (window.process) vem DEPOIS das importações.
 window.process = process;
