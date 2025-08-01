@@ -9,8 +9,6 @@ interface PlanData {
   queues: number;
   value: number;
   useWhatsapp?: boolean;
-  useFacebook?: boolean;
-  useInstagram?: boolean;
   useCampaigns?: boolean;
   campaignContactsLimit?: number;
   campaignsPerMonthLimit?: number;
@@ -50,8 +48,6 @@ const CreatePlanService = async (planData: PlanData): Promise<Plan> => {
       .min(0, "ERR_PLAN_INVALID_VALUE")
       .required("ERR_PLAN_INVALID_VALUE"),
     useWhatsapp: Yup.boolean(),
-    useFacebook: Yup.boolean(),
-    useInstagram: Yup.boolean(),
     useCampaigns: Yup.boolean(),
     campaignContactsLimit: Yup.number()
       .min(0, "ERR_PLAN_INVALID_CAMPAIGN_CONTACTS_LIMIT")

@@ -167,7 +167,7 @@ const TrialStatusCard = () => {
   };
 
   const handleActivateAccount = () => {
-    history.push('/financeiro');
+    history.push('/financial');
   };
 
   return (

@@ -94,7 +94,7 @@ const useAuth = () => {
           if (user.profile !== 'user') {
             toast.warn("Acesso restrito. Redirecionando para o financeiro...");
           }
-          history.push("/financeiro");
+          history.push("/financial");
         }
         return Promise.reject(error);
       }
@@ -169,7 +169,7 @@ const useAuth = () => {
         showUniqueSuccess(`✅ Empresa reativada! Todas as funcionalidades foram liberadas.`);
         
         refreshUserData().then(() => {
-          if (isMountedRef.current && history.location.pathname === '/financeiro') {
+          if (isMountedRef.current && history.location.pathname === '/financial') {
             setTimeout(() => {
               if (isMountedRef.current) {
                 history.push('/');
@@ -187,7 +187,7 @@ const useAuth = () => {
             if (isMountedRef.current) {
               setTimeout(() => {
                 if (isMountedRef.current) {
-                  history.push('/financeiro');
+                  history.push('/financial');
                 }
               }, 4000);
             }
@@ -270,7 +270,7 @@ const useAuth = () => {
           toast.warn(`Licença expirada em ${vencimento}. Acesso restrito ao financeiro para regularização.`);
         }
         
-        history.push("/financeiro");
+        history.push("/financial");
       } else {
         // Empresa ativa OU super admin
         const diff = moment(dueDate).diff(moment());

@@ -40,14 +40,6 @@ class Plan extends Model<Plan> {
 
   @AllowNull(false)
   @Column
-  useFacebook: boolean;
-
-  @AllowNull(false)
-  @Column
-  useInstagram: boolean;
-
-  @AllowNull(false)
-  @Column
   useCampaigns: boolean;
 
   @Column

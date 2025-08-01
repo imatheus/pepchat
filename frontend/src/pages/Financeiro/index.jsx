@@ -15,6 +15,8 @@ import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import Title from "../../components/Title";
@@ -78,25 +80,9 @@ const reducer = (state, action) => {
 
 const useStyles = makeStyles((theme) => ({
   mainContainer: {
-    display: "flex",
-    gap: theme.spacing(3),
     marginTop: theme.spacing(1),
     padding: theme.spacing(3),
     paddingTop: theme.spacing(2),
-    [theme.breakpoints.down("md")]: {
-      flexDirection: "column",
-    },
-  },
-  leftColumn: {
-    flex: "0 0 320px",
-    position: "relative",
-    [theme.breakpoints.down("md")]: {
-      flex: "1 1 auto",
-    },
-  },
-  rightColumn: {
-    flex: "1 1 auto",
-    minWidth: 0,
   },
   planCard: {
     borderRadius: "16px",
@@ -109,6 +95,9 @@ const useStyles = makeStyles((theme) => ({
     position: "relative",
     height: "fit-content",
     overflow: "hidden",
+    marginBottom: theme.spacing(3),
+    maxWidth: "600px",
+    margin: "0 auto",
   },
   activeBadge: {
     position: "absolute",
@@ -197,35 +186,22 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     boxShadow: "0 2px 8px rgba(244, 67, 54, 0.2)",
   },
-  cancelNotice: {
-    marginTop: theme.spacing(1.5),
-    padding: theme.spacing(1.5),
-    backgroundColor: "#f8f9fa",
-    borderRadius: "8px",
-    border: "1px solid #e9ecef",
-    textAlign: "center",
-  },
-  dueDate: {
-    textAlign: "center",
-    marginTop: theme.spacing(1.5),
-    padding: theme.spacing(1),
-    backgroundColor: "#fff3cd",
-    borderRadius: "8px",
-    border: "1px solid #ffeaa7",
-  },
-  invoicesPaper: {
+  tabsPaper: {
     padding: theme.spacing(2),
     height: "fit-content",
     minHeight: "500px",
     borderRadius: "16px",
   },
-  invoicesTitle: {
+  tabsTitle: {
     marginBottom: theme.spacing(2),
     padding: theme.spacing(2),
     backgroundColor: theme.palette.type === 'dark' ? '#424242' : '#f5f5f5',
     margin: `-${theme.spacing(2)}px -${theme.spacing(2)}px ${theme.spacing(2)}px -${theme.spacing(2)}px`,
     borderRadius: "16px 16px 0 0",
     color: theme.palette.text.primary,
+  },
+  tabContent: {
+    marginTop: theme.spacing(2),
   },
   paidStatusBadge: {
     display: "inline-flex",
@@ -278,31 +254,36 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: "rgba(25, 118, 210, 0.1)",
     },
   },
-  expiredBanner: {
-    backgroundColor: "#f44336",
-    color: "#fff",
-    padding: theme.spacing(3),
-    textAlign: "center",
-    borderRadius: "16px",
-    marginBottom: theme.spacing(3),
-    boxShadow: "0 4px 12px rgba(244, 67, 54, 0.3)",
-  },
-  expiredTitle: {
-    fontSize: "1.5rem",
-    fontWeight: "bold",
-    marginBottom: theme.spacing(1),
-  },
-  expiredMessage: {
-    fontSize: "1rem",
-    marginBottom: theme.spacing(2),
-  },
-  expiredContact: {
-    fontSize: "0.9rem",
-    fontStyle: "italic",
-  },
 }));
 
-const Invoices = () => {
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`financial-tabpanel-${index}`}
+      aria-labelledby={`financial-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index) {
+  return {
+    id: `financial-tab-${index}`,
+    'aria-controls': `financial-tabpanel-${index}`,
+  };
+}
+
+const Financial = () => {
   const classes = useStyles();
   const { user } = useContext(AuthContext);
   const { companyStatus } = useCompanyStatus();
@@ -315,6 +296,7 @@ const Invoices = () => {
   const [storagePlans, setStoragePlans] = React.useState([]);
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
   const formatCurrency = useCallback((value) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -383,6 +365,10 @@ const Invoices = () => {
   const isTrialExpired = useCallback(() => {
     return companyStatus.isExpired && !companyStatus.isInTrial;
   }, [companyStatus.isExpired, companyStatus.isInTrial]);
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
 
   useEffect(() => {
     dispatch({ type: "RESET" });
@@ -558,6 +544,125 @@ const Invoices = () => {
     return status === "paid" || status === "CONFIRMED" || status === "RECEIVED" || status === "RECEIVED_IN_CASH";
   }, []);
 
+  const renderInvoicesTab = () => (
+    <div style={{ overflowX: 'auto' }}>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell align="center">Id</TableCell>
+            <TableCell align="center">Detalhes</TableCell>
+            <TableCell align="center">Valor</TableCell>
+            <TableCell align="center">Data Venc.</TableCell>
+            <TableCell align="center">Status</TableCell>
+            <TableCell align="center">Ação</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {invoices.length === 0 && !loading ? (
+            <TableRow>
+              <TableCell colSpan={6} align="center" style={{ padding: '40px', color: '#666' }}>
+                <Typography variant="body1">
+                  Nenhuma fatura encontrada
+                </Typography>
+              </TableCell>
+            </TableRow>
+          ) : (
+            invoices.map((invoice) => (
+              <TableRow key={invoice.id}>
+                <TableCell align="center">{invoice.id}</TableCell>
+                <TableCell align="center">{invoice.detail}</TableCell>
+                <TableCell style={{ fontWeight: 'bold' }} align="center">
+                  {invoice.value.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
+                </TableCell>
+                <TableCell align="center">{moment(invoice.dueDate).format("DD/MM/YYYY")}</TableCell>
+                <TableCell style={{ fontWeight: 'bold' }} align="center">{renderStatus(invoice)}</TableCell>
+                <TableCell align="center">
+                  {!isPaid(invoice) ? (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleOpenContactModal(invoice)}
+                      startIcon={invoice.invoiceUrl ? <OpenInNewIcon /> : null}
+                      title={invoice.invoiceUrl ? "Abrir página de pagamento do Asaas" : "Processar pagamento"}
+                    >
+                      PAGAR
+                    </Button>
+                  ) : (
+                    invoice.invoiceUrl && (
+                      <Tooltip title="Ver fatura" arrow>
+                        <IconButton
+                          className={classes.viewInvoiceButton}
+                          onClick={() => handleViewInvoice(invoice)}
+                          size="small"
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+          {loading && <TableRowSkeleton columns={6} />}
+        </TableBody>
+      </Table>
+    </div>
+  );
+
+  const renderPlansTab = () => (
+    <Box display="flex" justifyContent="center" p={2}>
+      <div style={{ position: "relative" }}>
+        <div className={classes.activeBadge}>
+          Plano Ativo
+        </div>
+        
+        <Paper className={classes.planCard} elevation={0}>
+          <div className={classes.planHeader}>
+            <Typography className={classes.planTitle}>
+              {user?.company?.plan?.name || "Plano Não Identificado"}
+            </Typography>
+
+            <Box>
+              <Typography className={classes.planPrice}>
+                {user?.company?.plan?.totalValue ? 
+                  formatCurrency(user.company.plan.totalValue) :
+                  (user?.company?.plan?.value && user?.company?.plan?.users ?
+                    formatCurrency(user.company.plan.value * user.company.plan.users) :
+                    formatCurrency(user.company.plan?.value || 0)
+                  )
+                }
+              </Typography>
+            </Box>
+          </div>
+
+          <div className={classes.featuresList}>
+            {getPlanFeatures(user?.company?.plan).map((feature, index) => (
+              <div key={index} className={classes.featureItem}>
+                {feature.included ? (
+                  <CheckIcon className={classes.featureIcon} />
+                ) : (
+                  <CloseIcon className={classes.featureIconMissing} />
+                )}
+                <span 
+                  style={{ 
+                    fontFamily: "'Inter', 'Roboto', sans-serif",
+                    fontWeight: "500",
+                    opacity: feature.included ? 1 : 0.6,
+                    textDecoration: feature.included ? 'none' : 'line-through'
+                  }}
+                >
+                  {feature.text}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Paper>
+      </div>
+    </Box>
+  );
+
   return (
     <MainContainer>
       {/* Prompt de Upgrade para usuários em período de teste e não para usuários "user" */}
@@ -576,135 +681,33 @@ const Invoices = () => {
         <Title>Financeiro</Title>
       </MainHeader>
 
-      {/* Two Column Layout */}
+      {/* Main Content */}
       <div className={classes.mainContainer}>
-        {/* Left Column - Plan Information */}
-        <div className={classes.leftColumn}>
-          {/* Active Plan Badge */}
-          <div className={classes.activeBadge}>
-            Plano Ativo
+        <Paper className={classes.tabsPaper} variant="outlined">
+
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange} 
+            aria-label="financial tabs"
+            indicatorColor="primary"
+            textColor="primary"
+          >
+            <Tab label="Faturas" {...a11yProps(0)} />
+            <Tab label="Planos" {...a11yProps(1)} />
+          </Tabs>
+
+          <div className={classes.tabContent}>
+            <TabPanel value={tabValue} index={0}>
+              {renderInvoicesTab()}
+            </TabPanel>
+            <TabPanel value={tabValue} index={1}>
+              {renderPlansTab()}
+            </TabPanel>
           </div>
-          
-          <Paper className={classes.planCard} elevation={0}>
-            <div className={classes.planHeader}>
-              <Typography className={classes.planTitle}>
-                {user?.company?.plan?.name || "Plano Não Identificado"}
-              </Typography>
-
-              <Box>
-                <Typography className={classes.planPrice}>
-                  {user?.company?.plan?.totalValue ? 
-                    formatCurrency(user.company.plan.totalValue) :
-                    (user?.company?.plan?.value && user?.company?.plan?.users ?
-                      formatCurrency(user.company.plan.value * user.company.plan.users) :
-                      formatCurrency(user.company.plan?.value || 0)
-                    )
-                  }
-                </Typography>
-              </Box>
-            </div>
-
-            <div className={classes.featuresList}>
-              {getPlanFeatures(user?.company?.plan).map((feature, index) => (
-                <div key={index} className={classes.featureItem}>
-                  {feature.included ? (
-                    <CheckIcon className={classes.featureIcon} />
-                  ) : (
-                    <CloseIcon className={classes.featureIconMissing} />
-                  )}
-                  <span 
-                    style={{ 
-                      fontFamily: "'Inter', 'Roboto', sans-serif",
-                      fontWeight: "500",
-                      opacity: feature.included ? 1 : 0.6,
-                      textDecoration: feature.included ? 'none' : 'line-through'
-                    }}
-                  >
-                    {feature.text}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-          </Paper>
-        </div>
-
-        {/* Right Column - Invoices */}
-        <div className={classes.rightColumn}>
-          <Paper className={classes.invoicesPaper} variant="outlined">
-            <Typography variant="h6" className={classes.invoicesTitle} style={{ fontWeight: 'bold' }}>
-              Faturas
-            </Typography>
-            
-            <div style={{ overflowX: 'auto' }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="center">Id</TableCell>
-                    <TableCell align="center">Detalhes</TableCell>
-                    <TableCell align="center">Valor</TableCell>
-                    <TableCell align="center">Data Venc.</TableCell>
-                    <TableCell align="center">Status</TableCell>
-                    <TableCell align="center">Ação</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {invoices.length === 0 && !loading ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" style={{ padding: '40px', color: '#666' }}>
-                        <Typography variant="body1">
-                          Nenhuma fatura encontrada
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    invoices.map((invoice) => (
-                      <TableRow key={invoice.id}>
-                        <TableCell align="center">{invoice.id}</TableCell>
-                        <TableCell align="center">{invoice.detail}</TableCell>
-                        <TableCell style={{ fontWeight: 'bold' }} align="center">
-                          {invoice.value.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
-                        </TableCell>
-                        <TableCell align="center">{moment(invoice.dueDate).format("DD/MM/YYYY")}</TableCell>
-                        <TableCell style={{ fontWeight: 'bold' }} align="center">{renderStatus(invoice)}</TableCell>
-                        <TableCell align="center">
-                          {!isPaid(invoice) ? (
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="primary"
-                              onClick={() => handleOpenContactModal(invoice)}
-                              startIcon={invoice.invoiceUrl ? <OpenInNewIcon /> : null}
-                              title={invoice.invoiceUrl ? "Abrir página de pagamento do Asaas" : "Processar pagamento"}
-                            >
-                              PAGAR
-                            </Button>
-                          ) : (
-                            invoice.invoiceUrl && (
-                              <Tooltip title="Ver fatura" arrow>
-                                <IconButton
-                                  className={classes.viewInvoiceButton}
-                                  onClick={() => handleViewInvoice(invoice)}
-                                  size="small"
-                                >
-                                  <VisibilityIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            )
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                  {loading && <TableRowSkeleton columns={6} />}
-                </TableBody>
-              </Table>
-            </div>
-          </Paper>
-        </div>
+        </Paper>
       </div>
     </MainContainer>
   );
 };
 
-export default Invoices;
+export default Financial;

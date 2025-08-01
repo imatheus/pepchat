@@ -22,7 +22,6 @@ import { isArray } from "lodash";
 import { socketConnection } from "../../services/socket";
 import { useDate } from "../../hooks/useDate";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import soundFile from "../../assets/chat_notify.mp3";
 
 const useStyles = makeStyles((theme) => ({
   mainPaper: {
@@ -107,12 +106,14 @@ export default function ChatPopover() {
 
   const playNotificationSound = () => {
     try {
-      const audio = new Audio(soundFile);
+      const audio = new Audio('/backend/public/1750135956821.mp3');
       audio.volume = 0.5;
       audio.play().catch(error => {
-        });
+        console.error('Erro ao reproduzir som de notificação:', error);
+      });
     } catch (error) {
-      }
+      console.error('Erro ao criar áudio:', error);
+    }
   };
 
   useEffect(() => {

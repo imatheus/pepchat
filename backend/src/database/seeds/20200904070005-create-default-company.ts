@@ -19,8 +19,8 @@ module.exports = {
       return queryInterface.sequelize.transaction(async t => {
         // Primeiro criar o plano com ID específico
         await queryInterface.sequelize.query(
-          `INSERT INTO "Plans" (id, name, users, connections, queues, value, "useWhatsapp", "useFacebook", "useInstagram", "useCampaigns", "campaignContactsLimit", "campaignsPerMonthLimit", "createdAt", "updatedAt") 
-           VALUES (1, 'Plano 1', 10, 10, 10, 30, true, true, true, true, 150, 4, NOW(), NOW())
+          `INSERT INTO "Plans" (id, name, users, connections, queues, value, "useWhatsapp", "useCampaigns", "campaignContactsLimit", "campaignsPerMonthLimit", "createdAt", "updatedAt")
+          VALUES (1, 'Plano 1', 10, 10, 10, 30, true, true, 150, 4, NOW(), NOW())
            ON CONFLICT (id) DO NOTHING`,
           { transaction: t }
         );

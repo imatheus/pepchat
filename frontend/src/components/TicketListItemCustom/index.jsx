@@ -447,7 +447,8 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                   width: 23,
                   fontSize: 12,
                   borderRadius: 50,
-                  top: -8,
+                  top: -12,
+                  right: 15,
                   position: 'absolute',
                 }}
               />
@@ -492,8 +493,8 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                   width: 23,
                   fontSize: 12,
                   borderRadius: 50,
-                  right: 33,
-                  top: -8,
+                  right: -8,
+                  top: -12,
                   position: 'absolute',
                 }}
               />
@@ -542,14 +543,13 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
             <WhatsAppIcon 
               style={{ 
                 position: 'inherit',
-                top: -28,
-                right: -165,
+                top: -49,
+                right: -54,
                 fontSize: 20,
                 color: '#25D366',
-                backgroundColor: 'white',
+                backgroundColor: 'transparent',
                 borderRadius: '50%',
                 padding: 2,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
               }} 
             />
           )}

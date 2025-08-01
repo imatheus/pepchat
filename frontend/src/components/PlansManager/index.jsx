@@ -72,8 +72,6 @@ export function PlanManagerForm(props) {
         queues: 0,
         value: 0,
         useWhatsapp: true,
-        useFacebook: false,
-        useInstagram: false,
         useCampaigns: false,
         campaignContactsLimit: 150,
         campaignsPerMonthLimit: 4
@@ -187,31 +185,7 @@ export function PlanManagerForm(props) {
                                 )}
                             </Field>
                         </Grid>
-                        <Grid xs={12} sm={3} md={3} item>
-                            <Field name="useFacebook">
-                                {({ field }) => (
-                                    <ToggleSwitch
-                                        label="Facebook"
-                                        checked={field.value}
-                                        onChange={field.onChange}
-                                        name={field.name}
-                                    />
-                                )}
-                            </Field>
-                        </Grid>
-                        <Grid xs={12} sm={3} md={3} item>
-                            <Field name="useInstagram">
-                                {({ field }) => (
-                                    <ToggleSwitch
-                                        label="Instagram"
-                                        checked={field.value}
-                                        onChange={field.onChange}
-                                        name={field.name}
-                                    />
-                                )}
-                            </Field>
-                        </Grid>
-                        
+                                                
                         {/* Campos condicionais para limites de campanhas */}
                         {values.values.useCampaigns && (
                             <>
@@ -311,11 +285,7 @@ export function PlansManagerGrid(props) {
                             <TableCell align="center">{row.connections || '-'}</TableCell>
                             <TableCell align="center">{row.queues || '-'}</TableCell>
                             <TableCell align="center">
-                                {[
-                                    row.useWhatsapp && 'WhatsApp',
-                                    row.useFacebook && 'Facebook',
-                                    row.useInstagram && 'Instagram'
-                                ].filter(Boolean).join(', ') || '-'}
+                                {row.useWhatsapp ? 'WhatsApp' : '-'}
                             </TableCell>
                             <TableCell align="center">{row.useCampaigns ? 'Sim' : 'Não'}</TableCell>
                             <TableCell align="center">
@@ -348,8 +318,6 @@ export default function PlansManager() {
         queues: 0,
         value: 0,
         useWhatsapp: true,
-        useFacebook: false,
-        useInstagram: false,
         useCampaigns: false,
         campaignContactsLimit: 150,
         campaignsPerMonthLimit: 4
@@ -400,10 +368,8 @@ export default function PlansManager() {
             return;
         }
 
-        // Validar se pelo menos um canal está selecionado
+        // Validar configurações
         const useWhatsapp = data.useWhatsapp !== undefined ? data.useWhatsapp : true;
-        const useFacebook = data.useFacebook !== undefined ? data.useFacebook : false;
-        const useInstagram = data.useInstagram !== undefined ? data.useInstagram : false;
         const useCampaigns = data.useCampaigns !== undefined ? data.useCampaigns : false;
 
         // Validar limites de campanhas se campanhas estiverem habilitadas
@@ -421,8 +387,8 @@ export default function PlansManager() {
             }
         }
 
-        if (!useWhatsapp && !useFacebook && !useInstagram) {
-            toast.error('Pelo menos um canal deve estar habilitado no plano');
+        if (!useWhatsapp) {
+            toast.error('WhatsApp deve estar habilitado no plano');
             return;
         }
 
@@ -434,8 +400,6 @@ export default function PlansManager() {
             users: users,
             value: value,
             useWhatsapp: useWhatsapp,
-            useFacebook: useFacebook,
-            useInstagram: useInstagram,
             useCampaigns: useCampaigns,
             campaignContactsLimit: campaignContactsLimit,
             campaignsPerMonthLimit: campaignsPerMonthLimit
@@ -516,8 +480,6 @@ export default function PlansManager() {
             queues: 0,
             value: 0,
             useWhatsapp: true,
-            useFacebook: false,
-            useInstagram: false,
             useCampaigns: false,
             campaignContactsLimit: 150,
             campaignsPerMonthLimit: 4
@@ -533,8 +495,6 @@ export default function PlansManager() {
             queues: data.queues || 0,
             value: data.value.toLocaleString('pt-br', { minimumFractionDigits: 2 }) || 0,
             useWhatsapp: data.useWhatsapp !== undefined ? data.useWhatsapp : true,
-            useFacebook: data.useFacebook !== undefined ? data.useFacebook : false,
-            useInstagram: data.useInstagram !== undefined ? data.useInstagram : false,
             useCampaigns: data.useCampaigns !== undefined ? data.useCampaigns : false,
             campaignContactsLimit: data.campaignContactsLimit || 150,
             campaignsPerMonthLimit: data.campaignsPerMonthLimit || 4

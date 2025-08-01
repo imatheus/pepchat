@@ -4,7 +4,6 @@ import { getIO } from "../libs/socket";
 import { getWbot, removeWbot } from "../libs/wbot";
 import Whatsapp from "../models/Whatsapp";
 import DeleteBaileysService from "../services/BaileysServices/DeleteBaileysService";
-import { getAccessTokenFromPage, getPageProfile, subscribeApp } from "../services/FacebookServices/graphAPI";
 import { StartWhatsAppSession } from "../services/WbotServices/StartWhatsAppSession";
 
 import CreateWhatsAppService from "../services/WhatsappService/CreateWhatsAppService";
@@ -96,162 +95,6 @@ export const store = async (req: Request, res: Response): Promise<void> => {
   res.status(200).json(whatsapp);
 };
 
-export const storeFacebook = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const {
-    facebookUserId,
-    facebookUserToken,
-    addInstagram,
-    connectionType
-  }: {
-    facebookUserId: string;
-    facebookUserToken: string;
-    addInstagram: boolean;
-    connectionType?: string;
-  } = req.body;
-  const { companyId } = req.user;
-
-  const { data } = await getPageProfile(facebookUserId, facebookUserToken);
-
-  if (data.length === 0) {
-    res.status(400).json({
-      error: "Facebook page not found"
-    });
-  }
-  const io = getIO();
-
-  const pages = [];
-  for await (const page of data) {
-    const { name, access_token, id, instagram_business_account } = page;
-
-    const acessTokenPage = await getAccessTokenFromPage(access_token);
-
-    // Se connectionType é "instagram", só criar conexões Instagram
-    if (connectionType === "instagram" && instagram_business_account) {
-      const {
-        id: instagramId,
-        username,
-        name: instagramName
-      } = instagram_business_account;
-      
-      pages.push({
-        name: `${username || instagramName}`,
-        facebookUserId: facebookUserId,
-        facebookPageUserId: instagramId,
-        facebookUserToken: acessTokenPage,
-        tokenMeta: facebookUserToken,
-        isDefault: false,
-        channel: "instagram",
-        status: "CONNECTED",
-        greetingMessage: "",
-        farewellMessage: "",
-        queueIds: [],
-        isMultidevice: false,
-        companyId
-      });
-
-      await subscribeApp(instagramId, acessTokenPage);
-    }
-    // Se connectionType é "facebook" ou não especificado, criar conexões Facebook
-    else if (connectionType === "facebook" || !connectionType) {
-      pages.push({
-        name,
-        facebookUserId: facebookUserId,
-        facebookPageUserId: id,
-        facebookUserToken: acessTokenPage,
-        tokenMeta: facebookUserToken,
-        isDefault: false,
-        channel: "facebook",
-        status: "CONNECTED",
-        greetingMessage: "",
-        farewellMessage: "",
-        queueIds: [],
-        isMultidevice: false,
-        companyId
-      });
-
-      await subscribeApp(id, acessTokenPage);
-    }
-    // Comportamento antigo: criar ambos se addInstagram for true
-    else if (addInstagram && instagram_business_account) {
-      const {
-        id: instagramId,
-        username,
-        name: instagramName
-      } = instagram_business_account;
-      
-      pages.push({
-        name: `${username || instagramName}`,
-        facebookUserId: facebookUserId,
-        facebookPageUserId: instagramId,
-        facebookUserToken: acessTokenPage,
-        tokenMeta: facebookUserToken,
-        isDefault: false,
-        channel: "instagram",
-        status: "CONNECTED",
-        greetingMessage: "",
-        farewellMessage: "",
-        queueIds: [],
-        isMultidevice: false,
-        companyId
-      });
-
-      pages.push({
-        name,
-        facebookUserId: facebookUserId,
-        facebookPageUserId: id,
-        facebookUserToken: acessTokenPage,
-        tokenMeta: facebookUserToken,
-        isDefault: false,
-        channel: "facebook",
-        status: "CONNECTED",
-        greetingMessage: "",
-        farewellMessage: "",
-        queueIds: [],
-        isMultidevice: false,
-        companyId
-      });
-
-      await subscribeApp(id, acessTokenPage);
-      await subscribeApp(instagramId, acessTokenPage);
-    }
-  }
-
-  console.log("Pages to create:", pages);
-
-  for await (const pageConection of pages) {
-    const exist = await Whatsapp.findOne({
-      where: {
-        facebookPageUserId: pageConection.facebookPageUserId
-      }
-    });
-
-    if (exist) {
-      await exist.update({
-        ...pageConection
-      });
-      
-      io.emit(`company-${companyId}-whatsapp`, {
-        action: "update",
-        whatsapp: exist
-      });
-    } else {
-      const { whatsapp } = await CreateWhatsAppService(pageConection);
-
-      io.emit(`company-${companyId}-whatsapp`, {
-        action: "update",
-        whatsapp
-      });
-    }
-  }
-  
-  res.status(200).json({ 
-    message: "Connections created successfully",
-    count: pages.length 
-  });
-};
 
 export const storeWebChat = async (
   req: Request,
@@ -283,9 +126,6 @@ export const storeWebChat = async (
       queueIds: [],
       companyId,
       channel: "webchat",
-      facebookUserId: "",
-      facebookUserToken: "",
-      facebookPageUserId: `webchat_${Date.now()}`,
       tokenMeta: JSON.stringify({
         primaryColor,
         position,
@@ -401,7 +241,7 @@ export const remove = async (
     }
   }
 
-  if (whatsapp.channel === "facebook" || whatsapp.channel === "instagram" || whatsapp.channel === "webchat") {
+  if (whatsapp.channel === "webchat") {
     await DeleteWhatsAppService(whatsappId);
 
     console.log(`Conexão ${whatsapp.name} (${whatsapp.channel}) removida com sucesso`);

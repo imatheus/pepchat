@@ -1,4 +1,42 @@
-// Predefined color palette for queues and tags
+// Cores vivas pré-definidas para setores/filas - organizadas por categoria
+export const VIVID_COLORS = [
+  // Vermelhos vibrantes
+  { color: '#E74C3C', name: 'Vermelho Vibrante', category: 'red' },
+  { color: '#C0392B', name: 'Vermelho Escuro', category: 'red' },
+  { color: '#E91E63', name: 'Rosa Vibrante', category: 'red' },
+  
+  // Azuis vibrantes
+  { color: '#3498DB', name: 'Azul Claro', category: 'blue' },
+  { color: '#2980B9', name: 'Azul Médio', category: 'blue' },
+  { color: '#2C3E50', name: 'Azul Escuro', category: 'blue' },
+  
+  // Verdes vibrantes
+  { color: '#2ECC71', name: 'Verde Esmeralda', category: 'green' },
+  { color: '#27AE60', name: 'Verde Médio', category: 'green' },
+  { color: '#16A085', name: 'Verde Azulado', category: 'green' },
+  { color: '#009688', name: 'Verde Água', category: 'green' },
+  
+  // Laranjas e amarelos vibrantes
+  { color: '#F39C12', name: 'Laranja Dourado', category: 'orange' },
+  { color: '#E67E22', name: 'Laranja Escuro', category: 'orange' },
+  { color: '#D35400', name: 'Laranja Avermelhado', category: 'orange' },
+  { color: '#F1C40F', name: 'Amarelo Dourado', category: 'yellow' },
+  
+  // Roxos vibrantes
+  { color: '#9B59B6', name: 'Roxo', category: 'purple' },
+  { color: '#8E44AD', name: 'Roxo Escuro', category: 'purple' },
+  { color: '#673AB7', name: 'Roxo Profundo', category: 'purple' },
+  
+  // Turquesas e cianos
+  { color: '#1ABC9C', name: 'Turquesa', category: 'cyan' },
+  { color: '#17A2B8', name: 'Ciano', category: 'cyan' },
+  
+  // Cinzas vibrantes
+  { color: '#34495E', name: 'Azul Acinzentado', category: 'gray' },
+  { color: '#7F8C8D', name: 'Cinza Azulado', category: 'gray' },
+];
+
+// Paleta de cores pastéis (mantida para compatibilidade)
 const colorPalette = [
   '#FF6B6B', // Red
   '#4ECDC4', // Teal
@@ -26,6 +64,42 @@ const colorPalette = [
 export const generateRandomColor = () => {
   const randomIndex = Math.floor(Math.random() * colorPalette.length);
   return colorPalette[randomIndex];
+};
+
+// Função para gerar uma cor viva aleatória
+export const generateRandomVividColor = () => {
+  const randomIndex = Math.floor(Math.random() * VIVID_COLORS.length);
+  return VIVID_COLORS[randomIndex].color;
+};
+
+// Função para obter todas as cores vivas
+export const getAllVividColors = () => {
+  return VIVID_COLORS;
+};
+
+// Função para obter cores por categoria
+export const getVividColorsByCategory = (category) => {
+  return VIVID_COLORS.filter(colorObj => colorObj.category === category);
+};
+
+// Função para obter informações de uma cor específica
+export const getVividColorInfo = (color) => {
+  return VIVID_COLORS.find(colorObj => colorObj.color === color);
+};
+
+// Contador para cores vivas sequenciais
+let vividColorIndex = 0;
+
+// Função para obter a próxima cor viva da sequência
+export const getNextVividColor = () => {
+  const colorObj = VIVID_COLORS[vividColorIndex % VIVID_COLORS.length];
+  vividColorIndex++;
+  return colorObj.color;
+};
+
+// Função para resetar o contador de cores vivas
+export const resetVividColorIndex = () => {
+  vividColorIndex = 0;
 };
 
 // Function to generate a completely random hex color

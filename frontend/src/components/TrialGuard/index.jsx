@@ -9,7 +9,7 @@ const TrialGuard = ({ children }) => {
   const { isCompanyBlocked } = useCompanyStatus();
 
   const isFinanceiroPage = useCallback(() => {
-    return location.pathname === "/financeiro";
+    return location.pathname === "/financial";
   }, [location.pathname]);
 
   const isLoginPage = useCallback(() => {

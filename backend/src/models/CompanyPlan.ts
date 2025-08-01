@@ -59,14 +59,6 @@ class CompanyPlan extends Model<CompanyPlan> {
 
   @AllowNull(false)
   @Column
-  useFacebook: boolean;
-
-  @AllowNull(false)
-  @Column
-  useInstagram: boolean;
-
-  @AllowNull(false)
-  @Column
   useCampaigns: boolean;
 
   @Column

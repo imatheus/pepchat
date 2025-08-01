@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   overlay: {
     position: "fixed",
     top: 0,
@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 1300,
     pointerEvents: "none",
     opacity: 0,
-    transition: "opacity 0.4s ease",
+    transition: "opacity 0.3s ease",
     "&.visible": {
       opacity: 1,
     },
@@ -20,11 +20,11 @@ const useStyles = makeStyles((theme) => ({
   spotlight: {
     position: "fixed",
     backgroundColor: "transparent",
-    borderRadius: "12px",
+    borderRadius: "8px",
     pointerEvents: "none",
     zIndex: 1301,
-    transition: "all 0.4s ease",
-    boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.3)`,
+    transition: "all 0.3s ease",
+    boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.3)",
   },
 }));
 
@@ -35,10 +35,9 @@ const TutorialOverlay = ({ show, targetElement }) => {
 
   useEffect(() => {
     if (show && targetElement) {
-      // Pequeno delay para permitir que o elemento seja renderizado
       const timer = setTimeout(() => {
         const rect = targetElement.getBoundingClientRect();
-        const padding = 12;
+        const padding = 8;
 
         setSpotlightStyle({
           top: rect.top - padding,

@@ -78,25 +78,7 @@ const remove = async (req: Request, res: Response): Promise<void> => {
     removeWbot(whatsapp.id);
   }
 
-  if(whatsapp.channel === "facebook" || whatsapp.channel === "instagram") {
-    try {
-      await whatsapp.update({ status: "DISCONNECTED" });
-      
-      // Verificar se a instância ainda existe antes de recarregar
-      const existingWhatsapp = await ShowWhatsAppService(whatsappId, companyId);
-      if (existingWhatsapp) {
-        const updatedWhatsapp = await whatsapp.reload();
-        
-        io.emit(`company-${companyId}-whatsapp`, {
-          action: "update",
-          whatsapp: updatedWhatsapp
-        });
-      }
-    } catch (error: any) {
-      console.log("Erro ao recarregar whatsapp social após desconexão:", error.message);
-    }
-  }
-
+  
   res.status(200).json({ message: "Session disconnected." });
 };
 

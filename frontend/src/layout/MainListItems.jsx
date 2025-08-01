@@ -419,7 +419,7 @@ const MainListItems = (props) => {
               disabled={isCompanyBlocked}
             />
              <ListItemLink
-                to="/financeiro"
+                to="/financial"
                 primary={i18n.t("mainDrawer.listItems.financeiro")}
                 icon={<AccountBalanceOutlinedIcon />}
                 drawerCollapsed={drawerCollapsed}

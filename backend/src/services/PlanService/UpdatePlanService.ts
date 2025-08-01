@@ -9,15 +9,13 @@ interface PlanData {
   queues?: number;
   value?: number;
   useWhatsapp?: boolean;
-  useFacebook?: boolean;
-  useInstagram?: boolean;
   useCampaigns?: boolean;
   campaignContactsLimit?: number;
   campaignsPerMonthLimit?: number;
 }
 
 const UpdatePlanService = async (planData: PlanData): Promise<Plan> => {
-  const { id, name, users, connections, queues, value, useWhatsapp, useFacebook, useInstagram, useCampaigns, campaignContactsLimit, campaignsPerMonthLimit } = planData;
+  const { id, name, users, connections, queues, value, useWhatsapp, useCampaigns, campaignContactsLimit, campaignsPerMonthLimit } = planData;
 
   const plan = await Plan.findByPk(id);
 
@@ -63,8 +61,6 @@ const UpdatePlanService = async (planData: PlanData): Promise<Plan> => {
     queues,
     value,
     useWhatsapp,
-    useFacebook,
-    useInstagram,
     useCampaigns,
     campaignContactsLimit,
     campaignsPerMonthLimit

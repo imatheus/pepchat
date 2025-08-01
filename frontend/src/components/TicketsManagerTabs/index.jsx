@@ -10,7 +10,8 @@ import Tab from "@material-ui/core/Tab";
 import Badge from "@material-ui/core/Badge";
 import MoveToInboxIcon from "@material-ui/icons/MoveToInbox";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
-import AddCommentIcon from "@material-ui/icons/AddComment";
+import AddIcon from "@material-ui/icons/Add";
+import Button from "@material-ui/core/Button";
 
 import NewTicketModal from "../NewTicketModal";
 import TicketsList from "../TicketsListCustom";
@@ -90,6 +91,18 @@ const useStyles = makeStyles((theme) => ({
   },
   hide: {
     display: "none !important",
+  },
+  newTicketButton: {
+    backgroundColor: "#4caf50",
+    color: "white",
+    borderRadius: "20px",
+    padding: "6px 60px",
+    marginLeft: theme.spacing(1),
+    textTransform: "none",
+    fontWeight: 500,
+    "&:hover": {
+      backgroundColor: "trnsparent",
+    },
   },
 }));
 
@@ -208,69 +221,68 @@ const TicketsManagerTabs = () => {
         }}
       />
       <Paper elevation={0} square className={classes.tabsHeader}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Tabs
-            value={tab}
-            onChange={handleChangeTab}
-            indicatorColor="primary"
-            textColor="primary"
-            aria-label="icon label tabs example"
-            style={{ flex: 1 }}
-          >
-            <Tab
-              value={"open"}
-              icon={<MoveToInboxIcon />}
-              label={i18n.t("tickets.tabs.open.title")}
-              classes={{ root: classes.tab }}
-            />
-            <Tab
-              value={"closed"}
-              icon={<CheckBoxIcon />}
-              label={i18n.t("tickets.tabs.closed.title")}
-              classes={{ root: classes.tab }}
-            />
-            <Tab
-              value={"search"}
-              icon={<SearchIcon />}
-              label={i18n.t("tickets.tabs.search.title")}
-              classes={{ root: classes.tab }}
-            />
-          </Tabs>
-          <IconButton
-            color="primary"
-            onClick={() => setNewTicketModalOpen(true)}
-            title={i18n.t("ticketsManager.buttons.newTicket")}
-            style={{ marginRight: 8 }}
-          >
-            <AddCommentIcon />
-          </IconButton>
-        </div>
+        <Tabs
+          value={tab}
+          onChange={handleChangeTab}
+          indicatorColor="primary"
+          textColor="primary"
+          aria-label="icon label tabs example"
+        >
+          <Tab
+            value={"open"}
+            icon={<MoveToInboxIcon />}
+            label={i18n.t("tickets.tabs.open.title")}
+            classes={{ root: classes.tab }}
+          />
+          <Tab
+            value={"closed"}
+            icon={<CheckBoxIcon />}
+            label={i18n.t("tickets.tabs.closed.title")}
+            classes={{ root: classes.tab }}
+          />
+          <Tab
+            value={"search"}
+            icon={<SearchIcon />}
+            label={i18n.t("tickets.tabs.search.title")}
+            classes={{ root: classes.tab }}
+          />
+        </Tabs>
       </Paper>
       <Paper square elevation={0} className={classes.ticketOptionsBox}>
-        <Can
-          role={user.profile}
-          perform="tickets-manager:showall"
-          yes={() => (
-            <TicketsQueueSelect
-              style={{ marginRight: 6 }}
-              selectedQueueIds={selectedQueueIds}
-              userQueues={user?.queues}
-              onChange={handleQueueIdsChange}
-              showAllOption={true}
-              onShowAllChange={setShowAllTickets}
-              showAllTickets={showAllTickets}
-            />
-          )}
-          no={() => (
-            <TicketsQueueSelect
-              style={{ marginRight: 6 }}
-              selectedQueueIds={selectedQueueIds}
-              userQueues={user?.queues}
-              onChange={handleQueueIdsChange}
-              showAllOption={false}
-            />
-          )}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          <Can
+            role={user.profile}
+            perform="tickets-manager:showall"
+            yes={() => (
+              <TicketsQueueSelect
+                style={{ marginRight: 6 }}
+                selectedQueueIds={selectedQueueIds}
+                userQueues={user?.queues}
+                onChange={handleQueueIdsChange}
+                showAllOption={true}
+                onShowAllChange={setShowAllTickets}
+                showAllTickets={showAllTickets}
+              />
+            )}
+            no={() => (
+              <TicketsQueueSelect
+                style={{ marginRight: 6 }}
+                selectedQueueIds={selectedQueueIds}
+                userQueues={user?.queues}
+                onChange={handleQueueIdsChange}
+                showAllOption={false}
+              />
+            )}
+          />
+          <Button
+            className={classes.newTicketButton}
+            onClick={() => setNewTicketModalOpen(true)}
+            startIcon={<AddIcon />}
+            variant="contained"
+          >
+            {i18n.t("ticketsManager.buttons.newTicket")}
+          </Button>
+        </div>
         {tab === "search" ? (
           <div className={classes.searchInputWrapper}>
             <SearchIcon className={classes.searchIcon} />

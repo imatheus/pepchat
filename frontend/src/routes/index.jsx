@@ -9,7 +9,7 @@ import Signup from "../pages/Signup/";
 import Login from "../pages/Login/";
 import Connections from "../pages/Connections/";
 import SettingsCustom from "../pages/SettingsCustom/";
-import Financeiro from "../pages/Financeiro/";
+import Financial from "../pages/Financeiro/";
 import Users from "../pages/Users";
 import Contacts from "../pages/Contacts/";
 import Queues from "../pages/Queues/";
@@ -87,8 +87,8 @@ const RoutesContent = () => {
               />
               <Route
                 exact
-                path="/financeiro"
-                component={Financeiro}
+                path="/financial"
+                component={Financial}
                 isPrivate
               />
               <Route exact path="/queues" component={Queues} isPrivate />

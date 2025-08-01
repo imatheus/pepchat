@@ -18,11 +18,13 @@ import { i18n } from "../../translate/i18n";
 
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
-import { generateRandomColor } from "../../utils/colorGenerator";
+import { generateRandomVividColor } from "../../utils/colorGenerator";
 import {
   Paper,
+  Box,
 } from "@material-ui/core";
 import { QueueOptions } from "../QueueOptions";
+import ColorPickerSimple from "../ColorPickerSimple";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -50,6 +52,17 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(1),
     minWidth: 120,
   },
+  nameFieldContainer: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: theme.spacing(1.5),
+    marginBottom: theme.spacing(1),
+  },
+  colorPickerWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: theme.spacing(2), // Alinha com o centro do campo de texto
+  },
 }));
 
 const QueueSchema = Yup.object().shape({
@@ -66,7 +79,7 @@ const QueueModal = ({ open, onClose, queueId }) => {
 
   const initialState = {
     name: "",
-    color: queueId ? "" : generateRandomColor(), // Auto-generate color for new queues
+    color: queueId ? "" : generateRandomVividColor(), // Auto-generate vivid color for new queues
     greetingMessage: "",
     outOfHoursMessage: "",
   };
@@ -77,10 +90,10 @@ const QueueModal = ({ open, onClose, queueId }) => {
   useEffect(() => {
     (async () => {
       if (!queueId) {
-        // For new queues, set a random color
+        // For new queues, set a random vivid color
         setQueue({
           name: "",
-          color: generateRandomColor(),
+          color: generateRandomVividColor(),
           greetingMessage: "",
           outOfHoursMessage: "",
         });
@@ -108,10 +121,10 @@ const QueueModal = ({ open, onClose, queueId }) => {
 
   const handleClose = () => {
     onClose();
-    // Generate new color for next new queue
+    // Generate new vivid color for next new queue
     const newInitialState = {
       name: "",
-      color: generateRandomColor(),
+      color: generateRandomVividColor(),
       greetingMessage: "",
       outOfHoursMessage: "",
     };
@@ -158,21 +171,34 @@ const QueueModal = ({ open, onClose, queueId }) => {
               }, 400);
             }}
           >
-            {({ touched, errors, isSubmitting, values }) => (
+            {({ touched, errors, isSubmitting, values, setFieldValue }) => (
               <Form>
                 <DialogContent dividers>
-                  <Field
-                    as={TextField}
-                    label={i18n.t("queueModal.form.name")}
-                    autoFocus
-                    name="name"
-                    error={touched.name && Boolean(errors.name)}
-                    helperText={touched.name && errors.name}
-                    variant="outlined"
-                    margin="dense"
-                    className={classes.textField}
-                  />
-                  {/* Campo de cor removido - cor será gerada automaticamente */}
+                  {/* Campo Nome com bolinha de cor ao lado esquerdo */}
+                  <div className={classes.nameFieldContainer}>
+                    {/* Bolinha de cor do lado esquerdo */}
+                    <div className={classes.colorPickerWrapper}>
+                      <ColorPickerSimple
+                        selectedColor={values.color}
+                        onColorChange={(color) => {
+                          setFieldValue('color', color);
+                        }}
+                      />
+                    </div>
+                    
+                    <Field
+                      as={TextField}
+                      label={i18n.t("queueModal.form.name")}
+                      autoFocus
+                      name="name"
+                      error={touched.name && Boolean(errors.name)}
+                      helperText={touched.name && errors.name}
+                      variant="outlined"
+                      margin="dense"
+                      className={classes.textField}
+                    />
+                  </div>
+                  
                   <div style={{ marginTop: 5 }}>
                         <Field
                           as={TextField}

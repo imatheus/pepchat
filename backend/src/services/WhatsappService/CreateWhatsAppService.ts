@@ -19,11 +19,8 @@ interface Request {
   isDefault?: boolean;
   token?: string;
   provider?: string;
-  facebookUserId?: string;
-  facebookUserToken?: string;
   tokenMeta?: string;
   channel?: string;
-  facebookPageUserId?: string;
 }
 
 interface Response {
@@ -43,9 +40,6 @@ const CreateWhatsAppService = async ({
   companyId,
   token = "",
   provider = "beta",
-  facebookUserId,
-  facebookUserToken,
-  facebookPageUserId,
   tokenMeta,
   channel = "whatsapp"
 }: Request): Promise<Response> => {
@@ -146,9 +140,6 @@ const CreateWhatsAppService = async ({
       token,
       provider,
       channel,
-      facebookUserId,
-      facebookUserToken,
-      facebookPageUserId,
       tokenMeta,
     },
     { include: ["queues"] }

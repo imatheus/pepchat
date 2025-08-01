@@ -34,8 +34,6 @@ const EnsureDefaultCompanyService = async (): Promise<Response> => {
         queues: 1,
         value: 50.00,
         useWhatsapp: true,
-        useFacebook: false,
-        useInstagram: false,
         useCampaigns: false
       });
     }

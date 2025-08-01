@@ -29,8 +29,6 @@ import {
 	DeleteOutline,
 } from "@material-ui/icons";
 import WhatsAppIcon from "@material-ui/icons/WhatsApp";
-import FacebookIcon from "@material-ui/icons/Facebook";
-import InstagramIcon from "@material-ui/icons/Instagram";
 
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
@@ -42,7 +40,6 @@ import api from "../../services/api";
 import WhatsAppModal from "../../components/WhatsAppModal";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import QrcodeModal from "../../components/QrcodeModal";
-import FacebookModal from "../../components/FacebookModal";
 import { i18n } from "../../translate/i18n";
 import { WhatsAppsContext } from "../../context/WhatsApp/WhatsAppsContext";
 import { AuthContext } from "../../context/Auth/AuthContext";
@@ -123,13 +120,9 @@ const Connections = () => {
 	// Verificar quais canais estão permitidos no plano
 	const planChannels = user?.company?.plan || {};
 	const canUseWhatsapp = planChannels.useWhatsapp !== false; // Default true para compatibilidade
-	const canUseFacebook = planChannels.useFacebook === true;
-	const canUseInstagram = planChannels.useInstagram === true;
 	
 	const [whatsAppModalOpen, setWhatsAppModalOpen] = useState(false);
 	const [qrModalOpen, setQrModalOpen] = useState(false);
-	const [facebookModalOpen, setFacebookModalOpen] = useState(false);
-	const [connectionType, setConnectionType] = useState("facebook");
 	const [selectedWhatsApp, setSelectedWhatsApp] = useState(null);
 	const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 	const confirmationModalInitialState = {
@@ -183,21 +176,7 @@ const Connections = () => {
 		}
 	};
 
-	const handleOpenFacebookModal = () => {
-		setConnectionType("facebook");
-		setFacebookModalOpen(true);
-	};
-
-	const handleOpenInstagramModal = () => {
-		setConnectionType("instagram");
-		setFacebookModalOpen(true);
-	};
-
-	const handleCloseFacebookModal = useCallback(() => {
-		setFacebookModalOpen(false);
-		setConnectionType("facebook");
-	}, []);
-
+	
 	const handleCloseWhatsAppModal = useCallback(() => {
 		setWhatsAppModalOpen(false);
 		setSelectedWhatsApp(null);
@@ -366,11 +345,6 @@ const Connections = () => {
 	const getChannelIcon = (channel) => {
 		switch (channel) {
 			case "whatsapp":
-				return <WhatsAppIcon style={{ color: "#25D366" }} />;
-			case "facebook":
-				return <FacebookIcon style={{ color: "#1877F2" }} />;
-			case "instagram":
-				return <InstagramIcon style={{ color: "#E4405F" }} />;
 			default:
 				return <WhatsAppIcon style={{ color: "#25D366" }} />;
 		}
@@ -379,11 +353,6 @@ const Connections = () => {
 	const getChannelName = (channel) => {
 		switch (channel) {
 			case "whatsapp":
-				return "WhatsApp";
-			case "facebook":
-				return "Facebook";
-			case "instagram":
-				return "Instagram";
 			default:
 				return "WhatsApp";
 		}
@@ -409,12 +378,7 @@ const Connections = () => {
 				onClose={handleCloseWhatsAppModal}
 				whatsAppId={!qrModalOpen && selectedWhatsApp?.id}
 			/>
-			<FacebookModal
-				open={facebookModalOpen}
-				onClose={handleCloseFacebookModal}
-				connectionType={connectionType}
-			/>
-			<MainHeader>
+						<MainHeader>
 				<Title>{i18n.t("connections.title")}</Title>
 				<MainHeaderButtonsWrapper>
 					<Box className={classes.connectionButtons}>
@@ -449,27 +413,7 @@ const Connections = () => {
 								</Button>
 							</div>
 						)}
-						{canUseFacebook && (
-							<Button
-								variant="contained"
-								style={{ backgroundColor: "#1877F2", color: "white" }}
-								startIcon={<FacebookIcon />}
-								onClick={handleOpenFacebookModal}
-							>
-								Facebook
-							</Button>
-						)}
-						{canUseInstagram && (
-							<Button
-								variant="contained"
-								style={{ backgroundColor: "#E4405F", color: "white" }}
-								startIcon={<InstagramIcon />}
-								onClick={handleOpenInstagramModal}
-							>
-								Instagram
-							</Button>
-						)}
-					</Box>
+											</Box>
 				</MainHeaderButtonsWrapper>
 			</MainHeader>
 			<Paper className={classes.mainPaper} variant="outlined">
@@ -507,12 +451,9 @@ const Connections = () => {
 								{whatsApps?.length > 0 &&
 									whatsApps
 										.filter(whatsApp => {
-											// Filtrar conexões baseado no plano
+											// Filtrar conexões baseado no plano - apenas WhatsApp
 											const channel = whatsApp.channel || "whatsapp";
-											if (channel === "whatsapp") return canUseWhatsapp;
-											if (channel === "facebook") return canUseFacebook;
-											if (channel === "instagram") return canUseInstagram;
-											return false; // Outros canais não permitidos
+											return channel === "whatsapp" && canUseWhatsapp;
 										})
 										.map(whatsApp => (
 										<TableRow key={whatsApp.id}>
@@ -528,8 +469,7 @@ const Connections = () => {
 													label={getChannelName(whatsApp.channel || "whatsapp")}
 													className={classes.channelChip}
 													style={{
-														backgroundColor: whatsApp.channel === "facebook" ? "#1877F2" : 
-																		whatsApp.channel === "instagram" ? "#E4405F" : "#25D366",
+														backgroundColor: "#25D366",
 														color: "white"
 													}}
 												/>

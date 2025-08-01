@@ -1,85 +1,164 @@
-import { Dialog } from "@material-ui/core";
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import { makeStyles } from '@material-ui/core/styles';
+import {
+  Box,
+  Typography,
+  Tooltip,
+  Grid,
+  Paper,
+  FormControl,
+  FormLabel,
+} from '@material-ui/core';
+import { getAllVividColors, getContrastColor } from '../../utils/colorGenerator';
 
-import { BlockPicker } from "react-color";
+const useStyles = makeStyles((theme) => ({
+  colorPickerContainer: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+  },
+  colorGrid: {
+    marginTop: theme.spacing(1),
+  },
+  colorOption: {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    cursor: 'pointer',
+    border: '3px solid transparent',
+    transition: 'all 0.2s ease',
+    margin: theme.spacing(0.5),
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    '&:hover': {
+      transform: 'scale(1.1)',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+    },
+  },
+  selectedColor: {
+    border: '3px solid #333',
+    transform: 'scale(1.15)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+    '&::after': {
+      content: '"✓"',
+      position: 'absolute',
+      color: 'white',
+      fontSize: '16px',
+      fontWeight: 'bold',
+      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)',
+    },
+  },
+  categorySection: {
+    marginBottom: theme.spacing(2),
+  },
+  categoryTitle: {
+    fontSize: '0.9rem',
+    fontWeight: 'bold',
+    marginBottom: theme.spacing(1),
+    color: theme.palette.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  selectedColorPreview: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
+    backgroundColor: theme.palette.grey[100],
+  },
+  selectedColorCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: '50%',
+    marginRight: theme.spacing(1),
+    border: '2px solid #ccc',
+  },
+  selectedColorText: {
+    fontSize: '0.9rem',
+    color: theme.palette.text.primary,
+  },
+}));
 
-const ColorPicker = ({ onChange, currentColor, handleClose, open }) => {
-	const [selectedColor, setSelectedColor] = useState(currentColor);
+const ColorPicker = ({ selectedColor, onColorChange, label = "Cor do Setor" }) => {
+  const classes = useStyles();
+  const vividColors = getAllVividColors();
 
-	const handleChange = color => {
-		setSelectedColor(color.hex);
-		handleClose();
-	};
+  // Agrupar cores por categoria
+  const colorsByCategory = vividColors.reduce((acc, colorObj) => {
+    if (!acc[colorObj.category]) {
+      acc[colorObj.category] = [];
+    }
+    acc[colorObj.category].push(colorObj);
+    return acc;
+  }, {});
 
-	const colors = [
-		"#B80000",
-		"#DB3E00",
-		"#FCCB00",
-		"#008B02",
-		"#006B76",
-		"#1273DE",
-		"#004DCF",
-		"#5300EB",
-		"#EB9694",
-		"#FAD0C3",
-		"#FEF3BD",
-		"#C1E1C5",
-		"#BEDADC",
-		"#C4DEF6",
-		"#BED3F3",
-		"#D4C4FB",
-		"#4D4D4D",
-		"#999999",
-		"#F44E3B",
-		"#FE9200",
-		"#FCDC00",
-		"#DBDF00",
-		"#A4DD00",
-		"#68CCCA",
-		"#73D8FF",
-		"#AEA1FF",
-		"#FDA1FF",
-		"#333333",
-		"#808080",
-		"#cccccc",
-		"#D33115",
-		"#E27300",
-		"#FCC400",
-		"#B0BC00",
-		"#68BC00",
-		"#16A5A5",
-		"#009CE0",
-		"#7B64FF",
-		"#FA28FF",
-		"#666666",
-		"#B3B3B3",
-		"#9F0500",
-		"#C45100",
-		"#FB9E00",
-		"#808900",
-		"#194D33",
-		"#0C797D",
-		"#0062B1",
-		"#653294",
-		"#AB149E",
-	];
+  const categoryNames = {
+    red: 'Vermelhos',
+    blue: 'Azuis',
+    green: 'Verdes',
+    orange: 'Laranjas',
+    yellow: 'Amarelos',
+    purple: 'Roxos',
+    cyan: 'Turquesas',
+    gray: 'Cinzas',
+  };
 
-	return (
-		<Dialog
-			onClose={handleClose}
-			aria-labelledby="simple-dialog-title"
-			open={open}
-		>
-			<BlockPicker
-				width={"100%"}
-				triangle="hide"
-				color={selectedColor}
-				colors={colors}
-				onChange={handleChange}
-				onChangeComplete={color => onChange(color.hex)}
-			/>
-		</Dialog>
-	);
+  const handleColorSelect = (color) => {
+    onColorChange(color);
+  };
+
+  const getSelectedColorInfo = () => {
+    return vividColors.find(colorObj => colorObj.color === selectedColor);
+  };
+
+  const selectedColorInfo = getSelectedColorInfo();
+
+  return (
+    <FormControl className={classes.colorPickerContainer} fullWidth>
+      <FormLabel component="legend">{label}</FormLabel>
+      
+      {/* Preview da cor selecionada */}
+      {selectedColor && (
+        <Box className={classes.selectedColorPreview}>
+          <div
+            className={classes.selectedColorCircle}
+            style={{ backgroundColor: selectedColor }}
+          />
+          <Typography className={classes.selectedColorText}>
+            {selectedColorInfo ? selectedColorInfo.name : selectedColor}
+          </Typography>
+        </Box>
+      )}
+
+      {/* Grid de cores organizadas por categoria */}
+      <Box className={classes.colorGrid}>
+        {Object.entries(colorsByCategory).map(([category, colors]) => (
+          <Box key={category} className={classes.categorySection}>
+            <Typography className={classes.categoryTitle}>
+              {categoryNames[category] || category}
+            </Typography>
+            <Grid container spacing={0}>
+              {colors.map((colorObj) => (
+                <Grid item key={colorObj.color}>
+                  <Tooltip title={colorObj.name} arrow>
+                    <div
+                      className={`${classes.colorOption} ${
+                        selectedColor === colorObj.color ? classes.selectedColor : ''
+                      }`}
+                      style={{ backgroundColor: colorObj.color }}
+                      onClick={() => handleColorSelect(colorObj.color)}
+                    />
+                  </Tooltip>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        ))}
+      </Box>
+    </FormControl>
+  );
 };
 
 export default ColorPicker;

@@ -71,9 +71,7 @@ export const RefreshTokenService = async (
         queues: companyPlan.queues,
         value: companyPlan.pricePerUser,
         useWhatsapp: companyPlan.useWhatsapp,
-        useFacebook: companyPlan.useFacebook,
-        useInstagram: companyPlan.useInstagram,
-        useCampaigns: companyPlan.useCampaigns
+                useCampaigns: companyPlan.useCampaigns
       } as any;
     }
     

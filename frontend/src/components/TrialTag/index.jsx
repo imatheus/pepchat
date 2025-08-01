@@ -126,7 +126,7 @@ const TrialTag = () => {
   };
 
   const handleActivateClick = () => {
-    history.push('/financeiro');
+    history.push('/financial');
   };
 
   const showActivateButton = daysRemaining < 3;

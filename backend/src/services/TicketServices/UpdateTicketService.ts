@@ -14,7 +14,6 @@ import FindOrCreateATicketTrakingService from "./FindOrCreateATicketTrakingServi
 import GetTicketWbot from "../../helpers/GetTicketWbot";
 import { verifyMessage } from "../WbotServices/wbotMessageListener";
 import { isNil } from "lodash";
-import sendFaceMessage from "../FacebookServices/sendFacebookMessage";
 import AutoRatingService from "./AutoRatingService";
 import AppError from "../../errors/AppError";
 import { logger } from "../../utils/logger";
@@ -184,11 +183,7 @@ const UpdateTicketService = async ({
             await SendWhatsAppMessage({ body, ticket });
           }
 
-          if (["facebook", "instagram"].includes(ticket.channel)) {
-            console.log(`Checking if ${ticket.contact.number} is a valid ${ticket.channel} contact`)
-            await sendFaceMessage({ body, ticket });
-          }
-        }
+                  }
 
         // Finalizar o tracking apenas se não estiver aguardando avaliação
         ticketTraking.finishedAt = moment().toDate();
@@ -219,11 +214,7 @@ const UpdateTicketService = async ({
         await verifyMessage(queueChangedMessage as any, ticket, ticket.contact);
       }
 
-      if (["facebook", "instagram"].includes(ticket.channel)) {
-        console.log(`Checking if ${ticket.contact.number} is a valid ${ticket.channel} contact`)
-        await sendFaceMessage({ body: "\u200eVocê foi transferido, em breve iremos iniciar seu atendimento.", ticket });
-      }
-    }
+          }
 
     await ticket.update({
       status,

@@ -44,10 +44,7 @@ export const receiveMessage = async (req: Request, res: Response): Promise<void>
           queueIds: [],
           companyId: 1, // Usar company ID 1 como padrão
           channel: "webchat",
-          facebookUserId: "",
-          facebookUserToken: "",
-          facebookPageUserId: `webchat_auto_${Date.now()}`,
-          tokenMeta: JSON.stringify({
+                    tokenMeta: JSON.stringify({
             primaryColor: "#1976d2",
             position: "bottom-right",
             companyName: "PepChat",

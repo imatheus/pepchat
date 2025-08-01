@@ -3,7 +3,6 @@ import Ticket from "../../models/Ticket";
 import TicketTraking from "../../models/TicketTraking";
 import Setting from "../../models/Setting";
 import SendWhatsAppMessage from "../WbotServices/SendWhatsAppMessage";
-import sendFaceMessage from "../FacebookServices/sendFacebookMessage";
 import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
 import { logger } from "../../utils/logger";
 
@@ -87,18 +86,7 @@ Avalie nossa equipe:`;
       }
     }
 
-    if (["facebook", "instagram"].includes(ticket.channel)) {
-      try {
-        await sendFaceMessage({ body: bodyRatingMessage, ticket });
-        messageSent = true;
-        logger.info(`Auto rating message sent via ${ticket.channel} for ticket ${ticket.id}`);
-      } catch (socialError) {
-        logger.error(`Failed to send ${ticket.channel} auto rating for ticket ${ticket.id}: ${socialError.message}`);
-        // Se falhar no canal social, ainda assim marcar como enviado para não tentar novamente
-        messageSent = true;
-      }
-    }
-
+    
     // Se houve tentativa de envio (mesmo que tenha falhado), atualizar o tracking
     if (messageSent) {
       await ticketTraking.update({

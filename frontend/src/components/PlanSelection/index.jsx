@@ -386,8 +386,6 @@ const [planUsers, setPlanUsers] = useState({});
         ];
 
         const conditionalFeatures = [
-            { text: "Facebook Messenger", included: plan.useFacebook },
-            { text: "Instagram Direct", included: plan.useInstagram },
             { text: "Campanhas de Marketing", included: plan.useCampaigns },
         ];
 
@@ -403,8 +401,6 @@ const [planUsers, setPlanUsers] = useState({});
         
         conditionalFeatures.forEach(feature => {
             const someOtherPlanHasIt = plans.some(p => {
-                if (feature.text === "Facebook Messenger") return p.useFacebook;
-                if (feature.text === "Instagram Direct") return p.useInstagram;
                 if (feature.text === "Campanhas de Marketing") return p.useCampaigns;
                 return false;
             });
@@ -661,12 +657,6 @@ const [planUsers, setPlanUsers] = useState({});
                                     <Box mt={1}>
                                         {selectedPlan.useWhatsapp && (
                                             <Chip label="WhatsApp" size="small" style={{ margin: "2px" }} />
-                                        )}
-                                        {selectedPlan.useFacebook && (
-                                            <Chip label="Facebook" size="small" style={{ margin: "2px" }} />
-                                        )}
-                                        {selectedPlan.useInstagram && (
-                                            <Chip label="Instagram" size="small" style={{ margin: "2px" }} />
                                         )}
                                         {selectedPlan.useCampaigns && (
                                             <Chip label="Campanhas" size="small" style={{ margin: "2px" }} />
