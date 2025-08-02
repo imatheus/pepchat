@@ -106,7 +106,7 @@ export default function ChatPopover() {
 
   const playNotificationSound = () => {
     try {
-      const audio = new Audio('/src/assets/1750135956821.mp3');
+      const audio = new Audio('/backend/public/1750135956821.mp3');
       audio.volume = 0.5;
       audio.play().catch(error => {
         console.error('Erro ao reproduzir som de notificação:', error);

@@ -1,0 +1,21 @@
+[0;1;32m●[0m caddy.service - Caddy
+     Loaded: loaded (/lib/systemd/system/caddy.service; enabled; vendor preset: enabled)
+     Active: [0;1;32mactive (running)[0m since Thu 2025-07-31 03:21:36 UTC; 5s ago
+       Docs: https://caddyserver.com/docs/
+   Main PID: 23547 (caddy)
+      Tasks: 5 (limit: 4646)
+     Memory: 11.8M
+        CPU: 57ms
+     CGroup: /system.slice/caddy.service
+             └─23547 /usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+
+Jul 31 03:21:36 srv676132 caddy[23547]: {"level":"warn","ts":1753932096.8607082,"logger":"http","msg":"HTTP/2 skipped because it requires TLS","network":"tcp","addr":":80"}
+Jul 31 03:21:36 srv676132 caddy[23547]: {"level":"warn","ts":1753932096.8608215,"logger":"http","msg":"HTTP/3 skipped because it requires TLS","network":"tcp","addr":":80"}
+Jul 31 03:21:36 srv676132 caddy[23547]: {"level":"info","ts":1753932096.8609998,"logger":"http.log","msg":"server running","name":"remaining_auto_https_redirects","protocols":["h1","h2","h3"]}
+Jul 31 03:21:36 srv676132 caddy[23547]: {"level":"info","ts":1753932096.8611083,"logger":"http","msg":"enabling automatic TLS certificate management","domains":["app.pepchat.com.br"]}
+Jul 31 03:21:36 srv676132 caddy[23547]: {"level":"warn","ts":1753932096.8627517,"logger":"tls","msg":"stapling OCSP","error":"no OCSP stapling for [app.pepchat.com.br]: no OCSP server specified in certificate","identifiers":["app.pepchat.com.br"]}
+Jul 31 03:21:36 srv676132 caddy[23547]: {"level":"info","ts":1753932096.8632128,"msg":"autosaved config (load with --resume flag)","file":"/var/lib/caddy/.config/caddy/autosave.json"}
+Jul 31 03:21:36 srv676132 systemd[1]: Started Caddy.
+Jul 31 03:21:36 srv676132 caddy[23547]: {"level":"info","ts":1753932096.8683143,"msg":"serving initial configuration"}
+Jul 31 03:21:36 srv676132 caddy[23547]: {"level":"info","ts":1753932096.8700004,"logger":"tls","msg":"storage cleaning happened too recently; skipping for now","storage":"FileStorage:/var/lib/caddy/.local/share/caddy","instance":"6c28a30e-d8f3-49da-a914-01345a41b441","try_again":1754018496.8699996,"try_again_in":86399.99999978}
+Jul 31 03:21:36 srv676132 caddy[23547]: {"level":"info","ts":1753932096.8701923,"logger":"tls","msg":"finished cleaning storage units"}

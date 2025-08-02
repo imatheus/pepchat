@@ -113,9 +113,6 @@ class Whatsapp extends Model<Whatsapp> {
   sessionStartedAt: Date;
 
   @Column(DataType.TEXT)
-  facebookUserId: string;
-
-  @Column(DataType.TEXT)
   facebookUserToken: string;
 
   @Column(DataType.TEXT)

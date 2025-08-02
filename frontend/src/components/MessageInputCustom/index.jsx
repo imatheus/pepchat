@@ -571,11 +571,10 @@ const MessageInputCustom = (props) => {
       }
     };
 
-    // Só carregar uma vez quando o componente montar e o usuário estiver disponível
-    if (user?.id && quickMessages.length === 0) {
+    if (user?.id) {
       loadQuickMessages();
     }
-  }, [user.id]); // Remover listQuickMessages das dependências para evitar loops
+  }, [user.id, listQuickMessages]);
 
   const handleAddEmoji = (e) => {
     let emoji = e.native;
