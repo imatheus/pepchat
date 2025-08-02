@@ -111,6 +111,15 @@ class Whatsapp extends Model<Whatsapp> {
 
   @Column(DataType.DATE)
   sessionStartedAt: Date;
+
+  @Column(DataType.TEXT)
+  facebookUserId: string;
+
+  @Column(DataType.TEXT)
+  facebookUserToken: string;
+
+  @Column(DataType.TEXT)
+  facebookPageUserId: string;
 }
 
 export default Whatsapp;

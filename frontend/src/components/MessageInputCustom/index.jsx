@@ -48,11 +48,11 @@ const useStyles = makeStyles((theme) => ({
   messageInputWrapper: {
     padding: 6,
     marginRight: 7,
-    background: theme.palette.background.paper,
+    backgroundColor: theme.palette.type === 'dark' ? theme.palette.background.default : '#e9e9e9',
     display: "flex",
     borderRadius: 50,
     flex: 1,
-    border: "1px solid #35cd96",
+    border: "1px solid #ffffffff",
     "&:focus-within": {
       outline: "none !important",
       boxShadow: "none !important",
@@ -571,10 +571,11 @@ const MessageInputCustom = (props) => {
       }
     };
 
-    if (user?.id) {
+    // Só carregar uma vez quando o componente montar e o usuário estiver disponível
+    if (user?.id && quickMessages.length === 0) {
       loadQuickMessages();
     }
-  }, [user.id, listQuickMessages]);
+  }, [user.id]); // Remover listQuickMessages das dependências para evitar loops
 
   const handleAddEmoji = (e) => {
     let emoji = e.native;

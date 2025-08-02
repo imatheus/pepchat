@@ -29,21 +29,19 @@ import ClearOutlinedIcon from '@material-ui/icons/ClearOutlined';
 import { socketConnection } from "../../services/socket";
 
 const useStyles = makeStyles((theme) => ({
+  // Base ticket styles
   ticket: {
     position: "relative",
-    height: 98,
-    paddingHorizontal: 10,
-    paddingVertical: 0,
-    borderRadius: "12px",
-    margin: "8px 0px",
-    paddingLeft: "16px",
-    paddingRight: "80px", // Espaço para os botões
     width: "100%",
-    maxWidth: "100%",
+    maxWidth: "99%",
+    height: 98,
+    padding: "0 80px 0 16px", // Combined padding
+    margin: "8px 0",
     boxSizing: "border-box",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    borderRadius: "12px",
+    border: "1px solid #8c8c8c5f !important",
     backgroundColor: theme.palette.type === 'dark' ? '#333333' : theme.palette.background.paper,
-    border: "1px solid rgba(0, 0, 0, 0.05)",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
     transition: "all 0.2s ease-in-out",
     "&:hover": {
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
@@ -51,45 +49,59 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 
+  // Variant styles
   pendingTicket: {
     cursor: "pointer",
-    borderRadius: "12px",
-    margin: "8px 0px",
-    paddingLeft: "16px",
-    paddingRight: "80px", // Espaço para os botões
     width: "100%",
     maxWidth: "100%",
+    padding: "0 80px 0 16px",
+    margin: "5px 0",
     boxSizing: "border-box",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    borderRadius: "12px",
+    border: "1px solid #8c8c8c5f !important",
     backgroundColor: theme.palette.background.paper,
-    border: "1px solid rgba(0, 0, 0, 0.05)",
+    boxShadow: "0 1px 5px rgba(0, 0, 0, 0.1)",
     "&:hover": {
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+      boxShadow: "0 1px 7px rgba(0, 0, 0, 0.1)",
       transform: "translateY(-1px)",
     },
   },
 
+  // Empty state styles
   noTicketsDiv: {
     display: "flex",
-    height: "100px",
-    margin: 40,
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
+    height: "100px",
+    margin: 40,
+  },
+
+  noTicketsTitle: {
+    textAlign: "center",
+    fontSize: "16px",
+    fontWeight: 600,
+    margin: 0,
   },
 
   noTicketsText: {
     textAlign: "center",
     color: "rgb(104, 121, 146)",
     fontSize: "14px",
-    lineHeight: "1.4",
+    lineHeight: 1.4,
   },
 
-  noTicketsTitle: {
-    textAlign: "center",
-    fontSize: "16px",
-    fontWeight: "600",
-    margin: "0px",
+  // Ticket content styles
+  ticketQueueColor: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "8px",
+    height: "100%",
+
+    flex: "none",
+    borderTopLeftRadius: "12px",
+    borderBottomLeftRadius: "12px",
   },
 
   contactNameWrapper: {
@@ -97,69 +109,55 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "space-between",
   },
 
-  lastMessageTime: {
-    justifySelf: "flex-end",
-    textAlign: "right",
-    position: "relative",
-    top: -23,
-    fontSize: 12
+  contactLastMessage: {
+    paddingRight: 80, // Space for buttons
   },
 
+  lastMessageTime: {
+    position: "relative",
+    top: -35,
+    fontSize: 12,
+    textAlign: "right",
+  },
+
+  ticketInfo: {
+    position: "absolute",
+    top: 10,
+  },
+
+  ticketInfo1: {
+
+    position: "relative",
+    top: 40,
+    right: 0,
+    paddingLeft:50
+  },
+
+  // Badge styles
   closedBadge: {
     alignSelf: "center",
-    justifySelf: "flex-end",
-    marginRight: 32,
     marginLeft: "auto",
-  },
-
-  contactLastMessage: {
-    paddingRight: "80px", // Ajustado para não sobrepor os botões
+    marginRight: 32,
   },
 
   newMessagesCount: {
     alignSelf: "center",
-    marginRight: 0,
     marginLeft: "auto",
+    marginRight: 0,
     top: -10,
-    right: 10
+    right: 10,
   },
 
   badgeStyle: {
     color: "white",
     backgroundColor: green[500],
     right: 0,
-    top: 10
+    top: 10,
   },
 
-  acceptButton: {
-    position: "absolute",
-    right: "108px",
-  },
-
-  ticketQueueColor: {
-    flex: "none",
-    width: "8px",
-    height: "100%",
-    position: "absolute",
-    top: "0%",
-    left: "0%",
-    borderTopLeftRadius: "12px",
-    borderBottomLeftRadius: "12px",
-  },
-
-  ticketInfo: {
-    position: "relative",
-    top: 0
-  },
-
-  ticketInfo1: {
-    position: "relative",
-    top: 40,
-    right: 0
-  },
   Radiusdot: {
     "& .MuiBadge-badge": {
-      borderRadius: "50px", // 100% arredondado
+      borderRadius: "50px",
       position: "inherit",
       height: 16,
       margin: 2,
@@ -170,8 +168,13 @@ const useStyles = makeStyles((theme) => ({
       transform: "scale(1) translate(0%, -40%)",
     },
   },
-  
-  }));
+
+  // Button styles
+  acceptButton: {
+    position: "absolute",
+    right: 108,
+  },
+}));
 
 const TicketListItemCustom = ({ ticket, setUpdate }) => {
   const classes = useStyles();

@@ -8,7 +8,6 @@ interface SocketConfig {
     origin: string | string[];
     methods: string[];
     credentials: boolean;
-    allowedHeaders?: string[];
   };
 }
 
@@ -16,20 +15,19 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
 export const socketConfig: SocketConfig = {
-  transports: ["polling", "websocket"],
-  pingTimeout: 60000,
-  pingInterval: 25000,
-  connectTimeout: 45000,
+  transports: ["websocket"],
+  pingTimeout: 30000,
+  pingInterval: 10000,
+  connectTimeout: 30000,
   allowEIO3: true,
   cors: {
     origin: process.env.FRONTEND_URL ? 
       (Array.isArray(process.env.FRONTEND_URL) ? 
         process.env.FRONTEND_URL : 
         [process.env.FRONTEND_URL]) : 
-      (isDevelopment ? ["http://localhost:3000"] : ["https://app.pepchat.com.br"]),
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      (isDevelopment ? ["http://localhost:3000"] : ["https://pepchat.com.br"]),
+    methods: ["GET", "POST"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
   },
 };
 

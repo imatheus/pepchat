@@ -18,6 +18,8 @@ import CheckContactNumber from "../services/WbotServices/CheckNumber";
 import CheckIsValidContact from "../services/WbotServices/CheckIsValidContact";
 import { SendMessage } from "../helpers/SendMessage";
 
+import {sendFacebookMessageMedia} from "../services/FacebookServices/sendFacebookMessageMedia";
+import sendFaceMessage from "../services/FacebookServices/sendFacebookMessage";
 
 type IndexQuery = {
   pageNumber: string;
@@ -80,7 +82,22 @@ export const store = async (req: Request, res: Response): Promise<void> => {
         })
       );
     }
+
+    if (["facebook", "instagram"].includes(channel)) {
+      await Promise.all(
+        medias.map(async (media: Express.Multer.File) => {
+          await sendFacebookMessageMedia({ media, ticket });
+        })
+      );
+    }
+
+
   } else {
+    if (["facebook", "instagram"].includes(channel)) {
+      console.log(`Checking if ${ticket.contact.number} is a valid ${channel} contact`)
+      await sendFaceMessage({ body, ticket, quotedMsg });
+    }
+
     if (channel === "whatsapp") {
       await SendWhatsAppMessage({ body, ticket, quotedMsg });
       
