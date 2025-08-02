@@ -87,8 +87,7 @@ const CreateAsaasCustomerForCompanyService = async ({
     const customerData = {
       name: company.name,
       email: company.email,
-      phone: company.phone,
-      mobilePhone: company.phone,
+      mobilePhone: company.phone, // Celular - campo principal
       cpfCnpj: company.document,
       observations: `Cliente criado automaticamente - Sistema Smart Atendimento - Empresa ID: ${company.id}`
     };

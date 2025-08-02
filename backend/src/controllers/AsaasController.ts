@@ -189,7 +189,7 @@ export const webhookPublic = async (req: Request, res: Response): Promise<void> 
     const isValidUserAgent = !userAgent || validUserAgents.some(ua => userAgent.toLowerCase().includes(ua.toLowerCase()));
 
     // Log do webhook recebido
-    logger.info('Asaas webhook público recebido:', {
+    logger.info('Asaas webhook publico recebido:', {
       event: payload.event,
       paymentId: payload.payment?.id,
       subscriptionId: payload.subscription?.id,

@@ -118,7 +118,7 @@ const useStyles = makeStyles(theme => ({
     usersControlButton: {
         minWidth: "32px",
         width: "32px",
-        height: "132px",
+        height: "32px",
         borderRadius: "50%",
         border: "1px solid #e0e0e0",
         backgroundColor: "#ffffff",

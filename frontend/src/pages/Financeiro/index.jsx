@@ -9,6 +9,14 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+import CardHeader from "@material-ui/core/CardHeader";
+import Chip from "@material-ui/core/Chip";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
 import CheckIcon from "@material-ui/icons/Check";
 import CloseIcon from "@material-ui/icons/Close";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
@@ -29,7 +37,6 @@ import toastError from "../../errors/toastError";
 import { showUniqueWarning } from "../../utils/toastManager";
 import { socketConnection } from "../../services/socket";
 import useCompanyStatus from "../../hooks/useCompanyStatus";
-import TrialUpgradePrompt from "../../components/TrialUpgradePrompt";
 
 import moment from "moment";
 
@@ -88,8 +95,8 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "16px",
     padding: theme.spacing(3),
     backgroundColor: theme.palette.background.paper,
-    boxShadow: theme.palette.type === 'dark' 
-      ? "0 8px 32px rgba(0, 0, 0, 0.3)" 
+    boxShadow: theme.palette.type === 'dark'
+      ? "0 8px 32px rgba(0, 0, 0, 0.3)"
       : "0 8px 32px rgba(0, 0, 0, 0.08)",
     border: `1px solid ${theme.palette.divider}`,
     position: "relative",
@@ -97,7 +104,7 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
     marginBottom: theme.spacing(3),
     maxWidth: "600px",
-    margin: "0 auto",
+    margin: "0",
   },
   activeBadge: {
     position: "absolute",
@@ -113,7 +120,6 @@ const useStyles = makeStyles((theme) => ({
     textTransform: "uppercase",
     letterSpacing: "1px",
     boxShadow: "0 4px 12px rgba(68, 183, 116, 0.3)",
-    fontFamily: "'Inter', 'Roboto', sans-serif",
     zIndex: 10,
   },
   planHeader: {
@@ -127,21 +133,18 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "700",
     marginBottom: theme.spacing(2),
     color: theme.palette.text.primary,
-    fontFamily: "'Inter', 'Roboto', sans-serif",
   },
   planPrice: {
     fontSize: "2.5rem",
     fontWeight: "800",
     marginBottom: theme.spacing(0.5),
     color: "#44b774",
-    fontFamily: "'Inter', 'Roboto', sans-serif",
     lineHeight: 1,
   },
   planPriceUnit: {
     fontSize: "0.9rem",
     opacity: 0.7,
     color: theme.palette.text.secondary,
-    fontFamily: "'Inter', 'Roboto', sans-serif",
     fontWeight: "500",
   },
   featuresList: {
@@ -154,7 +157,6 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     marginBottom: theme.spacing(1.2),
     fontSize: "0.9rem",
-    fontFamily: "'Inter', 'Roboto', sans-serif",
     fontWeight: "500",
     color: theme.palette.text.primary,
   },
@@ -291,7 +293,7 @@ const Financial = () => {
   const [loading, setLoading] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [, setHasMore] = useState(false);
-  const [searchParam, ] = useState("");
+  const [searchParam,] = useState("");
   const [invoices, dispatch] = useReducer(reducer, []);
   const [storagePlans, setStoragePlans] = React.useState([]);
   const [selectedContactId, setSelectedContactId] = useState(null);
@@ -309,7 +311,7 @@ const Financial = () => {
 
   const getPlanFeatures = useCallback((plan) => {
     if (!plan) return [];
-    
+
     const features = [
       { text: `${plan.users} usuário${plan.users > 1 ? 's' : ''} por licença`, included: true },
       { text: `${plan.connections} ${plan.connections > 1 ? 'conexões' : 'conexão'} WhatsApp`, included: true },
@@ -343,7 +345,7 @@ const Financial = () => {
       window.open(invoice.invoiceUrl, '_blank');
       return;
     }
-    
+
     // Fallback para o modal antigo se não tiver invoiceUrl
     setStoragePlans(invoice);
     setSelectedContactId(null);
@@ -402,7 +404,7 @@ const Financial = () => {
   useEffect(() => {
     // Só executar se o usuário estiver carregado
     if (!profile) return;
-    
+
     if (profile !== 'user' && isTrialExpired()) {
       showUniqueWarning(
         'Seu período de teste expirou! Para continuar utilizando o sistema, regularize o pagamento.',
@@ -422,8 +424,8 @@ const Financial = () => {
           // Atualizar a fatura na lista
           dispatch({
             type: "UPDATE_USERS", // Reutilizando o reducer existente
-            payload: { 
-              id: data.invoice.id, 
+            payload: {
+              id: data.invoice.id,
               status: data.invoice.status,
               paymentDate: data.invoice.paymentDate,
               paymentMethod: data.invoice.paymentMethod
@@ -438,14 +440,14 @@ const Financial = () => {
       socket.on(`company-${companyId}-status-updated`, (data) => {
         if (data.action === "company_reactivated") {
           // Não mostrar toast aqui pois já é mostrado no useAuth
-          
+
           // Recarregar a página após 2 segundos para aplicar as mudanças
           setTimeout(() => {
             window.location.reload();
           }, 4000);
         } else if (data.action === "company_blocked") {
           // Não mostrar toast aqui pois já é mostrado no useAuth
-          
+
           // Recarregar a página para mostrar o status atualizado
           setTimeout(() => {
             window.location.reload();
@@ -459,8 +461,8 @@ const Financial = () => {
           // Atualizar a fatura na lista
           dispatch({
             type: "UPDATE_USERS",
-            payload: { 
-              id: data.invoice.id, 
+            payload: {
+              id: data.invoice.id,
               status: data.invoice.status
             }
           });
@@ -480,35 +482,35 @@ const Financial = () => {
 
   const getStatusInfo = useCallback((record) => {
     const status = record.status;
-    
+
     // Se a fatura já foi paga
     if (status === "paid" || status === "CONFIRMED" || status === "RECEIVED" || status === "RECEIVED_IN_CASH") {
       return { text: "Pago", type: "paid" };
     }
-    
+
     // Calcular diferença de dias usando moment
     if (moment(record.dueDate).isValid()) {
       const now = moment();
       const dueDate = moment(record.dueDate);
       const diff = dueDate.diff(now, "days");
-      
+
       // Verificar se está vencido pelo status do Asaas ou pela data
       if (status === "OVERDUE" || diff < 0) {
         return { text: "Vencido", type: "overdue" };
       }
-      
+
       // Faltam menos de 3 dias para vencer
       if (diff >= 0 && diff < 3) {
         return { text: "Em Aberto", type: "nearDue" };
       }
     }
-    
+
     return { text: "Em Aberto", type: "open" };
   }, []);
 
   const renderStatus = useCallback((record) => {
     const statusInfo = getStatusInfo(record);
-    
+
     switch (statusInfo.type) {
       case "paid":
         return (
@@ -549,10 +551,10 @@ const Financial = () => {
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell align="center">Id</TableCell>
-            <TableCell align="center">Detalhes</TableCell>
+            <TableCell align="center">Plano</TableCell>
             <TableCell align="center">Valor</TableCell>
-            <TableCell align="center">Data Venc.</TableCell>
+            <TableCell align="left">Mês Base</TableCell>
+            <TableCell align="center">Vencimento</TableCell>
             <TableCell align="center">Status</TableCell>
             <TableCell align="center">Ação</TableCell>
           </TableRow>
@@ -569,11 +571,11 @@ const Financial = () => {
           ) : (
             invoices.map((invoice) => (
               <TableRow key={invoice.id}>
-                <TableCell align="center">{invoice.id}</TableCell>
                 <TableCell align="center">{invoice.detail}</TableCell>
                 <TableCell style={{ fontWeight: 'bold' }} align="center">
                   {invoice.value.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
                 </TableCell>
+                <TableCell align="left">{moment(invoice.createdAt).format("MM/YYYY")}</TableCell>
                 <TableCell align="center">{moment(invoice.dueDate).format("DD/MM/YYYY")}</TableCell>
                 <TableCell style={{ fontWeight: 'bold' }} align="center">{renderStatus(invoice)}</TableCell>
                 <TableCell align="center">
@@ -612,63 +614,170 @@ const Financial = () => {
   );
 
   const renderPlansTab = () => (
-    <Box display="flex" justifyContent="center" p={2}>
-      <div style={{ position: "relative" }}>
-        <div className={classes.activeBadge}>
-          Plano Ativo
-        </div>
-        
-        <Paper className={classes.planCard} elevation={0}>
-          <div className={classes.planHeader}>
-            <Typography className={classes.planTitle}>
-              {user?.company?.plan?.name || "Plano Não Identificado"}
+    <Box p={2} display="flex" justifyContent="flex-start">
+      <Card
+        elevation={2}
+        style={{
+          borderRadius: 15,
+          width: 300,
+          textAlign: 'center',
+          padding: 30,
+          backgroundColor: '#fff',
+          color: '#333',
+          position: 'relative'
+        }}
+      >
+        {/* Badge pequeno no canto superior direito */}
+        <Box
+          position="absolute"
+          top={15}
+          right={15}
+        >
+         <Typography
+  variant="body2"
+  style={{
+    fontSize: '0.85em',
+    backgroundColor: companyStatus.isInTrial ? '#ff9800' : '#4caf50',
+    color: '#fff',
+    textTransform: 'uppercase',
+    fontWeight: 600,
+    letterSpacing: '0.5px',
+    padding: '2px 8px',
+    borderRadius: 12,
+    display: 'inline-block'
+  }}
+>
+  {companyStatus.isInTrial 
+    ? 'Trial' 
+    : 'Ativo'}
+</Typography>
+
+        </Box>
+
+        {/* Header com título */}
+        <Box mb={1}>
+          <Typography
+            variant="h5"
+            component="h1"
+            style={{
+              fontSize:"2em",
+              textAlign: 'left',
+              fontWeight: 600,
+              color: '#333',
+              marginTop:-15,
+              marginBottom: 10
+            }}
+          >
+            {user?.company?.plan?.name || "Plano Padrão"}
+          </Typography>
+
+                 {/* Preço */}
+        <Box mb={3} display="flex" justifyContent="left">
+          <Box display="flex" alignItems="flex-end">
+            <Typography
+              variant="h3"
+              style={{
+                fontSize: '1.4em',
+                fontWeight: 300,
+                color: 'gray',
+                marginBottom: 0,
+                borderRadius:"100px",
+              }}
+            >
+              {user?.company?.plan?.totalValue ?
+                formatCurrency(user.company.plan.totalValue) :
+                (user?.company?.plan?.value && user?.company?.plan?.users ?
+                  formatCurrency(user.company.plan.value * user.company.plan.users) :
+                  formatCurrency(user.company.plan?.value || 0)
+                )
+              }
             </Typography>
 
-            <Box>
-              <Typography className={classes.planPrice}>
-                {user?.company?.plan?.totalValue ? 
-                  formatCurrency(user.company.plan.totalValue) :
-                  (user?.company?.plan?.value && user?.company?.plan?.users ?
-                    formatCurrency(user.company.plan.value * user.company.plan.users) :
-                    formatCurrency(user.company.plan?.value || 0)
-                  )
-                }
-              </Typography>
-            </Box>
-          </div>
+            <Typography
+              variant="body2"
+              style={{
+                fontSize: '0.9em',
+                color: '#666',
+                fontWeight: 400,
+                marginLeft: 4
+              }}
+            >
+              /mês
+            </Typography>
+          </Box>
+        </Box>
+        </Box>
 
-          <div className={classes.featuresList}>
-            {getPlanFeatures(user?.company?.plan).map((feature, index) => (
-              <div key={index} className={classes.featureItem}>
-                {feature.included ? (
-                  <CheckIcon className={classes.featureIcon} />
-                ) : (
-                  <CloseIcon className={classes.featureIconMissing} />
-                )}
-                <span 
-                  style={{ 
-                    fontFamily: "'Inter', 'Roboto', sans-serif",
-                    fontWeight: "500",
-                    opacity: feature.included ? 1 : 0.6,
-                    textDecoration: feature.included ? 'none' : 'line-through'
+        {/* Descrição */}
+        <Typography
+          variant="body2"
+          style={{
+            color: '#666',
+            fontSize: '0.9em',
+            lineHeight: 1.6,
+            marginBottom: 20
+          }}
+        >
+        </Typography>
+
+        {/* Lista de recursos */}
+        <List
+          dense
+          style={{
+            textAlign: 'right',
+            marginBottom: 25,
+            padding: 0
+          }}
+        >
+          {getPlanFeatures(user?.company?.plan).map((feature, index) => (
+            <ListItem
+              key={index}
+              style={{
+                padding: '1px 0',
+                fontSize: '1.2em'
+              }}
+            >
+              <ListItemIcon style={{ minWidth: 25 }}>
+                <Typography
+                  style={{
+                    backgroundColor: "#3c741eff",
+                    padding: "0 5px",
+                    borderRadius: "20px",
+                    color: '#bfffc1ff',
+                    fontSize: '0.8em',
+                    fontWeight: 'bold'
                   }}
                 >
-                  {feature.text}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Paper>
-      </div>
+                  ✓
+                </Typography>
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="body2"
+                    style={{
+                      color: feature.included ? '#333' : '#999',
+                      fontSize: '0.9em',
+                      opacity: feature.included ? 1 : 0.6,
+                      textDecoration: feature.included ? 'none' : 'line-through'
+                    }}
+                  >
+                    {feature.text}
+                  </Typography>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+
+ 
+      </Card>
+      
     </Box>
   );
 
   return (
     <MainContainer>
-      {/* Prompt de Upgrade para usuários em período de teste e não para usuários "user" */}
-      {companyStatus.isInTrial && user?.profile !== 'user' && (
-        <TrialUpgradePrompt />
-      )}
       <SubscriptionModal
         open={contactModalOpen}
         onClose={handleCloseContactModal}
@@ -676,7 +785,7 @@ const Financial = () => {
         Invoice={storagePlans}
         contactId={selectedContactId}
       />
-      
+
       <MainHeader>
         <Title>Financeiro</Title>
       </MainHeader>
@@ -685,9 +794,9 @@ const Financial = () => {
       <div className={classes.mainContainer}>
         <Paper className={classes.tabsPaper} variant="outlined">
 
-          <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
             aria-label="financial tabs"
             indicatorColor="primary"
             textColor="primary"

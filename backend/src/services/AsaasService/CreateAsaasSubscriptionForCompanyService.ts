@@ -63,7 +63,7 @@ const CreateAsaasSubscriptionForCompanyService = async ({
         const customerData = {
           name: company.fullName || company.name,
           email: company.email,
-          phone: company.phone,
+          mobilePhone: company.phone, // Celular - campo principal
           cpfCnpj: company.document
         };
 

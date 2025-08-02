@@ -13,6 +13,7 @@ import routes from "./routes";
 import webHookMetaRoutes from "./routes/WebHookMetaRoutes";
 import webChatRoutes from "./routes/webChatRoutes";
 import subscriptionRoutes from "./routes/subScriptionRoutes";
+import asaasRoutes from "./routes/asaasRoutes";
 import AppError from "./errors/AppError";
 import uploadConfig from "./config/upload";
 import { logger } from "./utils/logger";
@@ -31,8 +32,8 @@ import {
 // Inicializar express
 const app = express();
 
-// Configurar trust proxy
-app.set('trust proxy', process.env.NODE_ENV === 'production' ? 1 : false);
+// Configurar trust proxy - sempre habilitado para evitar problemas com rate limiting
+app.set('trust proxy', true);
 
 // Configurações de segurança
 app.use(helmetConfig);
@@ -118,7 +119,20 @@ if (process.env.NODE_ENV === 'development') {
     const start = Date.now();
     res.on('finish', () => {
       const duration = Date.now() - start;
-      logger.info(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+      
+      // Filtrar logs de requisições frequentes e não importantes
+      const skipLogging = [
+        '/plans/public',
+        '/health',
+        '/api/health',
+        '/socket.io/',
+        '/favicon.ico'
+      ].some(path => req.path.includes(path)) || 
+      res.statusCode === 304; // Não logar respostas 304 (Not Modified)
+      
+      if (!skipLogging) {
+        logger.info(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+      }
     });
     next();
   });
@@ -167,6 +181,8 @@ app.get('/api/health', (req: Request, res: Response) => {
 app.use("/webhook/meta", webHookMetaRoutes);
 app.use("/webhook", webChatRoutes);
 app.use("/webhook", subscriptionRoutes);
+// Rotas do Asaas webhook (fora do prefixo /api/ para webhooks externos)
+app.use("/", asaasRoutes);
 app.use("/api", routes);
 
 // Error handling

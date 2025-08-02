@@ -5,8 +5,12 @@ import * as PlanController from "../controllers/PlanController";
 
 const planRoutes = express.Router();
 
-// Rota pública para listar planos (para signup)
-planRoutes.get("/plans/public", PlanController.list);
+// Rota pública para listar planos (para signup) com cache
+planRoutes.get("/plans/public", (req, res, next) => {
+  // Adicionar cache HTTP para reduzir requisições frequentes
+  res.set('Cache-Control', 'public, max-age=300'); // Cache por 5 minutos
+  next();
+}, PlanController.list);
 
 planRoutes.get("/plans", isAuth, PlanController.index);
 

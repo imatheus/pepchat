@@ -242,7 +242,7 @@ const SignUp = () => {
 			}
 		}
 		fetchData();
-	}, [getPlanList]);
+	}, []); // Removida a dependência getPlanList para evitar loop infinito
 
 	return (
 		<>

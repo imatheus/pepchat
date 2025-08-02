@@ -11,7 +11,21 @@ export const handleValidationErrors = (
   const errors = validationResult(req);
   
   if (!errors.isEmpty()) {
+    const errorDetails = errors.array().map(error => ({
+      field: 'path' in error ? error.path : 'param' in error ? error.param : 'unknown',
+      message: error.msg,
+      value: 'value' in error ? error.value : undefined
+    }));
+    
     const errorMessages = errors.array().map(error => error.msg).join(", ");
+    
+    // Log detalhado para debug
+    console.error('Validation errors:', {
+      errors: errorDetails,
+      body: req.body,
+      path: req.path
+    });
+    
     throw new AppError(`Dados inválidos: ${errorMessages}`, 400);
   }
   
