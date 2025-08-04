@@ -39,7 +39,7 @@ const checkWhatsAppConnection = async () => {
           
           // Testar conectividade básica
           try {
-            const state = wbot.ws?.readyState;
+            const state = (wbot as any).ws?.readyState;
             logger.info(`🌐 WebSocket State: ${state} (1=OPEN, 0=CONNECTING, 2=CLOSING, 3=CLOSED)`);
             
             if (state === 1) {

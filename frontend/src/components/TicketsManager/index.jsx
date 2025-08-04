@@ -185,6 +185,30 @@ const TicketsManager = () => {
 							classes={{ root: classes.tab }}
 						/>
 					</Tabs>
+					<Can
+						role={user.profile}
+						perform="tickets-manager:showall"
+						yes={() => (
+							<TicketsQueueSelect
+								style={{ marginRight: 8 }}
+								selectedQueueIds={selectedQueueIds}
+								userQueues={user?.queues}
+								onChange={handleQueueIdsChange}
+								showAllOption={true}
+								onShowAllChange={setShowAllTickets}
+								showAllTickets={showAllTickets}
+							/>
+						)}
+						no={() => (
+							<TicketsQueueSelect
+								style={{ marginRight: 8 }}
+								selectedQueueIds={selectedQueueIds}
+								userQueues={user?.queues}
+								onChange={handleQueueIdsChange}
+								showAllOption={false}
+							/>
+						)}
+					/>
 					<IconButton
 						color="primary"
 						onClick={() => setNewTicketModalOpen(true)}
@@ -210,30 +234,6 @@ const TicketsManager = () => {
 				) : (
 					<div style={{ flex: 1 }}></div>
 				)}
-				<Can
-					role={user.profile}
-					perform="tickets-manager:showall"
-					yes={() => (
-						<TicketsQueueSelect
-							style={{ marginLeft: 6 }}
-							selectedQueueIds={selectedQueueIds}
-							userQueues={user?.queues}
-							onChange={handleQueueIdsChange}
-							showAllOption={true}
-							onShowAllChange={setShowAllTickets}
-							showAllTickets={showAllTickets}
-						/>
-					)}
-					no={() => (
-						<TicketsQueueSelect
-							style={{ marginLeft: 6 }}
-							selectedQueueIds={selectedQueueIds}
-							userQueues={user?.queues}
-							onChange={handleQueueIdsChange}
-							showAllOption={false}
-						/>
-					)}
-				/>
 			</Paper>
 			<TabPanel value={tab} name="open" className={classes.ticketsWrapper}>
 				<TicketsList

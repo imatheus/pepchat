@@ -11,9 +11,7 @@ export const loginLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: true,
-  // Configuração segura para trust proxy
-  trustProxy: process.env.NODE_ENV === 'production' ? ['127.0.0.1', '::1'] : false
+  skipSuccessfulRequests: true
 });
 
 // Rate limiting geral para API - CORRIGIDO
@@ -25,8 +23,6 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  // Configuração segura para trust proxy
-  trustProxy: process.env.NODE_ENV === 'production' ? ['127.0.0.1', '::1'] : false,
   keyGenerator: (req) => {
     // Usar o IP do cliente de forma mais segura
     const forwarded = req.headers['x-forwarded-for'];
@@ -82,8 +78,6 @@ export const webhookLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  // Configuração segura para trust proxy
-  trustProxy: process.env.NODE_ENV === 'production' ? ['127.0.0.1', '::1'] : false,
   keyGenerator: (req) => {
     // Usar o IP do cliente de forma mais segura para webhooks
     const forwarded = req.headers['x-forwarded-for'];

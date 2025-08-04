@@ -86,8 +86,8 @@ const useStyles = makeStyles(theme => ({
 
 	groupAvatar: {
 		"& .MuiAvatar-colorDefault": {
-			color: "#7c7c7c",
-			backgroundColor: "#e4e4e4",
+			color: "#7c7c7c !important",
+			backgroundColor: "#e4e4e4  !important",
 		},
 	},
 }));

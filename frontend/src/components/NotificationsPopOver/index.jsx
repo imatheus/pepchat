@@ -19,6 +19,7 @@ import TicketListItem from "../TicketListItem";
 import useTickets from "../../hooks/useTickets";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { socketConnection } from "../../services/socket";
+import notificationSound from "../../utils/notificationSound";
 
 const useStyles = makeStyles((theme) => ({
   tabContainer: {
@@ -61,17 +62,9 @@ const NotificationsPopOver = () => {
   const { tickets } = useTickets({ withUnreadMessages: "true" });
   const historyRef = useRef(history);
 
-  // Som de notificação usando arquivo MP3
+  // Som de notificação usando utilitário - execução imediata sem await
   const playNotificationSound = () => {
-    try {
-      const audio = new Audio('/backend/public/1750135956821.mp3');
-      audio.volume = 0.5;
-      audio.play().catch(error => {
-        console.error('Erro ao reproduzir som de notificação:', error);
-      });
-    } catch (error) {
-      console.error('Erro ao criar áudio:', error);
-    }
+    notificationSound.play();
   };
 
 	useEffect(() => {
@@ -147,9 +140,7 @@ const NotificationsPopOver = () => {
 				});
       }
       
-      // Remover notificação quando ticket for atualizado (ex: status mudou)
       if (data.action === "update" && data.ticket) {
-        // Se o ticket não tem mais mensagens não lidas, remover das notificações
         if (!data.ticket.unreadMessages || data.ticket.unreadMessages === 0) {
           setNotifications(prevState => {
             const updatedNotifications = prevState.filter(t => t.id !== data.ticket.id);
@@ -185,15 +176,14 @@ const NotificationsPopOver = () => {
 					return [data.ticket, ...prevState];
 				});
 
-				const shouldNotNotificate =
-					(data.message.ticketId === ticketIdRef.current &&
-						document.visibilityState === "visible") ||
+				const shouldNotNotificate = 
+					(data.message.ticketId === ticketIdRef.current && document.visibilityState === "visible") ||
 					(data.ticket.userId && data.ticket.userId !== userId) ||
 					data.ticket.isGroup;
 
 				if (shouldNotNotificate) return;
 
-				// Tocar som de notificação
+				// Tocar som de notificação imediatamente
 				playNotificationSound();
 				
 				// Mostrar notificação desktop

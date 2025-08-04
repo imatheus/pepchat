@@ -194,8 +194,8 @@ export const createCompanyInAsaas = async (req: Request, res: Response): Promise
     res.status(200).json({
       success: true,
       message: "Empresa criada no Asaas com sucesso",
-      customer: result.customer,
-      subscription: result.subscription
+      asaasCustomerId: result.asaasCustomerId,
+      asaasSubscriptionId: result.asaasSubscriptionId
     });
   } catch (error: any) {
     logger.error('Error creating company in Asaas:', error);

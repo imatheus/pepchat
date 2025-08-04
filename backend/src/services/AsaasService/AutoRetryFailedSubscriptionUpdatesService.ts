@@ -24,9 +24,9 @@ class AutoRetryFailedSubscriptionUpdatesService {
     // Executar a cada 30 minutos
     this.cronJob = cron.schedule('*/30 * * * *', () => {
       this.checkAndRetryFailedUpdates();
-    }, {
-      scheduled: false // Não iniciar automaticamente
     });
+    // Parar o job inicialmente
+    this.cronJob.stop();
   }
 
   // Iniciar o serviço de retry automático
