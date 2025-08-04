@@ -166,7 +166,7 @@ export const receiveMessage = async (req: Request, res: Response): Promise<void>
     });
 
   } catch (error) {
-    console.error("❌ Erro ao processar mensagem do webchat:", error);
+    console.error("Erro ao processar mensagem do webchat:", error);
     res.status(500).json({
       error: "Internal server error",
       details: error.message,

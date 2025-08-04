@@ -213,8 +213,8 @@ export default function Options(props) {
                 handleGroupType(e.target.value);
               }}
             >
-              <MenuItem value={"disabled"}>Processar mensagens de grupos</MenuItem>
-              <MenuItem value={"enabled"}>Ignorar mensagens de grupos</MenuItem>
+              <MenuItem value={"disabled"}>Habilitar</MenuItem>
+              <MenuItem value={"enabled"}>Desabiliar</MenuItem>
             </Select>
             <FormHelperText>
               {loadingGroupMessages ? "Atualizando..." : "Controle se o sistema deve processar mensagens vindas de grupos do WhatsApp"}
