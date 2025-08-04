@@ -87,7 +87,8 @@ const CreateAsaasSubscriptionForCompanyService = async ({
     if (!subscriptionValue && companyPlan) {
       // CORREÇÃO: Usar valor total do plano personalizado (valor base * número de usuários)
       subscriptionValue = companyPlan.totalValue;
-      subscriptionName = companyPlan.name;
+      // CORREÇÃO: Usar apenas o nome base do plano, sem o número de usuários
+      subscriptionName = companyPlan.basePlan?.name || companyPlan.name.split(' - ')[0];
       
       logger.info(`Usando plano personalizado da empresa ${companyId}: ${subscriptionName} - Valor: R$ ${subscriptionValue} (${companyPlan.users} usuários x R$ ${companyPlan.pricePerUser})`);
     } else if (!subscriptionValue) {

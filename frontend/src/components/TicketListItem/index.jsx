@@ -99,6 +99,15 @@ const useStyles = makeStyles((theme) => ({
     top: "0%",
     left: "0%",
   },
+
+  groupAvatar: {
+    "& .MuiAvatar-colorDefault": {
+      color: "#7c7c7c !important",
+      backgroundColor: "#e4e4e4 !important",
+    },
+    color: "#7c7c7c !important",
+    backgroundColor: "#e4e4e4 !important",
+  },
 }));
 
 const TicketListItem = ({ ticket }) => {
@@ -161,7 +170,10 @@ const TicketListItem = ({ ticket }) => {
           ></span>
         </Tooltip>
         <ListItemAvatar>
-          <Avatar src={ticket?.contact?.profilePicUrl} />
+          <Avatar 
+            src={ticket?.contact?.profilePicUrl}
+            className={ticket?.contact?.isGroup ? classes.groupAvatar : ""}
+          />
         </ListItemAvatar>
         <ListItemText
           disableTypography

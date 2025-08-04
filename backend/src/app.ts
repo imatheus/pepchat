@@ -32,8 +32,14 @@ import {
 // Inicializar express
 const app = express();
 
-// Configurar trust proxy - sempre habilitado para evitar problemas com rate limiting
-app.set('trust proxy', true);
+// Configurar trust proxy de forma segura
+if (process.env.NODE_ENV === 'production') {
+  // Em produção, confiar apenas em proxies específicos (localhost e loopback)
+  app.set('trust proxy', ['127.0.0.1', '::1']);
+} else {
+  // Em desenvolvimento, desabilitar trust proxy para evitar warnings
+  app.set('trust proxy', false);
+}
 
 // Configurações de segurança
 app.use(helmetConfig);

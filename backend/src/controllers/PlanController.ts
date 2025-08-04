@@ -7,6 +7,7 @@ import Plan from "../models/Plan";
 import ListPlansService from "../services/PlanService/ListPlansService";
 import CreatePlanService from "../services/PlanService/CreatePlanService";
 import UpdatePlanService from "../services/PlanService/UpdatePlanService";
+import UpdatePlanWithAsaasAdjustmentService from "../services/PlanService/UpdatePlanWithAsaasAdjustmentService";
 import ShowPlanService from "../services/PlanService/ShowPlanService";
 import FindAllPlanService from "../services/PlanService/FindAllPlanService";
 import DeletePlanService from "../services/PlanService/DeletePlanService";
@@ -109,7 +110,8 @@ export const update = async (
 
   const { id, name, users, connections, queues, value, useWhatsapp, useCampaigns, campaignContactsLimit, campaignsPerMonthLimit } = planData;
 
-  const plan = await UpdatePlanService({
+  // Usar o novo serviço que inclui ajuste automático de assinaturas no Asaas
+  const result = await UpdatePlanWithAsaasAdjustmentService({
     id,
     name,
     users,
@@ -122,13 +124,17 @@ export const update = async (
     campaignsPerMonthLimit
   });
 
-  // const io = getIO();
-  // io.emit("plan", {
-  //   action: "update",
-  //   plan
-  // });
-
-  res.status(200).json(plan);
+  // Retornar informações detalhadas sobre a atualização
+  res.status(200).json({
+    plan: result.plan,
+    affectedCompanies: result.affectedCompanies.length,
+    successfulUpdates: result.successfulUpdates,
+    failedUpdates: result.failedUpdates,
+    errors: result.errors,
+    message: result.failedUpdates > 0 
+      ? `Plano atualizado com ${result.failedUpdates} falha(s) na sincronização com Asaas. As falhas serão reprocessadas automaticamente.`
+      : "Plano atualizado com sucesso. Todas as assinaturas foram sincronizadas com o Asaas."
+  });
 };
 
 export const remove = async (

@@ -5,6 +5,7 @@ import GetTicketWbot from "../../helpers/GetTicketWbot";
 import Ticket from "../../models/Ticket";
 import Message from "../../models/Message";
 import CreateMessageService from "../MessageServices/CreateMessageService";
+import { logger } from "../../utils/logger";
 
 interface Request {
   body: string;
@@ -13,6 +14,53 @@ interface Request {
   isButton?: boolean;
   isList?: boolean;
 }
+
+// Função para aguardar um tempo específico
+const sleep = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+// Função para enviar mensagem com retry automático
+const sendMessageWithRetry = async (
+  wbot: WASocket,
+  jid: string,
+  content: any,
+  options: any = {},
+  maxRetries: number = 3
+): Promise<any> => {
+  let lastError: any;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // Verificar se a conexão ainda está ativa
+      if (!wbot.user) {
+        throw new Error("WhatsApp connection lost");
+      }
+
+      // Enviar mensagem com timeout personalizado
+      const sentMessage = await Promise.race([
+        wbot.sendMessage(jid, content, options),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Custom timeout")), 30000) // 30 segundos
+        )
+      ]);
+
+      return sentMessage;
+      
+    } catch (error: any) {
+      lastError = error;
+      
+      // Se não é a última tentativa, aguardar antes de tentar novamente
+      if (attempt < maxRetries) {
+        const waitTime = attempt * 2000; // 2s, 4s, 6s...
+        await sleep(waitTime);
+      }
+    }
+  }
+  
+  // Se chegou aqui, todas as tentativas falharam
+  throw lastError;
+};
 
 const SendWhatsAppMessage = async ({
   body,
@@ -24,6 +72,15 @@ const SendWhatsAppMessage = async ({
   try {
     const wbot = await GetTicketWbot(ticket);
     
+    // Verificar se a conexão está ativa
+    if (!wbot.user) {
+      throw new AppError("WhatsApp connection is not active");
+    }
+
+    // Detectar se é grupo pelo número (mais confiável que o campo isGroup)
+    const isGroup = ticket.contact.number.includes("-") || ticket.contact.isGroup;
+    const jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
+    
     // Prepare quoted message if exists
     let quotedMsgData = null;
     if (quotedMsg) {
@@ -31,7 +88,7 @@ const SendWhatsAppMessage = async ({
         key: {
           id: quotedMsg.id,
           fromMe: quotedMsg.fromMe,
-          remoteJid: `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`
+          remoteJid: jid
         },
         message: {
           conversation: quotedMsg.body
@@ -39,72 +96,60 @@ const SendWhatsAppMessage = async ({
       };
     }
 
-    let messageContent: any;
     let sentMessage: any;
+    let messageBody = body;
 
     // Determine message type and content
     if (isButton || isList) {
-      console.log(`Sending interactive message - isButton: ${isButton}, isList: ${isList}`);
       try {
         // Parse the JSON message for buttons/lists
         const parsedMessage = JSON.parse(body);
-        console.log("Parsed message:", JSON.stringify(parsedMessage, null, 2));
+        messageBody = parsedMessage.text || body;
         
         if (isButton && parsedMessage.interactiveButtons) {
-          console.log("Sending button message with interactiveButtons:", parsedMessage.interactiveButtons);
-          // Send button message using text fallback (interactive buttons not supported in current Baileys)
-          sentMessage = await wbot.sendMessage(
-            `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
-            {
-              text: parsedMessage.text + "\n\n" + (parsedMessage.footer || "Escolha uma opção:")
-            },
+          // Send button message using text fallback
+          const textContent = parsedMessage.text + "\n\n" + (parsedMessage.footer || "Escolha uma opção:");
+          sentMessage = await sendMessageWithRetry(
+            wbot,
+            jid,
+            { text: textContent },
             quotedMsgData ? { quoted: quotedMsgData } : {}
           );
         } else if (isList && parsedMessage.sections) {
-          console.log("Sending list message with sections:", parsedMessage.sections);
-          // Send list message using text fallback (interactive lists not supported in current Baileys)
-          sentMessage = await wbot.sendMessage(
-            `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
-            {
-              text: parsedMessage.text + "\n\n" + (parsedMessage.footer || "Escolha uma opção:")
-            },
+          // Send list message using text fallback
+          const textContent = parsedMessage.text + "\n\n" + (parsedMessage.footer || "Escolha uma opção:");
+          sentMessage = await sendMessageWithRetry(
+            wbot,
+            jid,
+            { text: textContent },
             quotedMsgData ? { quoted: quotedMsgData } : {}
           );
         } else {
           // Fallback to text if parsing fails
-          sentMessage = await wbot.sendMessage(
-            `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
+          sentMessage = await sendMessageWithRetry(
+            wbot,
+            jid,
             { text: body },
             quotedMsgData ? { quoted: quotedMsgData } : {}
           );
         }
       } catch (parseError) {
-        console.log("Error parsing interactive message, falling back to text:", parseError);
         // Fallback to text message
-        sentMessage = await wbot.sendMessage(
-          `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
+        sentMessage = await sendMessageWithRetry(
+          wbot,
+          jid,
           { text: body },
           quotedMsgData ? { quoted: quotedMsgData } : {}
         );
       }
     } else {
       // Regular text message
-      sentMessage = await wbot.sendMessage(
-        `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
+      sentMessage = await sendMessageWithRetry(
+        wbot,
+        jid,
         { text: body },
         quotedMsgData ? { quoted: quotedMsgData } : {}
       );
-    }
-
-    // Extract text content for database storage
-    let messageBody = body;
-    if (isButton || isList) {
-      try {
-        const parsedMessage = JSON.parse(body);
-        messageBody = parsedMessage.text || body;
-      } catch {
-        messageBody = body;
-      }
     }
 
     // Create message record in database
@@ -132,9 +177,19 @@ const SendWhatsAppMessage = async ({
 
     return newMessage;
 
-  } catch (err) {
-    console.log("Error sending WhatsApp message:", err);
-    throw new AppError("ERR_SENDING_WAPP_MSG");
+  } catch (err: any) {
+    logger.error("❌ Erro ao enviar mensagem WhatsApp:", err);
+    
+    // Verificar tipo específico de erro para mensagem mais clara
+    if (err.message?.includes("Timed Out") || err.message?.includes("timeout")) {
+      throw new AppError("Timeout ao enviar mensagem. Verifique a conexão do WhatsApp.");
+    } else if (err.message?.includes("connection")) {
+      throw new AppError("Conexão WhatsApp perdida. Reconecte na seção Conexões.");
+    } else if (err.message?.includes("not found") || err.message?.includes("invalid")) {
+      throw new AppError("Destinatário não encontrado ou inválido.");
+    } else {
+      throw new AppError("Erro ao enviar mensagem. Tente novamente.");
+    }
   }
 };
 

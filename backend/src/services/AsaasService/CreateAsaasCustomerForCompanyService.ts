@@ -54,7 +54,8 @@ const CreateAsaasCustomerForCompanyService = async ({
     
     if (companyPlan) {
       planValue = companyPlan.totalValue;
-      planName = companyPlan.name;
+      // CORREÇÃO: Usar apenas o nome base do plano, sem o número de usuários
+      planName = companyPlan.basePlan?.name || companyPlan.name.split(' - ')[0];
     } else {
       // Fallback: buscar plano base da empresa
       const companyWithPlan = await Company.findByPk(companyId, {

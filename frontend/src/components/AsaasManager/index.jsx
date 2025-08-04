@@ -79,9 +79,18 @@ const AsaasManager = () => {
       setLoading(true);
       const { data } = await api.get("/asaas");
       
-      // Manter as bolinhas se a API Key está mascarada
-      setConfig(data);
-      setOriginalConfig(data);
+      // Garantir que os valores booleanos sejam tratados corretamente
+      const configData = {
+        ...data,
+        enabled: Boolean(data.enabled),
+        webhookUrl: data.webhookUrl || "",
+        webhookToken: data.webhookToken || "",
+        apiKey: data.apiKey || "",
+        environment: data.environment || "sandbox"
+      };
+      
+      setConfig(configData);
+      setOriginalConfig(configData);
     } catch (error) {
       console.error("Erro ao buscar configuração do Asaas:", error);
       toast.error("Erro ao carregar configurações do Asaas");
@@ -101,24 +110,40 @@ const AsaasManager = () => {
     try {
       setLoading(true);
       
-      // Se não tem API Key (considerando que *** é válida) e não existe uma configurada, é obrigatória
-      if (!config.apiKey && !config.hasApiKey) {
+      // Preparar payload
+      const payload = {
+        enabled: Boolean(config.enabled),
+        environment: config.environment,
+        webhookUrl: config.webhookUrl || "",
+        webhookToken: config.webhookToken || ""
+      };
+
+      // Só incluir API Key se não for mascarada ou se for uma nova
+      const isApiKeyMasked = config.apiKey && config.apiKey.includes('...');
+      if (!isApiKeyMasked && config.apiKey) {
+        payload.apiKey = config.apiKey;
+      } else if (!isApiKeyMasked && !config.apiKey && !originalConfig.apiKey) {
         toast.error("Chave de API é obrigatória");
         return;
       }
 
-      const method = originalConfig.id ? "put" : "post";
+      // Determinar método baseado na existência de configuração
+      const hasExistingConfig = originalConfig && (originalConfig.apiKey || originalConfig.id);
+      const method = hasExistingConfig ? "put" : "post";
       
-      // Preparar payload - se API Key for as bolinhas (***), não enviar (manter a atual)
-      const payload = { ...config };
-      if (config.apiKey === '***') {
-        delete payload.apiKey; // Não enviar API Key mascarada, manter a atual
-      }
+      console.log("Enviando payload:", payload);
       
       const { data } = await api[method]("/asaas", payload);
       
-      setConfig(data);
-      setOriginalConfig(data);
+      // Atualizar estado com resposta do servidor
+      const updatedConfig = {
+        ...config,
+        ...data.config,
+        enabled: Boolean(data.config.enabled)
+      };
+      
+      setConfig(updatedConfig);
+      setOriginalConfig(updatedConfig);
       toast.success("Configurações salvas com sucesso!");
     } catch (error) {
       console.error("Erro ao salvar configuração:", error);

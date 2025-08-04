@@ -148,7 +148,8 @@ export const send = async (req: Request, res: Response): Promise<void> => {
 
     try {
       const CheckValidNumber = await CheckContactNumber(numberToTest, companyId);
-      const number = CheckValidNumber.jid.replace(/\D/g, "");
+      // Extrair número do JID preservando hífen para grupos
+      const number = CheckValidNumber.jid.replace(/@.*$/, "");
 
       if (medias) {
         // Enviar mídia diretamente

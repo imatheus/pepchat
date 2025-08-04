@@ -7,6 +7,7 @@ import { startQueueProcess } from "./queues";
 import ProcessPendingSchedules from "./services/ScheduleServices/ProcessPendingSchedules";
 import ProcessPendingCampaigns from "./services/CampaignService/ProcessPendingCampaigns";
 import CheckCompanyExpirationService from "./services/CompanyService/CheckCompanyExpirationService";
+import autoRetryService from "./services/AsaasService/AutoRetryFailedSubscriptionUpdatesService";
 import Company from "./models/Company";
 import sequelize from "./database";
 
@@ -92,6 +93,16 @@ const server = app.listen(process.env.PORT, async () => {
     logger.error("Error during server initialization:", error);
   }
 });
+
+// Inicializar serviço de retry automático para atualizações de assinatura do Asaas
+setTimeout(() => {
+  try {
+    autoRetryService.start();
+    logger.info("Asaas auto retry service started");
+  } catch (error) {
+    logger.error("Error starting Asaas auto retry service:", error);
+  }
+}, 60000); // Aguardar 1 minuto para garantir que tudo esteja estável
 
 initIO(server);
 gracefulShutdown(server);

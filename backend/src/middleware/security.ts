@@ -11,7 +11,9 @@ export const loginLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: true
+  skipSuccessfulRequests: true,
+  // Configuração segura para trust proxy
+  trustProxy: process.env.NODE_ENV === 'production' ? ['127.0.0.1', '::1'] : false
 });
 
 // Rate limiting geral para API - CORRIGIDO
@@ -23,9 +25,28 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  // Configuração segura para trust proxy
+  trustProxy: process.env.NODE_ENV === 'production' ? ['127.0.0.1', '::1'] : false,
   keyGenerator: (req) => {
-    // Usar o IP do cliente de forma simples e segura
-    return req.ip || req.socket.remoteAddress || 'unknown';
+    // Usar o IP do cliente de forma mais segura
+    const forwarded = req.headers['x-forwarded-for'];
+    const realIp = req.headers['x-real-ip'];
+    const clientIp = req.ip;
+    const socketIp = req.socket.remoteAddress;
+    
+    // Em produção, usar o primeiro IP da lista x-forwarded-for se disponível
+    if (process.env.NODE_ENV === 'production' && forwarded) {
+      const ips = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0];
+      return ips.trim();
+    }
+    
+    // Usar real IP se disponível
+    if (realIp) {
+      return Array.isArray(realIp) ? realIp[0] : realIp;
+    }
+    
+    // Fallback para IP do Express ou socket
+    return clientIp || socketIp || 'unknown';
   },
   skip: (req) => {
     // Pular rate limiting em desenvolvimento
@@ -61,6 +82,29 @@ export const webhookLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  // Configuração segura para trust proxy
+  trustProxy: process.env.NODE_ENV === 'production' ? ['127.0.0.1', '::1'] : false,
+  keyGenerator: (req) => {
+    // Usar o IP do cliente de forma mais segura para webhooks
+    const forwarded = req.headers['x-forwarded-for'];
+    const realIp = req.headers['x-real-ip'];
+    const clientIp = req.ip;
+    const socketIp = req.socket.remoteAddress;
+    
+    // Em produção, usar o primeiro IP da lista x-forwarded-for se disponível
+    if (process.env.NODE_ENV === 'production' && forwarded) {
+      const ips = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0];
+      return ips.trim();
+    }
+    
+    // Usar real IP se disponível
+    if (realIp) {
+      return Array.isArray(realIp) ? realIp[0] : realIp;
+    }
+    
+    // Fallback para IP do Express ou socket
+    return clientIp || socketIp || 'unknown';
+  },
   skip: (req) => {
     // Pular rate limiting para webhooks do Asaas se tiver o token correto
     if (req.path.includes('/asaas/webhook')) {

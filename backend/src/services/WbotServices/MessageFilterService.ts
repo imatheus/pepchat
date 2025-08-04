@@ -1,5 +1,6 @@
 import { proto } from "@whiskeysockets/baileys";
 import Whatsapp from "../../models/Whatsapp";
+import Setting from "../../models/Setting";
 import { logger } from "../../utils/logger";
 import HistoryConfigService from "./HistoryConfigService";
 
@@ -143,12 +144,56 @@ export const isSystemMessage = (msg: proto.IWebMessageInfo): boolean => {
 };
 
 /**
+ * Verifica se mensagens de grupos devem ser ignoradas baseado na configuração da empresa
+ */
+export const shouldIgnoreGroupMessage = async (
+  msg: proto.IWebMessageInfo,
+  companyId: number
+): Promise<boolean> => {
+  try {
+    // Verificar se a mensagem é de um grupo
+    const isGroup = msg.key.remoteJid?.endsWith("@g.us");
+    
+    if (!isGroup) {
+      return false; // Não é grupo, não ignorar
+    }
+
+    // Buscar configuração da empresa
+    const setting = await Setting.findOne({
+      where: { 
+        key: "CheckMsgIsGroup", 
+        companyId 
+      }
+    });
+
+    // Se a configuração não existe ou está desabilitada, processar mensagens de grupos
+    if (!setting || setting.value === "disabled") {
+      return false;
+    }
+
+    // Se a configuração está habilitada ("enabled"), ignorar mensagens de grupos
+    if (setting.value === "enabled") {
+      logger.info(`Ignoring group message from ${msg.key.remoteJid} - Group messages disabled for company ${companyId}`);
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    logger.error(error, "Error checking group message setting");
+    // Em caso de erro, não ignorar a mensagem para não perder dados
+    return false;
+  }
+};
+
+/**
  * Filtro principal que combina todas as verificações
  */
 export const shouldIgnoreMessage = async (
   msg: proto.IWebMessageInfo,
   options: MessageFilterOptions
 ): Promise<boolean> => {
+  const { companyId } = options;
+
   // Verificar se é mensagem de sistema
   if (isSystemMessage(msg)) {
     return true;
@@ -156,6 +201,11 @@ export const shouldIgnoreMessage = async (
 
   // Verificar se é mensagem do bot
   if (isBotMessage(msg)) {
+    return true;
+  }
+
+  // Verificar se mensagens de grupos devem ser ignoradas
+  if (await shouldIgnoreGroupMessage(msg, companyId)) {
     return true;
   }
 

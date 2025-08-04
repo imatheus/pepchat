@@ -174,6 +174,15 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     right: 108,
   },
+
+  groupAvatar: {
+    "& .MuiAvatar-colorDefault": {
+      color: "#7c7c7c !important",
+      backgroundColor: "#e4e4e4 !important",
+    },
+    color: "#7c7c7c !important",
+    backgroundColor: "#e4e4e4 !important",
+  },
 }));
 
 const TicketListItemCustom = ({ ticket, setUpdate }) => {
@@ -541,7 +550,10 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
           ></span>
         </Tooltip>
         <ListItemAvatar style={{ position: 'relative' }}>
-          <Avatar src={ticket?.contact?.profilePicUrl} />
+          <Avatar 
+            src={ticket?.contact?.profilePicUrl}
+            className={ticket?.contact?.isGroup ? classes.groupAvatar : ""}
+          />
           {ticket.channel === "whatsapp" && (
             <WhatsAppIcon 
               style={{ 

@@ -85,7 +85,7 @@ export default function Options(props) {
   const [loadingCallType, setLoadingCallType] = useState(false);
   const [loadingChatbotType, setLoadingChatbotType] = useState(false);
   const [loadingChatbotAutoMode, setLoadingChatbotAutoMode] = useState(false);
-  const [, setCheckMsgIsGroup] = useState(false);
+  const [loadingGroupMessages, setLoadingGroupMessages] = useState(false);
 
   
   const { update } = useSettings();
@@ -124,7 +124,7 @@ export default function Options(props) {
       key: "userRating",
       value,
     });
-    toast.success("Operação atualizada com sucesso.");
+    toast.success("Configuração de avaliações atualizada com sucesso.");
     setLoadingUserRating(false);
   }
 
@@ -135,7 +135,7 @@ export default function Options(props) {
       key: "call",
       value,
     });
-    toast.success("Operação atualizada com sucesso.");
+    toast.success("Configuração de chamadas atualizada com sucesso.");
     setLoadingCallType(false);
   }
 
@@ -146,19 +146,24 @@ export default function Options(props) {
       key: "chatBotType",
       value,
     });
-    toast.success("Operação atualizada com sucesso.");
+    toast.success("Tipo de chatbot atualizado com sucesso.");
     setLoadingChatbotType(false);
   }
 
   async function handleGroupType(value) {
     setCheckMsgIsGroupType(value);
-    setCheckMsgIsGroup(true);
+    setLoadingGroupMessages(true);
     await update({
       key: "CheckMsgIsGroup",
       value,
     });
-    toast.success("Operação atualizada com sucesso.");
-    setCheckMsgIsGroup(false);
+    
+    const message = value === "enabled" 
+      ? "Mensagens de grupos serão ignoradas a partir de agora." 
+      : "Mensagens de grupos serão processadas normalmente.";
+    
+    toast.success(message);
+    setLoadingGroupMessages(false);
   }
 
   async function handleChatbotAutoMode(value) {
@@ -168,7 +173,7 @@ export default function Options(props) {
       key: "chatbotAutoMode",
       value,
     });
-    toast.success("Operação atualizada com sucesso.");
+    toast.success("Modo automático do chatbot atualizado com sucesso.");
     setLoadingChatbotAutoMode(false);
   }
 
@@ -180,7 +185,7 @@ export default function Options(props) {
                 </Grid> */}
         <Grid xs={12} sm={6} md={4} item>
           <FormControl className={classes.selectContainer}>
-            <InputLabel id="ratings-label">Avaliações</InputLabel>
+            <InputLabel id="ratings-label">Avaliações de Atendimento</InputLabel>
             <Select
               labelId="ratings-label"
               value={userRating}
@@ -192,14 +197,14 @@ export default function Options(props) {
               <MenuItem value={"enabled"}>Habilitadas</MenuItem>
             </Select>
             <FormHelperText>
-              {loadingUserRating && "Atualizando..."}
+              {loadingUserRating ? "Atualizando..." : "Permite que clientes avaliem o atendimento"}
             </FormHelperText>
           </FormControl>
         </Grid>
         <Grid xs={12} sm={6} md={4} item>
           <FormControl className={classes.selectContainer}>
             <InputLabel id="group-type-label">
-              Ignorar Mensagens de Grupos
+              Mensagens de Grupos
             </InputLabel>
             <Select
               labelId="group-type-label"
@@ -208,18 +213,18 @@ export default function Options(props) {
                 handleGroupType(e.target.value);
               }}
             >
-              <MenuItem value={"disabled"}>Desativado</MenuItem>
-              <MenuItem value={"enabled"}>Ativado</MenuItem>
+              <MenuItem value={"disabled"}>Processar mensagens de grupos</MenuItem>
+              <MenuItem value={"enabled"}>Ignorar mensagens de grupos</MenuItem>
             </Select>
             <FormHelperText>
-              Ativar/desativar o processamento de mensagens de grupos
+              {loadingGroupMessages ? "Atualizando..." : "Controle se o sistema deve processar mensagens vindas de grupos do WhatsApp"}
             </FormHelperText>
           </FormControl>
         </Grid>
         <Grid xs={12} sm={6} md={4} item>
           <FormControl className={classes.selectContainer}>
             <InputLabel id="call-type-label">
-              Aceitar Chamada
+              Chamadas de Voz
             </InputLabel>
             <Select
               labelId="call-type-label"
@@ -228,18 +233,18 @@ export default function Options(props) {
                 handleCallType(e.target.value);
               }}
             >
-              <MenuItem value={"disabled"}>Não Aceitar</MenuItem>
-              <MenuItem value={"enabled"}>Aceitar</MenuItem>
+              <MenuItem value={"disabled"}>Não aceitar chamadas</MenuItem>
+              <MenuItem value={"enabled"}>Aceitar chamadas</MenuItem>
             </Select>
             <FormHelperText>
-              {loadingCallType && "Atualizando..."}
+              {loadingCallType ? "Atualizando..." : "Define se o sistema deve aceitar chamadas de voz"}
             </FormHelperText>
           </FormControl>
         </Grid>
         <Grid xs={12} sm={6} md={4} item>
           <FormControl className={classes.selectContainer}>
             <InputLabel id="chatbot-type-label">
-              Tipo Chatbot
+              Tipo de Interface do Chatbot
             </InputLabel>
             <Select
               labelId="chatbot-type-label"
@@ -248,12 +253,12 @@ export default function Options(props) {
                 handleChatbotType(e.target.value);
               }}
             >
-              <MenuItem value={"text"}>Texto</MenuItem>
-              <MenuItem value={"button"}>Botão</MenuItem>
-              <MenuItem value={"list"}>Lista</MenuItem>
+              <MenuItem value={"text"}>Texto simples</MenuItem>
+              <MenuItem value={"button"}>Botões interativos</MenuItem>
+              <MenuItem value={"list"}>Lista de opções</MenuItem>
             </Select>
             <FormHelperText>
-              {loadingChatbotType && "Atualizando..."}
+              {loadingChatbotType ? "Atualizando..." : "Escolha como as opções do chatbot serão apresentadas"}
             </FormHelperText>
           </FormControl>
         </Grid>
@@ -273,7 +278,7 @@ export default function Options(props) {
               <MenuItem value={"enabled"}>Habilitado</MenuItem>
             </Select>
             <FormHelperText>
-              {loadingChatbotAutoMode ? "Atualizando..." : "Quando desabilitado, novos leads não passam pelo chatbot automático nem avaliações"}
+              {loadingChatbotAutoMode ? "Atualizando..." : "Quando desabilitado, novos contatos não passam pelo chatbot automático"}
             </FormHelperText>
           </FormControl>
         </Grid>

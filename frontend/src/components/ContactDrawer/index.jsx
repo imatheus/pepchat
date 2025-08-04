@@ -83,6 +83,13 @@ const useStyles = makeStyles(theme => ({
 		marginTop: 4,
 		padding: 6,
 	},
+
+	groupAvatar: {
+		"& .MuiAvatar-colorDefault": {
+			color: "#7c7c7c",
+			backgroundColor: "#e4e4e4",
+		},
+	},
 }));
 
 const ContactDrawer = ({ open, handleDrawerClose, contact, ticket, loading }) => {
@@ -130,7 +137,14 @@ const ContactDrawer = ({ open, handleDrawerClose, contact, ticket, loading }) =>
 								style={{ cursor: "pointer", width: '100%' }}
 								titleTypographyProps={{ noWrap: true }}
 								subheaderTypographyProps={{ noWrap: true }}
-								avatar={<Avatar src={contact.profilePicUrl} alt="contact_image" style={{ width: 60, height: 60 }} />}
+								avatar={
+									<Avatar 
+										src={contact.profilePicUrl} 
+										alt="contact_image" 
+										style={{ width: 60, height: 60 }} 
+										className={contact.isGroup ? classes.groupAvatar : ""}
+									/>
+								}
 								title={
 									<>
 										<Typography onClick={() => setOpenForm(true)}>

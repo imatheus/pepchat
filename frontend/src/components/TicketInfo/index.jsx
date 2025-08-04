@@ -37,6 +37,14 @@ const useStyles = makeStyles((theme) => ({
     color: '#ccc',
     boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
   },
+  groupAvatar: {
+    "& .MuiAvatar-colorDefault": {
+      color: "#7c7c7c !important",
+      backgroundColor: "#e4e4e4 !important",
+    },
+    color: "#7c7c7c !important",
+    backgroundColor: "#e4e4e4 !important",
+  },
 }));
 
 const TicketInfo = ({ contact, ticket, onClick }) => {
@@ -135,7 +143,11 @@ const TicketInfo = ({ contact, ticket, onClick }) => {
 						/>
 					}
 				>
-					<Avatar src={contact.profilePicUrl} alt="contact_image" />
+					<Avatar 
+						src={contact.profilePicUrl} 
+						alt="contact_image"
+						className={contact.isGroup ? classes.groupAvatar : ""}
+					/>
 				</Badge>
 			}
 			title={`${contactName} #${ticket.id}`}

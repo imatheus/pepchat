@@ -553,7 +553,7 @@ const Financial = () => {
           <TableRow>
             <TableCell align="center">Plano</TableCell>
             <TableCell align="center">Valor</TableCell>
-            <TableCell align="left">Mês Base</TableCell>
+            <TableCell align="left">Referência</TableCell>
             <TableCell align="center">Vencimento</TableCell>
             <TableCell align="center">Status</TableCell>
             <TableCell align="center">Ação</TableCell>

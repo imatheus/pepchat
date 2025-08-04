@@ -33,4 +33,8 @@ asaasRoutes.get("/asaas/webhook", (req, res) => {
   });
 });
 
+// Novas rotas para ajuste automático de planos
+asaasRoutes.post("/asaas/retry-subscription-updates", isAuth, isSuperUser, AsaasController.retrySubscriptionUpdates);
+asaasRoutes.get("/asaas/subscription-status/:companyId", isAuth, isSuperUser, AsaasController.getSubscriptionStatus);
+
 export default asaasRoutes;

@@ -7,8 +7,29 @@ interface IOnWhatsapp {
 }
 
 const checker = async (number: string, wbot: any) => {
-  const [validNumber] = await wbot.onWhatsApp(`${number}@s.whatsapp.net`);
-  return validNumber;
+  // Verificar se é um grupo (contém "-" no número) ou conversa individual
+  const isGroup = number.includes("-");
+  const jid = `${number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
+  
+  if (isGroup) {
+    // Para grupos, assumir que existe se conseguir obter metadados
+    try {
+      const groupMetadata = await wbot.groupMetadata(jid);
+      return {
+        jid: jid,
+        exists: true
+      };
+    } catch (error) {
+      return {
+        jid: jid,
+        exists: false
+      };
+    }
+  } else {
+    // Para números individuais, usar onWhatsApp
+    const [validNumber] = await wbot.onWhatsApp(jid);
+    return validNumber;
+  }
 };
 
 const CheckContactNumber = async (
