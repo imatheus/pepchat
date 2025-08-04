@@ -193,7 +193,8 @@ export async function ImportContacts(
       // Número válido e existe no WhatsApp
       newContact.isWhatsappValid = true;
       if (checkResult.jid) {
-        const number = checkResult.jid.replace(/\D/g, "");
+        // Extrair número do JID preservando hífen para grupos
+        const number = checkResult.jid.replace(/@.*$/, "");
         newContact.number = number;
       }
       await newContact.save();
