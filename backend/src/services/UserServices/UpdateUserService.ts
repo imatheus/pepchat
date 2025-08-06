@@ -49,7 +49,7 @@ const UpdateUserService = async ({
     email: Yup.string().email(),
     profile: Yup.string(),
     password: Yup.string(),
-    profileImage: Yup.string()
+    profileImage: Yup.string().nullable()
   });
 
   const { email, password, profile, name, queueIds = [], profileImage } = userData;

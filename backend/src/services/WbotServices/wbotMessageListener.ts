@@ -44,6 +44,7 @@ import { cacheLayer } from "../../libs/cache";
 import { debounce } from "../../helpers/Debounce";
 import { provider } from "./providers";
 import { shouldIgnoreMessage } from "./MessageFilterService";
+import SendGreetingMessageService from "./SendGreetingMessageService";
 
 // Função para obter o tipo de chatbot das configurações da empresa
 const getChatbotType = async (companyId: number): Promise<string> => {
@@ -1111,6 +1112,16 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
     const whatsapp = await ShowWhatsAppService(wbot.id!, companyId);
     const contact = await verifyContact(msgContact, wbot, companyId);
     const ticket = await FindOrCreateTicketService(contact, wbot.id!, 0, companyId, groupContact);
+
+    // Verificar se é um ticket novo e enviar mensagem de saudação se necessário
+    if ((ticket as any).isNewTicket && !msg.key.fromMe && !isGroup) {
+      logger.info(`New ticket created: ${ticket.id}, sending greeting message`);
+      try {
+        await SendGreetingMessageService(ticket, contact, wbot.id!, companyId);
+      } catch (greetingError) {
+        logger.error(greetingError, `Error sending greeting message for ticket ${ticket.id}`);
+      }
+    }
 
     // Verificar se é uma avaliação antes de processar outras lógicas
     const ticketTraking = await FindOrCreateATicketTrakingService({

@@ -68,7 +68,7 @@ const CreateUserService = async ({
         }
       ),
     password: Yup.string().required().min(5),
-    profileImage: Yup.string()
+    profileImage: Yup.string().nullable()
   });
 
   try {

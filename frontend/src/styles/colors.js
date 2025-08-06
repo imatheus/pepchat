@@ -4,7 +4,7 @@
 
 // ===== COR PRINCIPAL DO SISTEMA =====
 // Esta é a cor que será usada para sidebar, botões, links e elementos principais
-const MAIN_COLOR = '#76a500ff';
+const MAIN_COLOR = '#7db301ff';
 
 export const SYSTEM_COLORS = {
   // ===== CORES PRINCIPAIS =====
