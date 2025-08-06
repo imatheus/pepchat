@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+import fs from "fs";
+import path from "path";
 import { cacheLayer } from "../libs/cache";
 import { getIO } from "../libs/socket";
 import { getWbot, removeWbot } from "../libs/wbot";
@@ -253,4 +255,174 @@ export const remove = async (
   }
 
   res.status(200).json({ message: "Connection deleted successfully." });
+};
+
+// Função auxiliar para criar diretório se não existir
+const ensureDirectoryExists = (dirPath: string): void => {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+};
+
+// Upload de arquivos de saudação
+export const uploadGreetingMedia = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { whatsappId } = req.params;
+    const { companyId } = req.user;
+    const files = req.files as Express.Multer.File[];
+
+    console.log(`Upload request for whatsappId: ${whatsappId}, companyId: ${companyId}`);
+    console.log(`Files received: ${files ? files.length : 0}`);
+
+    if (!files || files.length === 0) {
+      console.log("No files received in upload request");
+      res.status(400).json({ error: "Nenhum arquivo enviado" });
+      return;
+    }
+
+    // Verificar se a conexão existe e pertence à empresa
+    const whatsapp = await ShowWhatsAppService(whatsappId, companyId);
+    if (!whatsapp) {
+      console.log(`WhatsApp connection not found: ${whatsappId}`);
+      res.status(404).json({ error: "Conexão não encontrada" });
+      return;
+    }
+
+    // Criar diretório específico para a conexão
+    const uploadsDir = path.resolve(__dirname, "..", "..", "uploads");
+    const companyDir = path.join(uploadsDir, companyId.toString());
+    const connectionsDir = path.join(companyDir, "connections");
+    const connectionDir = path.join(connectionsDir, whatsappId);
+    
+    console.log(`Auto-creating directory structure for first upload: ${connectionDir}`);
+    
+    // Criar toda a estrutura de diretórios automaticamente se não existir
+    ensureDirectoryExists(companyDir);
+    ensureDirectoryExists(connectionsDir);
+    ensureDirectoryExists(connectionDir);
+
+    const uploadedFiles = [];
+
+    for (const file of files) {
+      console.log(`Processing file: ${file.originalname}, size: ${file.size}, mimetype: ${file.mimetype}`);
+      
+      // Gerar nome único para o arquivo
+      const timestamp = Date.now();
+      const extension = path.extname(file.originalname);
+      const filename = `${timestamp}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const filePath = path.join(connectionDir, filename);
+
+      try {
+        // Verificar se o arquivo temporário existe
+        if (!fs.existsSync(file.path)) {
+          console.error(`Temporary file not found: ${file.path}`);
+          continue;
+        }
+
+        // Mover arquivo do temp para o diretório final
+        fs.renameSync(file.path, filePath);
+        console.log(`File moved successfully: ${filename}`);
+
+        uploadedFiles.push({
+          filename,
+          originalName: file.originalname,
+          size: file.size,
+          mimetype: file.mimetype,
+          path: `/uploads/${companyId}/connections/${whatsappId}/${filename}`
+        });
+      } catch (fileError) {
+        console.error(`Error processing file ${file.originalname}:`, fileError);
+      }
+    }
+
+    console.log(`Successfully uploaded ${uploadedFiles.length} files`);
+
+    res.status(200).json({
+      message: `${uploadedFiles.length} arquivo(s) enviado(s) com sucesso`,
+      files: uploadedFiles
+    });
+  } catch (error) {
+    console.error("Erro no upload de arquivos de saudação:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
+
+// Listar arquivos de saudação
+export const listGreetingMedia = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { whatsappId } = req.params;
+    const { companyId } = req.user;
+
+    // Verificar se a conexão existe e pertence à empresa
+    const whatsapp = await ShowWhatsAppService(whatsappId, companyId);
+    if (!whatsapp) {
+      res.status(404).json({ error: "Conexão não encontrada" });
+      return;
+    }
+
+    const uploadsDir = path.resolve(__dirname, "..", "..", "uploads");
+    const connectionDir = path.join(uploadsDir, companyId.toString(), "connections", whatsappId);
+
+    if (!fs.existsSync(connectionDir)) {
+      res.status(200).json({ files: [] });
+      return;
+    }
+
+    const files = fs.readdirSync(connectionDir);
+    const fileList = files.map(filename => {
+      const filePath = path.join(connectionDir, filename);
+      const stats = fs.statSync(filePath);
+      
+      return {
+        filename,
+        size: stats.size,
+        createdAt: stats.birthtime,
+        path: `/uploads/${companyId}/connections/${whatsappId}/${filename}`
+      };
+    });
+
+    res.status(200).json({ files: fileList });
+  } catch (error) {
+    console.error("Erro ao listar arquivos de saudação:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
+
+// Deletar arquivo de saudação
+export const deleteGreetingMedia = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { whatsappId, filename } = req.params;
+    const { companyId } = req.user;
+
+    // Verificar se a conexão existe e pertence à empresa
+    const whatsapp = await ShowWhatsAppService(whatsappId, companyId);
+    if (!whatsapp) {
+      res.status(404).json({ error: "Conexão não encontrada" });
+      return;
+    }
+
+    const uploadsDir = path.resolve(__dirname, "..", "..", "uploads");
+    const filePath = path.join(uploadsDir, companyId.toString(), "connections", whatsappId, filename);
+
+    if (!fs.existsSync(filePath)) {
+      res.status(404).json({ error: "Arquivo não encontrado" });
+      return;
+    }
+
+    fs.unlinkSync(filePath);
+
+    res.status(200).json({ message: "Arquivo removido com sucesso" });
+  } catch (error) {
+    console.error("Erro ao deletar arquivo de saudação:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
 };

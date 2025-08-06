@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { createTheme } from "@material-ui/core/styles";
 import { ptBR } from "@material-ui/core/locale";
+import { getThemeColors, SYSTEM_COLORS } from "../../styles/colors";
 
 const ThemeContext = createContext();
 
@@ -10,44 +11,6 @@ export const useCustomTheme = () => {
     throw new Error("useCustomTheme must be used within a ThemeProvider");
   }
   return context;
-};
-
-// Configurações de cores centralizadas
-const THEME_COLORS = {
-  light: {
-    primary: '#44b774',
-    secondary: '#f50057',
-    background: {
-      default: 'transparent',
-      paper: '#ffffff',
-      drawer: '#44b774',
-      appBar: '#ffffff',
-    },
-    text: {
-      primary: '#151515',
-      secondary: '#666666',
-      inverse: '#ffffff',
-    },
-    border: '#e0e0e0',
-    shadow: 'rgba(0, 0, 0, 0.1)',
-  },
-  dark: {
-    primary: '#66bb6a',
-    secondary: '#f48fb1',
-    background: {
-      default: '#121212',
-      paper: '#1e1e1e',
-      drawer: '#1a1a1a',
-      appBar: '#1e1e1e',
-    },
-    text: {
-      primary: '#ffffff',
-      secondary: '#b0b0b0',
-      inverse: '#000000',
-    },
-    border: '#333333',
-    shadow: 'rgba(0, 0, 0, 0.3)',
-  }
 };
 
 // Configurações de tipografia centralizadas
@@ -65,20 +28,20 @@ const TYPOGRAPHY_CONFIG = {
 };
 
 // Configurações de scrollbar centralizadas
-const getScrollbarStyles = (isDark) => ({
+const getScrollbarStyles = (colors) => ({
   '&::-webkit-scrollbar': {
     width: '8px',
     height: '8px',
   },
   '&::-webkit-scrollbar-thumb': {
-    backgroundColor: isDark ? '#555555' : '#cccccc',
+    backgroundColor: colors.scrollbar.thumb,
     borderRadius: '4px',
     '&:hover': {
-      backgroundColor: isDark ? '#666666' : '#bbbbbb',
+      backgroundColor: colors.scrollbar.thumbHover,
     },
   },
   '&::-webkit-scrollbar-track': {
-    backgroundColor: isDark ? '#2a2a2a' : '#f1f1f1',
+    backgroundColor: colors.scrollbar.track,
     borderRadius: '4px',
   },
 });
@@ -142,7 +105,7 @@ const createThemeOverrides = (colors, isDark) => ({
     root: {
       backgroundColor: colors.background.paper,
       color: colors.text.primary,
-      ...getScrollbarStyles(isDark),
+      ...getScrollbarStyles(colors),
     },
     outlined: {
       border: `1px solid ${colors.border}`,
@@ -180,7 +143,7 @@ const createThemeOverrides = (colors, isDark) => ({
         borderColor: colors.border,
       },
       '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-        borderColor: colors.primary,
+        borderColor: colors.primary.main,
       },
     },
   },
@@ -247,20 +210,20 @@ const createThemeOverrides = (colors, isDark) => ({
       fontWeight: 600,
       textTransform: 'none',
       '&.Mui-selected': {
-        color: colors.primary,
+        color: colors.primary.main,
       },
     },
   },
   MuiTabs: {
     indicator: {
-      backgroundColor: colors.primary,
+      backgroundColor: colors.primary.main,
     },
   },
   MuiFormLabel: {
     root: {
       color: colors.text.secondary,
       '&.Mui-focused': {
-        color: colors.primary,
+        color: colors.primary.main,
       },
     },
   },
@@ -367,21 +330,37 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem("drawerCollapsed", JSON.stringify(newDrawerCollapsed));
   };
 
-  const currentColors = darkMode ? THEME_COLORS.dark : THEME_COLORS.light;
+  const currentColors = getThemeColors(darkMode);
 
   const theme = createTheme(
     {
       typography: TYPOGRAPHY_CONFIG,
-      scrollbarStyles: getScrollbarStyles(darkMode),
+      scrollbarStyles: getScrollbarStyles(currentColors),
       palette: {
         type: darkMode ? 'dark' : 'light',
         primary: {
-          main: currentColors.primary,
-          contrastText: currentColors.text.inverse,
+          main: currentColors.primary.main,
+          light: currentColors.primary.light,
+          dark: currentColors.primary.dark,
+          contrastText: currentColors.primary.contrastText,
         },
         secondary: {
-          main: currentColors.secondary,
-          contrastText: currentColors.text.inverse,
+          main: currentColors.secondary.main,
+          light: currentColors.secondary.light,
+          dark: currentColors.secondary.dark,
+          contrastText: currentColors.secondary.contrastText,
+        },
+        success: {
+          main: currentColors.status.success,
+        },
+        error: {
+          main: currentColors.status.error,
+        },
+        warning: {
+          main: currentColors.status.warning,
+        },
+        info: {
+          main: currentColors.status.info,
         },
         background: {
           default: currentColors.background.default,

@@ -19,13 +19,14 @@ import {
   IconButton,
   Tooltip,
 } from "@material-ui/core";
-import { FileCopy as CopyIcon, Refresh as RefreshIcon, Info as InfoIcon } from "@material-ui/icons";
+import { FileCopy as CopyIcon, Refresh as RefreshIcon, Info as InfoIcon, AttachFile as AttachFileIcon, Delete as DeleteIcon } from "@material-ui/icons";
 
 import api from "../../services/api";
 import { i18n } from "../../translate/i18n";
 import toastError from "../../errors/toastError";
 import QueueSelect from "../QueueSelect";
 import ToggleSwitch from "../ToggleSwitch";
+import { loadGreetingMedia, uploadGreetingMedia as uploadGreetingMediaHelper, deleteGreetingMedia } from "./greetingMediaHelpers";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -79,6 +80,113 @@ const useStyles = makeStyles((theme) => ({
       color: theme.palette.primary.main,
     },
   },
+
+  greetingFieldWrapper: {
+    position: "relative",
+  },
+
+  attachIcon: {
+    position: "absolute",
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+    zIndex: 1,
+    color: theme.palette.grey[500],
+    "&:hover": {
+      color: theme.palette.primary.main,
+    },
+  },
+
+  uploadInput: {
+    display: "none",
+  },
+
+  mediaPreview: {
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(1),
+    backgroundColor: theme.palette.grey[100],
+    borderRadius: theme.shape.borderRadius,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  mediaInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(1),
+  },
+
+  mediaContainer: {
+    marginTop: theme.spacing(1),
+    maxHeight: 300,
+    overflowY: "auto",
+  },
+
+  mediaItem: {
+    marginBottom: theme.spacing(1),
+    padding: theme.spacing(1),
+    backgroundColor: theme.palette.grey[100],
+    borderRadius: theme.shape.borderRadius,
+    border: `1px solid ${theme.palette.grey[300]}`,
+  },
+
+  mediaHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: theme.spacing(1),
+  },
+
+  mediaPreviewContent: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(2),
+  },
+
+  previewImage: {
+    maxWidth: 100,
+    maxHeight: 100,
+    borderRadius: theme.shape.borderRadius,
+    objectFit: "cover",
+  },
+
+  previewVideo: {
+    maxWidth: 150,
+    maxHeight: 100,
+    borderRadius: theme.shape.borderRadius,
+  },
+
+  documentPreview: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 100,
+    height: 100,
+    backgroundColor: theme.palette.grey[200],
+    borderRadius: theme.shape.borderRadius,
+    fontSize: "2rem",
+    color: theme.palette.grey[600],
+  },
+
+  fileInfo: {
+    flex: 1,
+  },
+
+  fileName: {
+    fontWeight: 500,
+    marginBottom: theme.spacing(0.5),
+  },
+
+  fileSize: {
+    fontSize: "0.8em",
+    color: theme.palette.grey[600],
+  },
+
+  fileType: {
+    fontSize: "0.75em",
+    color: theme.palette.grey[500],
+    textTransform: "uppercase",
+  },
 }));
 
 const SessionSchema = Yup.object().shape({
@@ -111,6 +219,8 @@ Avalie nossa equipe:`;
   };
   const [whatsApp, setWhatsApp] = useState(initialState);
   const [selectedQueueIds, setSelectedQueueIds] = useState([]);
+  const [greetingMedia, setGreetingMedia] = useState([]);
+  const [uploadingGreeting, setUploadingGreeting] = useState(false);
 
   // Função para gerar token no formato: a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8
   const generateToken = () => {
@@ -147,6 +257,10 @@ Avalie nossa equipe:`;
 
         const whatsQueueIds = data.queues?.map((queue) => queue.id);
         setSelectedQueueIds(whatsQueueIds);
+        
+        // Carregar arquivos existentes de saudação
+        const existingMedia = await loadGreetingMedia(api, whatsAppId);
+        setGreetingMedia(existingMedia);
       } catch (err) {
         toastError(err);
       }
@@ -160,17 +274,39 @@ Avalie nossa equipe:`;
     delete whatsappData["session"];
 
     try {
+      let savedWhatsAppId = whatsAppId;
+      
       if (whatsAppId) {
         await api.put(`/whatsapp/${whatsAppId}`, whatsappData);
       } else {
-        await api.post("/whatsapp", whatsappData);
-        // Aguardar um pouco para a conexão ser criada e processada
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+        const response = await api.post("/whatsapp", whatsappData);
+        savedWhatsAppId = response.data.id;
       }
+
+      // Fazer upload dos arquivos de saudação se houver arquivos novos
+      const newFiles = greetingMedia.filter(media => !media.isExisting);
+      if (newFiles.length > 0 && savedWhatsAppId) {
+        setUploadingGreeting(true);
+        try {
+          const success = await uploadGreetingMediaHelper(api, savedWhatsAppId, greetingMedia, toast, toastError);
+          if (success) {
+            toast.success("Arquivos de saudação enviados com sucesso!");
+          }
+        } catch (uploadErr) {
+          console.error("Erro no upload dos arquivos:", uploadErr);
+          toast.error("Erro ao enviar arquivos de saudação");
+        } finally {
+          setUploadingGreeting(false);
+        }
+      }
+
       toast.success(i18n.t("whatsappModal.success"));
       handleClose();
+      
+      // Recarregar a página após um pequeno delay para mostrar as mudanças
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err) {
       toastError(err);
     }
@@ -179,6 +315,8 @@ Avalie nossa equipe:`;
   const handleClose = () => {
     onClose();
     setWhatsApp(initialState);
+    setGreetingMedia([]);
+    setUploadingGreeting(false);
   };
 
   const copyToClipboard = (text) => {
@@ -192,6 +330,173 @@ Avalie nossa equipe:`;
     setWhatsApp(prev => ({ ...prev, token: newToken }));
     toast.success("Novo token gerado!");
   };
+
+  const handleGreetingMediaChange = (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length > 0) {
+      const newFiles = files.map(file => ({
+        file,
+        id: Date.now() + Math.random(),
+        preview: null,
+        isExisting: false
+      }));
+      
+      // Gerar previews para imagens
+      newFiles.forEach(fileObj => {
+        if (fileObj.file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            fileObj.preview = e.target.result;
+            setGreetingMedia(prev => [...prev]);
+          };
+          reader.readAsDataURL(fileObj.file);
+        }
+      });
+      
+      setGreetingMedia(prev => [...prev, ...newFiles]);
+      toast.success(`${files.length} arquivo(s) selecionado(s)`);
+    }
+    
+    // Limpar o input para permitir selecionar os mesmos arquivos novamente
+    event.target.value = '';
+  };
+
+  const handleUploadGreetingMedia = async () => {
+    if (!whatsAppId) {
+      toast.error("Salve a conexão primeiro antes de anexar arquivos");
+      return;
+    }
+
+    setUploadingGreeting(true);
+    
+    try {
+      const success = await uploadGreetingMediaHelper(api, whatsAppId, greetingMedia, toast, toastError);
+      if (success) {
+        // Recarregar arquivos após upload
+        const updatedMedia = await loadGreetingMedia(api, whatsAppId);
+        setGreetingMedia(updatedMedia);
+      }
+    } catch (err) {
+      toastError(err);
+    } finally {
+      setUploadingGreeting(false);
+    }
+  };
+
+  const handleDeleteGreetingMedia = async (filename) => {
+    if (!whatsAppId) return;
+    
+    try {
+      const success = await deleteGreetingMedia(api, whatsAppId, filename, toast, toastError);
+      if (success) {
+        // Remover arquivo da lista local
+        setGreetingMedia(prev => prev.filter(media => 
+          media.isExisting ? media.id !== filename : media.id !== filename
+        ));
+      }
+    } catch (err) {
+      toastError(err);
+    }
+  };
+
+  const removeGreetingMedia = (fileId) => {
+    const mediaItem = greetingMedia.find(media => media.id === fileId);
+    
+    if (mediaItem && mediaItem.isExisting) {
+      // Se é um arquivo existente no servidor, deletar do servidor
+      handleDeleteGreetingMedia(mediaItem.id);
+    } else {
+      // Se é um arquivo novo, apenas remover da lista local
+      setGreetingMedia(prev => prev.filter(media => media.id !== fileId));
+      toast.info("Arquivo removido da mensagem de saudação");
+    }
+  };
+
+  const removeAllGreetingMedia = () => {
+    // Remover apenas arquivos novos (não existentes no servidor)
+    const newFiles = greetingMedia.filter(media => !media.isExisting);
+    if (newFiles.length > 0) {
+      setGreetingMedia(prev => prev.filter(media => media.isExisting));
+      toast.info(`${newFiles.length} arquivo(s) removido(s) da seleção`);
+    } else {
+      toast.info("Nenhum arquivo novo para remover");
+    }
+  };
+
+  const getFileIcon = (fileType) => {
+    if (fileType.startsWith('image/')) return '🖼️';
+    if (fileType.startsWith('video/')) return '🎥';
+    if (fileType.startsWith('audio/')) return '🎵';
+    if (fileType.includes('pdf')) return '📄';
+    if (fileType.includes('word') || fileType.includes('document')) return '📝';
+    if (fileType.includes('excel') || fileType.includes('spreadsheet')) return '📊';
+    if (fileType.includes('powerpoint') || fileType.includes('presentation')) return '📈';
+    return '📎';
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const renderFilePreview = (mediaObj) => {
+    const { file, preview, isExisting } = mediaObj;
+    
+    if (isExisting) {
+      // Para arquivos existentes, usar o preview do servidor se disponível
+      if (preview) {
+        return (
+          <img 
+            src={preview} 
+            alt={file.name}
+            className={classes.previewImage}
+          />
+        );
+      } else {
+        return (
+          <div className={classes.documentPreview}>
+            {getFileIcon(file.type)}
+          </div>
+        );
+      }
+    }
+    
+    // Para arquivos novos
+    if (file.type.startsWith('image/')) {
+      return (
+        <img 
+          src={preview} 
+          alt={file.name}
+          className={classes.previewImage}
+        />
+      );
+    }
+    
+    if (file.type.startsWith('video/')) {
+      return (
+        <video 
+          className={classes.previewVideo}
+          controls
+          preload="metadata"
+        >
+          <source src={URL.createObjectURL(file)} type={file.type} />
+          Seu navegador não suporta vídeo.
+        </video>
+      );
+    }
+    
+    return (
+      <div className={classes.documentPreview}>
+        {getFileIcon(file.type)}
+      </div>
+    );
+  };
+
+  const newFilesCount = greetingMedia.filter(media => !media.isExisting).length;
+  const existingFilesCount = greetingMedia.filter(media => media.isExisting).length;
 
   return (
     <div className={classes.root}>
@@ -260,8 +565,8 @@ Avalie nossa equipe:`;
                   />
                 </div>
 
-                {/* Mensagem de saudação */}
-                <div>
+                {/* Mensagem de saudação com anexo */}
+                <div className={classes.greetingFieldWrapper}>
                   <Field
                     as={TextField}
                     label={i18n.t("queueModal.form.greetingMessage")}
@@ -274,11 +579,135 @@ Avalie nossa equipe:`;
                       touched.greetingMessage && Boolean(errors.greetingMessage)
                     }
                     helperText={
-                      touched.greetingMessage && errors.greetingMessage
+                      touched.greetingMessage && errors.greetingMessage || "Você pode anexar imagens, vídeos ou documentos junto com a mensagem"
                     }
                     variant="outlined"
                     margin="dense"
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end" style={{ alignSelf: 'flex-start', marginTop: '8px' }}>
+                          <input
+                            type="file"
+                            id="greeting-media-input"
+                            className={classes.uploadInput}
+                            onChange={handleGreetingMediaChange}
+                            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                            multiple
+                          />
+                          <label htmlFor="greeting-media-input">
+                            <Tooltip title="Anexar arquivo à mensagem de saudação">
+                              <IconButton
+                                size="small"
+                                component="span"
+                                className={classes.attachIcon}
+                              >
+                                <AttachFileIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </label>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
+                  
+                  {/* Preview dos arquivos selecionados */}
+                  {greetingMedia.length > 0 && (
+                    <div className={classes.mediaContainer}>
+                      {/* Header com ações globais */}
+                      <div className={classes.mediaHeader}>
+                        <span style={{ fontWeight: 500 }}>
+                          {existingFilesCount > 0 && `${existingFilesCount} arquivo(s) salvos`}
+                          {existingFilesCount > 0 && newFilesCount > 0 && " • "}
+                          {newFilesCount > 0 && `${newFilesCount} arquivo(s) selecionados`}
+                        </span>
+                        <div>
+                          {!uploadingGreeting && newFilesCount > 0 && (
+                            <>
+                              <Tooltip title="Arquivos serão enviados automaticamente ao salvar">
+                                <IconButton
+                                  size="small"
+                                  onClick={handleUploadGreetingMedia}
+                                  color="primary"
+                                  disabled={!whatsAppId}
+                                >
+                                  <AttachFileIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Remover arquivos selecionados">
+                                <IconButton
+                                  size="small"
+                                  onClick={removeAllGreetingMedia}
+                                  color="secondary"
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
+                          {uploadingGreeting && (
+                            <CircularProgress size={20} />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Lista de arquivos com preview */}
+                      {greetingMedia.map((mediaObj) => (
+                        <div key={mediaObj.id} className={classes.mediaItem}>
+                          <div className={classes.mediaHeader}>
+                            <div className={classes.fileName}>
+                              {mediaObj.isExisting && "📎 "}
+                              {mediaObj.file.name}
+                              {mediaObj.isExisting && " (salvo)"}
+                            </div>
+                            <Tooltip title="Remover arquivo">
+                              <IconButton
+                                size="small"
+                                onClick={() => removeGreetingMedia(mediaObj.id)}
+                                color="secondary"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </div>
+                          
+                          <div className={classes.mediaPreviewContent}>
+                            {renderFilePreview(mediaObj)}
+                            
+                            <div className={classes.fileInfo}>
+                              <div className={classes.fileSize}>
+                                {formatFileSize(mediaObj.file.size)}
+                              </div>
+                              <div className={classes.fileType}>
+                                {mediaObj.file.type || 'Tipo desconhecido'}
+                              </div>
+                              {mediaObj.file.type.startsWith('image/') && (
+                                <div style={{ fontSize: '0.75em', color: 'gray' }}>
+                                  Imagem • Pré-visualização disponível
+                                </div>
+                              )}
+                              {mediaObj.file.type.startsWith('video/') && (
+                                <div style={{ fontSize: '0.75em', color: 'gray' }}>
+                                  Vídeo • Player disponível
+                                </div>
+                              )}
+                              {mediaObj.file.type.startsWith('audio/') && (
+                                <div style={{ fontSize: '0.75em', color: 'gray' }}>
+                                  Áudio • {getFileIcon(mediaObj.file.type)}
+                                </div>
+                              )}
+                              {!mediaObj.file.type.startsWith('image/') && 
+                               !mediaObj.file.type.startsWith('video/') && 
+                               !mediaObj.file.type.startsWith('audio/') && (
+                                <div style={{ fontSize: '0.75em', color: 'gray' }}>
+                                  Documento • {getFileIcon(mediaObj.file.type)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Mensagem fora de expediente */}

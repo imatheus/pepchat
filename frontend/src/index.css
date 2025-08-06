@@ -1,3 +1,6 @@
+/* Importar variáveis CSS centralizadas */
+@import './styles/variables.css';
+
 /* Fonte Lato para todo o sistema */
 * {
   font-family: 'Lato', 'Helvetica', 'Arial', sans-serif !important;

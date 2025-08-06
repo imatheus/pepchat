@@ -374,15 +374,11 @@ const verifyContact = async (msgContact: IMe, wbot: Session, companyId: number):
     profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
   }
 
-  // Extrair número preservando hífen para grupos
-  const isGroup = msgContact.id.endsWith("g.us");
-  const number = isGroup ? msgContact.id.replace(/@.*$/, "") : msgContact.id.replace(/\D/g, "");
-
   const contactData = {
-    name: msgContact?.name || number,
-    number: number,
+    name: msgContact?.name || msgContact.id.replace(/\D/g, ""),
+    number: msgContact.id.replace(/\D/g, ""),
     profilePicUrl,
-    isGroup: isGroup,
+    isGroup: msgContact.id.endsWith("g.us"),
     companyId,
   };
 

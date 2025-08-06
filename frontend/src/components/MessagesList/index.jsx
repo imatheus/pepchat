@@ -48,14 +48,9 @@ const useStyles = makeStyles((theme) => ({
   },
 
   messagesList: {
-
-
-background: theme.palette.type === 'dark'
-  ? theme.palette.background.default
-  : 'rgba(207, 233, 186, 0.7)',
-
-
-
+    background: theme.palette.type === 'dark'
+      ? theme.palette.background.default
+      : 'rgba(207, 233, 186, 0.7)',
     display: "flex",
     width:"20",
     flexDirection: "column",
@@ -90,8 +85,8 @@ background: theme.palette.type === 'dark'
     },
 
     whiteSpace: "pre-wrap",
-    backgroundColor: theme.palette.type === 'dark' ? theme.palette.grey[800] : "#76a282ff",
-    color:"#fff",
+    backgroundColor: theme.palette.type === 'dark' ? theme.palette.grey[800] : theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
     alignSelf: "flex-start",
     borderTopLeftRadius: 0,
     borderTopRightRadius: 8,
@@ -170,7 +165,6 @@ background: theme.palette.type === 'dark'
   },
 
   quotedMsgRight: {
-    
     padding: 10,
     maxWidth: 300,
     height: "auto",

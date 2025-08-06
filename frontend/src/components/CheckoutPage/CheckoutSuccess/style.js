@@ -86,7 +86,7 @@ export const SuccessContent = styled.div`
     justify-content: center;
     -webkit-box-align: center;
     align-items: center;
-    background-color: #f9f9f9;
+    background-color: #f8f8f8ff;
     color: #000;
     -webkit-appearance: none !important;
     outline: none;

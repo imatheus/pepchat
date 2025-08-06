@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
   },
 
   newMessageBox: {
-    background: theme.palette.background.default,
+    background: theme.palette.background.paper,
     width: "100%",
     display: "flex",
     padding: "7px",
@@ -97,6 +97,16 @@ const useStyles = makeStyles((theme) => ({
 
   sendMessageIcons: {
     color: "grey",
+    "&:hover": {
+      color: theme.palette.primary.main,
+    },
+  },
+
+  attachFileIcon: {
+    color: "grey",
+    "&:hover": {
+      color: theme.palette.primary.main,
+    },
   },
 
   uploadInput: {
@@ -319,12 +329,15 @@ const FileInput = (props) => {
         disabled={disableOption()}
         className={classes.uploadInput}
         onChange={handleChangeMedias}
+        accept="*/*"
+        title="Anexar qualquer tipo de arquivo"
       />
       <label htmlFor="upload-button">
         <IconButton
           aria-label="upload"
           component="span"
           disabled={disableOption()}
+          title="Anexar arquivo"
         >
           <AttachFileIcon className={classes.sendMessageIcons} />
         </IconButton>
@@ -778,7 +791,10 @@ const MessageInputCustom = (props) => {
           </div>
         ) : (
           <span>
-            {medias[0]?.name}
+            {medias.length === 1 
+              ? medias[0]?.name 
+              : `${medias.length} arquivos selecionados`
+            }
           </span>
         )}
         <IconButton
@@ -786,6 +802,7 @@ const MessageInputCustom = (props) => {
           component="span"
           onClick={handleUploadMedia}
           disabled={loading}
+          title={`Enviar ${medias.length === 1 ? 'arquivo' : `${medias.length} arquivos`}`}
         >
           <SendIcon className={classes.sendMessageIcons} />
         </IconButton>

@@ -52,7 +52,7 @@ const useStyles = makeStyles(theme => ({
 		display: "flex",
 		justifyContent: "space-between",
 		alignItems: "center",
-		background: "#fafafa",
+		background: theme.palette.background.paper,
 		padding: theme.spacing(1),
 	},
 

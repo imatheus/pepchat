@@ -9,7 +9,6 @@ import { TutorialProvider } from "./context/Tutorial/TutorialContext";
 
 // Import unified theme CSS
 import "./assets/css/unified-theme.css";
-import "./assets/css/custom-paper-styles.css";
 import "./assets/css/font-override.css";
 import "./assets/css/tutorial-styles.css";
 

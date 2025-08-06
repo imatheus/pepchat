@@ -1,0 +1,258 @@
+/* ===== VARIÁVEIS CSS GLOBAIS =====
+   Este arquivo define variáveis CSS que podem ser usadas em qualquer lugar do projeto.
+   Para alterar as cores do sistema, modifique apenas as variáveis aqui.
+*/
+
+/* ===== TEMA CLARO (padrão) ===== */
+:root {
+  /* Cores principais */
+  --color-primary: #4d009fff;
+  --color-primary-light: #66bb6a;
+  --color-primary-dark: #2e7d32;
+  --color-secondary: #f50057;
+  --color-secondary-light: #f48fb1;
+  --color-secondary-dark: #c51162;
+
+  /* Cores de status */
+  --color-success: #4caf50;
+  --color-error: #f44336;
+  --color-warning: #ff9800;
+  --color-info: #2196f3;
+  --color-pending: #ff9800;
+  --color-cancelled: #f44336;
+  --color-completed: #4caf50;
+  --color-in-progress: #2196f3;
+
+  /* Cores de fundo */
+  --bg-default: #ffffff;
+  --bg-paper: #ffffff;
+  --bg-drawer: #4d009fff;
+  --bg-appbar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --bg-selected: rgba(0, 0, 0, 0.08);
+  --bg-disabled: #f5f5f5;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Cores de texto */
+  --text-primary: #151515;
+  --text-secondary: #666666;
+  --text-disabled: #9e9e9e;
+  --text-inverse: #ffffff;
+  --text-hint: #999999;
+
+  /* Bordas e divisores */
+  --border-color: #e0e0e0;
+  --divider-color: #e0e0e0;
+
+  /* Sombras */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --shadow-light: 0 2px 4px var(--shadow-color);
+  --shadow-medium: 0 2px 8px var(--shadow-color);
+  --shadow-heavy: 0 4px 16px var(--shadow-color);
+
+  /* WhatsApp */
+  --whatsapp-main: #25D366;
+  --whatsapp-dark: #128C7E;
+  --whatsapp-light: #DCF8C6;
+
+  /* Gradientes */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-success: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+  --gradient-error: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+  --gradient-warning: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  --gradient-info: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
+
+  /* Scrollbar */
+  --scrollbar-thumb: #cccccc;
+  --scrollbar-thumb-hover: #bbbbbb;
+  --scrollbar-track: #f1f1f1;
+
+  /* Componentes específicos */
+  --tag-default: #eee;
+  --tag-text: #333;
+  --form-bg: #f8f9fa;
+  --form-border: #e9ecef;
+  --form-border-focus: #dee2e6;
+  --table-header-bg: #f5f5f5;
+  --table-striped-bg: #fafafa;
+
+  /* Cores de campanha */
+  --campaign-error-bg: #f8d7da;
+  --campaign-error-text: #721c24;
+  --campaign-error-border: #f5c6cb;
+  --campaign-scheduled-bg: #d1ecf1;
+  --campaign-scheduled-text: #0c5460;
+  --campaign-scheduled-border: #bee5eb;
+  --campaign-in-progress-bg: #fff3cd;
+  --campaign-in-progress-text: #856404;
+  --campaign-in-progress-border: #ffeaa7;
+  --campaign-cancelled-bg: #f8d7da;
+  --campaign-cancelled-text: #721c24;
+  --campaign-cancelled-border: #f5c6cb;
+  --campaign-completed-bg: #d4edda;
+  --campaign-completed-text: #155724;
+  --campaign-completed-border: #c3e6cb;
+}
+
+/* ===== TEMA ESCURO ===== */
+[data-theme="dark"], 
+.theme-dark {
+  /* Cores principais */
+  --color-primary: #66bb6a;
+  --color-primary-light: #98ee99;
+  --color-primary-dark: #338a3e;
+  --color-secondary: #f48fb1;
+  --color-secondary-light: #ffc1e3;
+  --color-secondary-dark: #bf5f82;
+
+  /* Cores de fundo */
+  --bg-default: #121212;
+  --bg-paper: #1e1e1e;
+  --bg-drawer: #1a1a1a;
+  --bg-appbar: #1e1e1e;
+  --bg-card: #1e1e1e;
+  --bg-input: #2a2a2a;
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-selected: rgba(255, 255, 255, 0.12);
+  --bg-disabled: #333333;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Cores de texto */
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-disabled: #666666;
+  --text-inverse: #000000;
+  --text-hint: #888888;
+
+  /* Bordas e divisores */
+  --border-color: #333333;
+  --divider-color: #333333;
+
+  /* Sombras */
+  --shadow-color: rgba(0, 0, 0, 0.3);
+
+  /* Scrollbar */
+  --scrollbar-thumb: #555555;
+  --scrollbar-thumb-hover: #666666;
+  --scrollbar-track: #2a2a2a;
+
+  /* Componentes específicos */
+  --tag-default: #333;
+  --tag-text: #fff;
+  --form-bg: #2a2a2a;
+  --form-border: #444444;
+  --form-border-focus: #555555;
+  --table-header-bg: #2a2a2a;
+  --table-striped-bg: #252525;
+}
+
+/* ===== CLASSES UTILITÁRIAS ===== */
+
+/* Cores de texto */
+.text-primary { color: var(--text-primary) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-error { color: var(--color-error) !important; }
+.text-warning { color: var(--color-warning) !important; }
+.text-info { color: var(--color-info) !important; }
+.text-whatsapp { color: var(--whatsapp-main) !important; }
+
+/* Cores de fundo */
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-secondary { background-color: var(--color-secondary) !important; }
+.bg-success { background-color: var(--color-success) !important; }
+.bg-error { background-color: var(--color-error) !important; }
+.bg-warning { background-color: var(--color-warning) !important; }
+.bg-info { background-color: var(--color-info) !important; }
+.bg-paper { background-color: var(--bg-paper) !important; }
+.bg-whatsapp { background-color: var(--whatsapp-main) !important; }
+
+/* Bordas */
+.border-primary { border-color: var(--color-primary) !important; }
+.border-secondary { border-color: var(--color-secondary) !important; }
+.border-success { border-color: var(--color-success) !important; }
+.border-error { border-color: var(--color-error) !important; }
+.border-warning { border-color: var(--color-warning) !important; }
+.border-info { border-color: var(--color-info) !important; }
+.border-default { border-color: var(--border-color) !important; }
+
+/* Sombras */
+.shadow-light { box-shadow: var(--shadow-light) !important; }
+.shadow-medium { box-shadow: var(--shadow-medium) !important; }
+.shadow-heavy { box-shadow: var(--shadow-heavy) !important; }
+
+/* Status específicos */
+.status-success {
+  background-color: var(--color-success) !important;
+  color: white !important;
+}
+
+.status-error {
+  background-color: var(--color-error) !important;
+  color: white !important;
+}
+
+.status-warning {
+  background-color: var(--color-warning) !important;
+  color: white !important;
+}
+
+.status-info {
+  background-color: var(--color-info) !important;
+  color: white !important;
+}
+
+.status-pending {
+  background-color: var(--color-pending) !important;
+  color: white !important;
+}
+
+/* Hover states */
+.hover-primary:hover {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+}
+
+.hover-secondary:hover {
+  background-color: var(--color-secondary) !important;
+  color: white !important;
+}
+
+/* Scrollbar personalizada */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: var(--scrollbar-track);
+  border-radius: 4px;
+}
+
+/* Transições suaves */
+.smooth-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Gradientes */
+.gradient-primary { background: var(--gradient-primary) !important; }
+.gradient-success { background: var(--gradient-success) !important; }
+.gradient-error { background: var(--gradient-error) !important; }
+.gradient-warning { background: var(--gradient-warning) !important; }
+.gradient-info { background: var(--gradient-info) !important; }

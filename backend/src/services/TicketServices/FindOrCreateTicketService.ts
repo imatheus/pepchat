@@ -19,7 +19,7 @@ const FindOrCreateTicketService = async (
   unreadMessages: number,
   companyId: number,
   groupContact?: Contact
-): Promise<Ticket> => {
+): Promise<Ticket & { isNewTicket?: boolean }> => {
   let ticket = await Ticket.findOne({
     where: {
       status: {
@@ -135,6 +135,9 @@ const FindOrCreateTicketService = async (
 
   ticket = await ShowTicketService(ticket.id, companyId);
 
+  // Adicionar flag para indicar se é um ticket novo
+  (ticket as any).isNewTicket = created;
+
   // Emissão de evento via socket
   const io = getIO();
   
@@ -158,7 +161,7 @@ const FindOrCreateTicketService = async (
       });
   }
 
-  return ticket;
+  return ticket as Ticket & { isNewTicket?: boolean };
 };
 
 export default FindOrCreateTicketService;
