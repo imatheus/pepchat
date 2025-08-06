@@ -246,13 +246,20 @@ export const sendMessageImage = async (
   caption: string
 ): Promise<void> => {
   try {
-    const sentMessage = await wbot.sendMessage(
-      `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
-      {
-        image: { url },
-        caption: caption || ""
-      }
-    );
+    // Construir o JID corretamente para grupos e contatos individuais
+    const isGroup = ticket.contact.isGroup || ticket.contact.number.includes("-") || ticket.contact.number.endsWith("@g.us");
+    let jid: string;
+    
+    if (ticket.contact.number.includes("@")) {
+      jid = ticket.contact.number;
+    } else {
+      jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
+    }
+    
+    const sentMessage = await wbot.sendMessage(jid, {
+      image: { url },
+      caption: caption || ""
+    });
     
     await verifyMessage(sentMessage, ticket, contact);
   } catch (error) {
@@ -268,14 +275,21 @@ export const sendMessageLink = async (
   filename: string
 ): Promise<void> => {
   try {
-    const sentMessage = await wbot.sendMessage(
-      `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
-      {
-        document: { url },
-        fileName: filename,
-        mimetype: "application/pdf"
-      }
-    );
+    // Construir o JID corretamente para grupos e contatos individuais
+    const isGroup = ticket.contact.isGroup || ticket.contact.number.includes("-") || ticket.contact.number.endsWith("@g.us");
+    let jid: string;
+    
+    if (ticket.contact.number.includes("@")) {
+      jid = ticket.contact.number;
+    } else {
+      jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
+    }
+    
+    const sentMessage = await wbot.sendMessage(jid, {
+      document: { url },
+      fileName: filename,
+      mimetype: "application/pdf"
+    });
     
     await verifyMessage(sentMessage, ticket, contact);
   } catch (error) {
@@ -375,11 +389,14 @@ const verifyContact = async (msgContact: IMe, wbot: Session, companyId: number):
     profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
   }
 
+  const isGroup = msgContact.id.endsWith("g.us");
+  
   const contactData = {
     name: msgContact?.name || msgContact.id.replace(/\D/g, ""),
-    number: msgContact.id.replace(/\D/g, ""),
+    // Para grupos, manter o ID completo; para contatos individuais, remover caracteres não numéricos
+    number: isGroup ? msgContact.id : msgContact.id.replace(/\D/g, ""),
     profilePicUrl,
-    isGroup: msgContact.id.endsWith("g.us"),
+    isGroup,
     companyId,
   };
 
@@ -424,7 +441,8 @@ const verifyMediaMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, co
     }
   }
 
-  const body = getBodyMessage(msg) || media.filename;
+  const body = getBodyMessage(msg) || ""; // Não mostrar nome do arquivo se não houver caption
+  const mediaType = media.mimetype.split("/")[0];
   const messageData = {
     id: msg.key.id,
     ticketId: ticket.id,
@@ -433,13 +451,18 @@ const verifyMediaMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, co
     fromMe: msg.key.fromMe,
     read: msg.key.fromMe,
     mediaUrl: mediaPath, // Usar caminho organizado
-    mediaType: media.mimetype.split("/")[0],
+    mediaType: mediaType,
     quotedMsgId: quotedMsg?.id,
     ack: msg.status,
     dataJson: JSON.stringify(msg),
   };
 
-  await ticket.update({ lastMessage: body });
+  // Atualizar última mensagem do ticket com descrição mais amigável
+  const lastMessageText = body || (mediaType === 'image' ? '📷 Imagem' : 
+                                  mediaType === 'video' ? '🎥 Vídeo' : 
+                                  mediaType === 'audio' ? '🎵 Áudio' : 
+                                  '📄 Documento');
+  await ticket.update({ lastMessage: lastMessageText });
 
   const newMessage = await CreateMessageService({ messageData, companyId: ticket.companyId });
 

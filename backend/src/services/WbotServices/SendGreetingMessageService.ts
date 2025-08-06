@@ -5,10 +5,13 @@ import Ticket from "../../models/Ticket";
 import Contact from "../../models/Contact";
 import Whatsapp from "../../models/Whatsapp";
 import SendWhatsAppMessage from "./SendWhatsAppMessage";
+import SendWhatsAppMedia from "./SendWhatsAppMedia";
 import { getWbot } from "../../libs/wbot";
 import formatBody from "../../helpers/Mustache";
 import { verifyMessage } from "./wbotMessageListener";
 import { Op } from "sequelize";
+import CreateMessageService from "../MessageServices/CreateMessageService";
+import UploadHelper from "../../helpers/UploadHelper";
 
 interface GreetingFile {
   filename: string;
@@ -110,41 +113,85 @@ const SendGreetingMessageService = async (
       
       for (const file of greetingFiles) {
         try {
+          // Construir o JID corretamente para grupos e contatos individuais
+          const isGroup = ticket.contact.isGroup || ticket.contact.number.includes("-") || ticket.contact.number.endsWith("@g.us");
+          let jid: string;
+          
+          if (ticket.contact.number.includes("@")) {
+            jid = ticket.contact.number;
+          } else {
+            jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
+          }
+
           const fileBuffer = fs.readFileSync(file.path);
+          let sentMessage: any;
           
           if (file.mimetype.startsWith('image/')) {
             // Enviar como imagem
-            const sentMessage = await wbot.sendMessage(
-              `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
-              {
-                image: fileBuffer,
-                caption: ""
-              }
-            );
-            await verifyMessage(sentMessage, ticket, contact);
+            sentMessage = await wbot.sendMessage(jid, {
+              image: fileBuffer,
+              caption: ""
+            });
           } else if (file.mimetype.startsWith('video/')) {
             // Enviar como vídeo
-            const sentMessage = await wbot.sendMessage(
-              `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
-              {
-                video: fileBuffer,
-                caption: "",
-                mimetype: file.mimetype
-              }
-            );
-            await verifyMessage(sentMessage, ticket, contact);
+            sentMessage = await wbot.sendMessage(jid, {
+              video: fileBuffer,
+              caption: "",
+              mimetype: file.mimetype
+            });
           } else {
             // Enviar como documento
-            const sentMessage = await wbot.sendMessage(
-              `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
-              {
-                document: fileBuffer,
-                fileName: file.filename,
-                mimetype: file.mimetype
-              }
-            );
-            await verifyMessage(sentMessage, ticket, contact);
+            sentMessage = await wbot.sendMessage(jid, {
+              document: fileBuffer,
+              fileName: file.filename,
+              mimetype: file.mimetype
+            });
           }
+
+          // Salvar arquivo no diretório organizado
+          const fileName = UploadHelper.generateFileName(file.filename);
+          const uploadConfig = {
+            companyId: ticket.companyId,
+            category: 'chat' as const,
+            ticketId: ticket.id
+          };
+
+          let mediaPath: string;
+          try {
+            mediaPath = await UploadHelper.saveBuffer(fileBuffer, uploadConfig, fileName);
+          } catch (err) {
+            logger.error(err, "Error organizing greeting media file");
+            // Fallback para usar o caminho original
+            mediaPath = file.filename;
+          }
+
+          // Criar registro da mensagem no banco de dados
+          const mediaType = file.mimetype.split("/")[0];
+          const messageData = {
+            id: sentMessage.key.id,
+            ticketId: ticket.id,
+            contactId: undefined, // fromMe messages don't have contactId
+            body: "", // Deixar vazio para não mostrar o nome do arquivo no chat
+            fromMe: true,
+            read: true,
+            mediaType: mediaType,
+            mediaUrl: mediaPath,
+            ack: 1, // sent
+            dataJson: JSON.stringify(sentMessage)
+          };
+
+          // Atualizar última mensagem do ticket com descrição mais amigável
+          const lastMessageText = mediaType === 'image' ? '📷 Imagem' : 
+                                 mediaType === 'video' ? '🎥 Vídeo' : 
+                                 mediaType === 'audio' ? '🎵 Áudio' : 
+                                 '📄 Documento';
+          await ticket.update({ lastMessage: lastMessageText });
+
+          // Criar mensagem e emitir evento socket
+          await CreateMessageService({ 
+            messageData, 
+            companyId: ticket.companyId 
+          });
           
           logger.info(`Greeting file sent successfully: ${file.filename}`);
           

@@ -77,9 +77,18 @@ const SendWhatsAppMessage = async ({
       throw new AppError("WhatsApp connection is not active");
     }
 
-    // Detectar se é grupo pelo número (mais confiável que o campo isGroup)
-    const isGroup = ticket.contact.number.includes("-") || ticket.contact.isGroup;
-    const jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
+    // Detectar se é grupo de forma mais confiável
+    const isGroup = ticket.contact.isGroup || ticket.contact.number.includes("-") || ticket.contact.number.endsWith("@g.us");
+    
+    // Construir o JID corretamente
+    let jid: string;
+    if (ticket.contact.number.includes("@")) {
+      // Se já tem o domínio, usar como está
+      jid = ticket.contact.number;
+    } else {
+      // Se não tem domínio, adicionar baseado no tipo
+      jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
+    }
     
     // Prepare quoted message if exists
     let quotedMsgData = null;

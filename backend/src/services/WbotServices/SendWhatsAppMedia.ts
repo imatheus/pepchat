@@ -50,10 +50,17 @@ const SendWhatsAppMedia = async ({
         };
     }
 
-    const sentMessage = await wbot.sendMessage(
-      `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
-      messageContent
-    );
+    // Construir o JID corretamente para grupos e contatos individuais
+    const isGroup = ticket.contact.isGroup || ticket.contact.number.includes("-") || ticket.contact.number.endsWith("@g.us");
+    let jid: string;
+    
+    if (ticket.contact.number.includes("@")) {
+      jid = ticket.contact.number;
+    } else {
+      jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
+    }
+
+    const sentMessage = await wbot.sendMessage(jid, messageContent);
 
     // Organizar arquivo por empresa e categoria
     const fileName = UploadHelper.generateFileName(media.originalname);
@@ -81,7 +88,7 @@ const SendWhatsAppMedia = async ({
       id: sentMessage.key.id,
       ticketId: ticket.id,
       contactId: undefined, // fromMe messages don't have contactId
-      body: media.originalname,
+      body: "", // Deixar vazio para não mostrar o nome do arquivo no chat
       fromMe: true,
       read: true,
       mediaType: mediaType,
@@ -90,8 +97,12 @@ const SendWhatsAppMedia = async ({
       dataJson: JSON.stringify(sentMessage)
     };
 
-    // Update ticket's last message
-    await ticket.update({ lastMessage: media.originalname });
+    // Update ticket's last message with friendly description
+    const lastMessageText = mediaType === 'image' ? '📷 Imagem' : 
+                           mediaType === 'video' ? '🎥 Vídeo' : 
+                           mediaType === 'audio' ? '🎵 Áudio' : 
+                           '📄 Documento';
+    await ticket.update({ lastMessage: lastMessageText });
 
     // Create message and emit socket event
     const newMessage = await CreateMessageService({ 
