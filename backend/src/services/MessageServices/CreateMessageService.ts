@@ -1,6 +1,7 @@
 import { getIO } from "../../libs/socket";
 import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
+import UploadHelper from "../../helpers/UploadHelper";
 
 interface MessageData {
   id: string;
@@ -52,6 +53,13 @@ const CreateMessageService = async ({
 
   if (message.ticket.queueId !== null && message.queueId === null) {
     await message.update({ queueId: message.ticket.queueId });
+  }
+
+  // Construir URL completa para arquivos de mídia se necessário
+  if (message.mediaUrl && !message.mediaUrl.startsWith('http')) {
+    const fullMediaUrl = UploadHelper.getFileUrl(message.mediaUrl);
+    // Atualizar o objeto message com a URL completa para o frontend
+    message.dataValues.mediaUrl = fullMediaUrl;
   }
 
   const io = getIO();

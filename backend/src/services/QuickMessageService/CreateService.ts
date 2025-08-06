@@ -7,6 +7,9 @@ interface Data {
   message: string;
   companyId: number | string;
   userId: number | string;
+  mediaPath?: string;
+  mediaType?: string;
+  mediaName?: string;
 }
 
 const CreateService = async (data: Data): Promise<QuickMessage> => {

@@ -26,6 +26,15 @@ class QuickMessage extends Model<QuickMessage> {
   @Column
   message: string;
 
+  @Column
+  mediaPath: string;
+
+  @Column
+  mediaType: string;
+
+  @Column
+  mediaName: string;
+
   @ForeignKey(() => Company)
   @Column
   companyId: number;

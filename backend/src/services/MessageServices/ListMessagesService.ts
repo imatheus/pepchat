@@ -5,6 +5,7 @@ import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 import ShowTicketService from "../TicketServices/ShowTicketService";
 import Queue from "../../models/Queue";
+import UploadHelper from "../../helpers/UploadHelper";
 
 interface Request {
   ticketId: string;
@@ -72,8 +73,17 @@ const ListMessagesService = async ({
 
   const hasMore = count > offset + messages.length;
 
+  // Construir URLs completas para arquivos de mídia
+  const messagesWithFullUrls = messages.map(message => {
+    if (message.mediaUrl && !message.mediaUrl.startsWith('http')) {
+      const fullMediaUrl = UploadHelper.getFileUrl(message.mediaUrl);
+      message.dataValues.mediaUrl = fullMediaUrl;
+    }
+    return message;
+  });
+
   return {
-    messages: messages.reverse(),
+    messages: messagesWithFullUrls.reverse(),
     ticket,
     count,
     hasMore

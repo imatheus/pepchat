@@ -540,23 +540,105 @@ useEffect(() => {
     }
     
     if (message.mediaType === "video") {
+      // Construir URL completa se necessário
+      let videoUrl = message.mediaUrl;
+      if (videoUrl && !videoUrl.startsWith('http')) {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080';
+        videoUrl = `${backendUrl}/uploads/${videoUrl}`;
+      }
+      
       return (
-        <video
-          className={classes.messageMedia}
-          src={message.mediaUrl}
-          controls
-        />
+        <div style={{ position: 'relative' }}>
+          <video
+            className={classes.messageMedia}
+            src={videoUrl}
+            controls
+            preload="metadata"
+            crossOrigin="anonymous"
+            onError={(e) => {
+              console.error('Erro ao carregar vídeo:', e);
+              console.error('URL do vídeo:', videoUrl);
+              console.error('Erro detalhado:', e.target.error);
+              
+              // Mostrar erro visual
+              e.target.style.display = 'none';
+              const errorDiv = e.target.nextSibling;
+              if (errorDiv && errorDiv.classList.contains('video-error')) {
+                errorDiv.style.display = 'flex';
+              }
+            }}
+            onLoadStart={() => {
+              console.log('Iniciando carregamento do vídeo:', videoUrl);
+            }}
+            onCanPlay={() => {
+              console.log('Vídeo pronto para reprodução:', videoUrl);
+            }}
+            onLoadedMetadata={() => {
+              console.log('Metadados do vídeo carregados:', videoUrl);
+            }}
+          >
+            Seu navegador não suporta a reprodução de vídeo.
+          </video>
+          <div 
+            className="video-error"
+            style={{
+              display: 'none',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '250px',
+              height: '200px',
+              backgroundColor: '#f5f5f5',
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              color: '#666'
+            }}
+          >
+            <div>❌ Erro ao carregar vídeo</div>
+            <button 
+              style={{
+                marginTop: '10px',
+                padding: '5px 10px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+              onClick={() => window.open(videoUrl, '_blank')}
+            >
+              Abrir em nova aba
+            </button>
+          </div>
+        </div>
       );
     }
     
     if (message.mediaType === "audio") {
+      // Construir URL completa se necessário
+      let audioUrl = message.mediaUrl;
+      if (audioUrl && !audioUrl.startsWith('http')) {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080';
+        audioUrl = `${backendUrl}/uploads/${audioUrl}`;
+      }
+      
       return (
         <audio
           className={classes.messageMedia}
-          src={message.mediaUrl}
+          src={audioUrl}
           controls
+          preload="metadata"
           style={{ width: "250px", height: "40px" }}
-        />
+          onError={(e) => {
+            console.error('Erro ao carregar áudio:', e);
+            console.error('URL do áudio:', audioUrl);
+          }}
+        >
+          Seu navegador não suporta a reprodução de áudio.
+        </audio>
       );
     }
     

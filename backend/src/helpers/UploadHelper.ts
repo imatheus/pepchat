@@ -3,7 +3,7 @@ import fs from "fs";
 
 export interface UploadConfig {
   companyId: number;
-  category: 'chat' | 'faturas' | 'campaigns' | 'contatos' | 'geral';
+  category: 'chat' | 'faturas' | 'campaigns' | 'contatos' | 'geral' | 'responses';
   ticketId?: number;
 }
 
