@@ -104,6 +104,21 @@ const getMessageOptions = async (body: string, mediaPath: string) => {
           // Ler áudio convertido como Buffer (OBRIGATÓRIO para PTT funcionar)
           const convertedAudioBuffer = fs.readFileSync(convertedPath);
           
+          // 🔍 DIAGNÓSTICO: Verificar buffer convertido
+          console.log('🔍 DIAGNÓSTICO SendMessage CONVERTIDO:', {
+            convertedPath,
+            fileExists: fs.existsSync(convertedPath),
+            bufferLength: convertedAudioBuffer.length,
+            bufferType: typeof convertedAudioBuffer,
+            isBuffer: Buffer.isBuffer(convertedAudioBuffer),
+            first10Bytes: convertedAudioBuffer.slice(0, 10).toString('hex'),
+            mimetype: finalMimetype
+          });
+          
+          if (convertedAudioBuffer.length === 0) {
+            throw new Error('❌ SendMessage: Buffer convertido está vazio!');
+          }
+          
           return {
             audio: convertedAudioBuffer, // Buffer direto - NÃO usar { url }
             mimetype: finalMimetype,
@@ -122,6 +137,21 @@ const getMessageOptions = async (body: string, mediaPath: string) => {
       
       // Ler áudio como Buffer (OBRIGATÓRIO para PTT funcionar)
       const audioBuffer = fs.readFileSync(mediaPath);
+      
+      // 🔍 DIAGNÓSTICO: Verificar buffer no SendMessage
+      console.log('🔍 DIAGNÓSTICO SendMessage BUFFER:', {
+        mediaPath,
+        fileExists: fs.existsSync(mediaPath),
+        bufferLength: audioBuffer.length,
+        bufferType: typeof audioBuffer,
+        isBuffer: Buffer.isBuffer(audioBuffer),
+        first10Bytes: audioBuffer.slice(0, 10).toString('hex'),
+        mimetype: finalMimetype
+      });
+      
+      if (audioBuffer.length === 0) {
+        throw new Error('❌ SendMessage: Buffer de áudio está vazio!');
+      }
       
       return {
         audio: audioBuffer, // Buffer direto - NÃO usar { url }

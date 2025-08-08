@@ -102,10 +102,41 @@ class AudioConverter {
         })
         .on('end', () => {
           console.log('✅ Audio conversion completed:', finalOutputPath);
+          
+          // 🔍 DIAGNÓSTICO: Verificar arquivo convertido
+          try {
+            const stats = fs.statSync(finalOutputPath);
+            const buffer = fs.readFileSync(finalOutputPath);
+            
+            console.log('🔍 DIAGNÓSTICO CONVERSÃO:', {
+              outputPath: finalOutputPath,
+              fileExists: fs.existsSync(finalOutputPath),
+              fileSize: stats.size,
+              fileSizeMB: (stats.size / (1024 * 1024)).toFixed(2),
+              bufferLength: buffer.length,
+              first10Bytes: buffer.slice(0, 10).toString('hex'),
+              isValidOgg: buffer.slice(0, 4).toString() === 'OggS'
+            });
+            
+            if (stats.size === 0) {
+              throw new Error('Arquivo convertido está vazio!');
+            }
+            
+          } catch (diagError) {
+            console.error('❌ Erro no diagnóstico pós-conversão:', diagError);
+          }
+          
           resolve(finalOutputPath);
         })
         .on('error', (err) => {
           console.error('❌ Audio conversion failed:', err);
+          console.error('🔍 DETALHES DO ERRO FFMPEG:', {
+            inputPath,
+            outputPath: finalOutputPath,
+            inputExists: fs.existsSync(inputPath),
+            errorMessage: err.message,
+            errorStack: err.stack
+          });
           reject(err);
         })
         .save(finalOutputPath);
@@ -200,23 +231,88 @@ class AudioConverter {
   }
 
   /**
-   * Verifica se o arquivo já está no formato OGG/Opus
+   * Verifica se o arquivo já está no formato OGG/Opus REAL
    */
   static async isOggOpus(filePath: string): Promise<boolean> {
     try {
+      // SEMPRE verificar assinatura binária primeiro
+      const isRealOgg = this.isRealOggFile(filePath);
+      
+      if (!isRealOgg) {
+        console.log('❌ Arquivo não é OGG real (assinatura binária incorreta)');
+        return false;
+      }
+      
       if (!ffmpegAvailable) {
-        // Fallback: verificar apenas pela extensão
-        return path.extname(filePath).toLowerCase() === '.ogg';
+        console.log('⚠️ FFmpeg não disponível, mas arquivo tem assinatura OGG válida');
+        console.log('📝 Para garantir que é Opus, instale FFmpeg: npm install');
+        // Assumir que é válido se tem assinatura OGG correta
+        return true;
       }
       
       const info = await this.getAudioInfo(filePath);
       const audioStream = info.streams.find((stream: any) => stream.codec_type === 'audio');
       
-      return audioStream && 
-             audioStream.codec_name === 'opus' && 
-             path.extname(filePath).toLowerCase() === '.ogg';
+      const isValidOpus = audioStream && audioStream.codec_name === 'opus';
+      
+      console.log('🔍 Verificação OGG/Opus completa:', {
+        isRealOgg,
+        hasOpusCodec: isValidOpus,
+        codecName: audioStream?.codec_name,
+        channels: audioStream?.channels,
+        sampleRate: audioStream?.sample_rate
+      });
+      
+      return isRealOgg && isValidOpus;
     } catch (error) {
       console.error('Error checking audio format:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Verifica se o arquivo é realmente OGG pela assinatura binária
+   */
+  static isRealOggFile(filePath: string): boolean {
+    try {
+      if (!fs.existsSync(filePath)) {
+        console.log('❌ Arquivo não existe:', filePath);
+        return false;
+      }
+      
+      const buffer = fs.readFileSync(filePath, { start: 0, end: 9 });
+      const signature = buffer.slice(0, 4).toString();
+      const first10Hex = buffer.toString('hex');
+      
+      console.log('🔍 Assinatura do arquivo:', {
+        filePath: path.basename(filePath),
+        first4Bytes: buffer.slice(0, 4).toString('hex'),
+        first10Hex,
+        signature,
+        isOggS: signature === 'OggS'
+      });
+      
+      // Detectar tipos de arquivo falsos
+      if (signature !== 'OggS') {
+        if (first10Hex.startsWith('00000024667479706973')) {
+          console.log('❌ DETECTADO: Arquivo MP4/ISOBMFF disfarçado de OGG!');
+        } else if (first10Hex.startsWith('494433')) {
+          console.log('❌ DETECTADO: Arquivo MP3 disfarçado de OGG!');
+        } else if (first10Hex.startsWith('ffd8ff')) {
+          console.log('❌ DETECTADO: Arquivo JPEG disfarçado de OGG!');
+        } else {
+          console.log('❌ DETECTADO: Formato desconhecido disfarçado de OGG!');
+          console.log('📝 Primeiros 10 bytes:', first10Hex);
+        }
+        
+        console.log('⚠️ Para corrigir, instale FFmpeg: npm install');
+        return false;
+      }
+      
+      console.log('✅ Arquivo é OGG real (assinatura válida)');
+      return true;
+    } catch (error) {
+      console.error('Erro ao verificar assinatura OGG:', error);
       return false;
     }
   }

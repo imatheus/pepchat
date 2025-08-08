@@ -70,36 +70,46 @@ const SendWhatsAppMedia = async ({
         let convertedAudioPath: string | null = null;
         
         try {
-          // Verificar se FFmpeg está disponível
-          if (AudioConverter.isFFmpegAvailable()) {
-            // Verificar se o áudio já está no formato OGG/Opus
-            const isAlreadyOggOpus = await AudioConverter.isOggOpus(media.path);
+          // Verificar se o arquivo é realmente OGG/Opus válido
+          const isRealOggOpus = await AudioConverter.isOggOpus(media.path);
+          
+          if (isRealOggOpus) {
+            console.log("✅ Audio is REAL OGG/Opus format - perfect for PTT");
+            finalAudioBuffer = fs.readFileSync(media.path);
+            finalMimetype = 'audio/ogg; codecs=opus';
+          } else {
+            console.log("❌ Audio is NOT real OGG/Opus - conversion required");
             
-            if (isAlreadyOggOpus) {
-              console.log("✅ Audio already in OGG/Opus format - perfect for PTT");
-              finalAudioBuffer = fs.readFileSync(media.path);
-              finalMimetype = 'audio/ogg; codecs=opus';
-            } else {
-              console.log("🔄 Converting audio to OGG/Opus for optimal PTT compatibility");
+            if (AudioConverter.isFFmpegAvailable()) {
+              console.log("🔄 Converting to REAL OGG/Opus for PTT compatibility");
               
-              // Converter para OGG/Opus
+              // Converter para OGG/Opus REAL
               const tempOutputPath = media.path.replace(path.extname(media.path), '_converted.ogg');
               convertedAudioPath = await AudioConverter.convertToPTT(media.path, tempOutputPath);
               
-              // Ler o arquivo convertido
-              finalAudioBuffer = fs.readFileSync(convertedAudioPath);
-              finalMimetype = 'audio/ogg; codecs=opus';
+              // Verificar se a conversão criou um OGG real
+              const isConvertedReal = AudioConverter.isRealOggFile(convertedAudioPath);
               
-              console.log("✅ Audio successfully converted to OGG/Opus");
+              if (isConvertedReal) {
+                console.log("✅ Conversion successful - now REAL OGG/Opus");
+                finalAudioBuffer = fs.readFileSync(convertedAudioPath);
+                finalMimetype = 'audio/ogg; codecs=opus';
+              } else {
+                throw new Error('Conversão falhou - arquivo não é OGG real');
+              }
+            } else {
+              console.log("❌ PROBLEMA: FFmpeg não disponível e arquivo não é OGG real!");
+              console.log("🛠️ SOLUÇÃO: Execute 'npm install' no diretório backend");
+              console.log("📝 Ou execute: ./install-deps-now.bat (Windows) ou ./install-deps-now.sh (Linux)");
+              
+              // Usar arquivo original mas avisar claramente
+              finalAudioBuffer = fs.readFileSync(media.path);
+              finalMimetype = AudioConverter.getBestMimetype(media.path);
+              
+              console.log("⚠️ AVISO: Enviando arquivo original (pode não funcionar como PTT)");
+              console.log("📱 Mimetype usado:", finalMimetype);
+              console.log("🔄 Para PTT funcionar 100%, instale FFmpeg e reinicie o servidor");
             }
-          } else {
-            console.log("⚠️ FFmpeg not available, using original audio with best mimetype");
-            
-            // Usar arquivo original com melhor mimetype
-            finalAudioBuffer = fs.readFileSync(media.path);
-            finalMimetype = AudioConverter.getBestMimetype(media.path);
-            
-            console.log("📱 Using original audio with mimetype:", finalMimetype);
           }
         } catch (conversionError) {
           console.warn("⚠️ Audio conversion failed, using original format:", conversionError);
@@ -180,19 +190,56 @@ const SendWhatsAppMedia = async ({
     }
     
     const fileStats = fs.statSync(media.path);
-    console.log("📤 Sending WhatsApp media:", {
+    // 🔍 DIAGNÓSTICO FINAL: Verificar tudo antes do envio
+    console.log("🔍 DIAGNÓSTICO ENVIO FINAL:", {
       mediaType,
       jid,
       ticketId: ticket.id,
-      mimetype: media.mimetype,
+      originalMimetype: media.mimetype,
+      finalMimetype: messageContent.mimetype,
       filename: media.originalname,
-      fileSize: fileStats.size,
+      originalFileSize: fileStats.size,
       filePath: media.path,
       hasBuffer: !!(messageContent.audio || messageContent.image || messageContent.video),
-      bufferSize: messageContent.audio?.length || messageContent.image?.length || messageContent.video?.length || 'N/A'
+      bufferSize: messageContent.audio?.length || messageContent.image?.length || messageContent.video?.length || 'N/A',
+      messageContentKeys: Object.keys(messageContent),
+      isPTT: messageContent.ptt,
+      hasFileName: !!messageContent.fileName,
+      hasCaption: !!messageContent.caption
     });
+    
+    // Verificar versão do Baileys
+    try {
+      const baileysPackage = require('@adiwajshing/baileys/package.json');
+      console.log('🔍 VERSÃO BAILEYS:', baileysPackage.version);
+    } catch (e) {
+      try {
+        const baileysPackage = require('@whiskeysockets/baileys/package.json');
+        console.log('🔍 VERSÃO BAILEYS (whiskeysockets):', baileysPackage.version);
+      } catch (e2) {
+        console.log('🔍 Não foi possível detectar versão do Baileys');
+      }
+    }
 
+    // 🔍 DIAGNÓSTICO: Envio via Baileys
+    console.log('🚀 Enviando mensagem via Baileys...');
+    console.log('🔍 messageContent final:', JSON.stringify({
+      ...messageContent,
+      audio: messageContent.audio ? `Buffer(${messageContent.audio.length} bytes)` : undefined
+    }, null, 2));
+    
     const sentMessage = await wbot.sendMessage(jid, messageContent);
+    
+    console.log('🔍 RESPOSTA BAILEYS:', {
+      success: !!sentMessage,
+      messageId: sentMessage?.key?.id,
+      status: sentMessage?.status,
+      timestamp: sentMessage?.messageTimestamp,
+      fromMe: sentMessage?.key?.fromMe,
+      remoteJid: sentMessage?.key?.remoteJid,
+      hasMessage: !!sentMessage?.message,
+      messageType: sentMessage?.message ? Object.keys(sentMessage.message)[0] : 'unknown'
+    });
     console.log("✅ Message sent successfully, response:", {
       messageId: sentMessage?.key?.id,
       status: sentMessage?.status,
