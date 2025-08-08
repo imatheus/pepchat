@@ -820,15 +820,30 @@ const MessageInputCustom = (props) => {
   };
 
   const startRecording = async () => {
-    console.log('🎤 startRecording called');
     try {
-      console.log('🎤 Requesting microphone access...');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log('🎤 Microphone access granted, creating MediaRecorder...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100
+        } 
+      });
       
-      const mediaRecorder = new MediaRecorder(stream);
+      // Tentar usar formato mais compatível
+      let options = {};
+      if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        options = { mimeType: 'audio/mp4' };
+        console.log('🎤 Using MP4 format');
+      } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+        options = { mimeType: 'audio/webm;codecs=opus' };
+        console.log('🎤 Using WebM with Opus');
+      } else {
+        console.log('🎤 Using default format');
+      }
+      
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
-      streamRef.current = stream; // Armazenar stream separadamente
+      streamRef.current = stream;
       audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
@@ -838,23 +853,28 @@ const MessageInputCustom = (props) => {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg; codecs=opus' });
+        // Usar o tipo MIME do MediaRecorder ou fallback para MP4
+        const mimeType = mediaRecorder.mimeType || 'audio/mp4';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        
+        console.log('🎤 Áudio gravado:', {
+          mimeType,
+          size: audioBlob.size,
+          chunks: audioChunksRef.current.length
+        });
+        
         setAudioBlob(audioBlob);
+        
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
         }
       };
 
-      console.log('🎤 Starting recording...');
       mediaRecorder.start();
-      
-      console.log('🎤 Setting isRecording to true');
       setIsRecording(true);
       setIsPaused(false);
-      
-      console.log('🎤 Recording state updated, isRecording should be true now');
     } catch (err) {
-      console.error('❌ Error accessing microphone:', err);
+      console.error('Error accessing microphone:', err);
       if (err.name === 'NotAllowedError') {
         toastError({ message: 'Permissão do microfone negada. Permita o acesso ao microfone e tente novamente.' });
       } else if (err.name === 'NotFoundError') {
@@ -897,9 +917,23 @@ const MessageInputCustom = (props) => {
     setLoading(true);
     const formData = new FormData();
     
-    // Criar arquivo de áudio com tipo MIME correto
-    const audioFile = new File([blob], `audio_${Date.now()}.ogg`, { 
-      type: 'audio/ogg; codecs=opus' 
+    // Detectar extensão baseada no tipo MIME
+    let extension = 'mp4'; // default
+    if (blob.type.includes('wav')) extension = 'wav';
+    else if (blob.type.includes('webm')) extension = 'webm';
+    else if (blob.type.includes('mp4')) extension = 'mp4';
+    else if (blob.type.includes('ogg')) extension = 'ogg';
+    
+    const fileName = `audio_${Date.now()}.${extension}`;
+    
+    const audioFile = new File([blob], fileName, { 
+      type: blob.type 
+    });
+    
+    console.log('🎤 Enviando áudio:', {
+      fileName,
+      type: blob.type,
+      size: blob.size
     });
     
     formData.append("fromMe", true);
@@ -922,9 +956,23 @@ const MessageInputCustom = (props) => {
     setLoading(true);
     const formData = new FormData();
     
-    // Criar arquivo de áudio com tipo MIME correto
-    const audioFile = new File([audioBlob], `audio_${Date.now()}.ogg`, { 
-      type: 'audio/ogg; codecs=opus' 
+    // Detectar extensão baseada no tipo MIME
+    let extension = 'mp4'; // default
+    if (audioBlob.type.includes('wav')) extension = 'wav';
+    else if (audioBlob.type.includes('webm')) extension = 'webm';
+    else if (audioBlob.type.includes('mp4')) extension = 'mp4';
+    else if (audioBlob.type.includes('ogg')) extension = 'ogg';
+    
+    const fileName = `audio_${Date.now()}.${extension}`;
+    
+    const audioFile = new File([audioBlob], fileName, { 
+      type: audioBlob.type 
+    });
+    
+    console.log('🎤 Enviando áudio:', {
+      fileName,
+      type: audioBlob.type,
+      size: audioBlob.size
     });
     
     formData.append("fromMe", true);
@@ -956,27 +1004,18 @@ const MessageInputCustom = (props) => {
   };
 
   const handleMicClick = () => {
-    console.log('🎤 handleMicClick called', { 
-      isRecording, 
-      audioBlob: !!audioBlob, 
-      isPaused,
-      ticketStatus 
-    });
-    
     if (!isRecording && !audioBlob) {
-      console.log('🎤 Condition met: starting recording');
       startRecording();
     } else if (isRecording && !isPaused) {
-      console.log('🎤 Condition met: stopping recording');
       stopRecording();
-    } else {
-      console.log('🎤 No condition met, current state:', { isRecording, audioBlob: !!audioBlob, isPaused });
     }
   };
 
   const disableOption = () => {
     return ticketStatus !== "open";
   };
+
+
 
   const renderReplyingMessage = (message) => {
     return (
@@ -1008,17 +1047,8 @@ const MessageInputCustom = (props) => {
     );
   };
 
-  // Debug: verificar estados antes da renderização
-  console.log('🎨 Render states:', { 
-    isRecording, 
-    audioBlob: !!audioBlob, 
-    mediasLength: medias.length,
-    loading 
-  });
-  
   // Verificar se deve mostrar interface de gravação
   if (isRecording || audioBlob) {
-    console.log('🎨 Rendering recording interface');
     return (
       <Paper elevation={0} square className={classes.viewMediaInputWrapper}>
         <IconButton
@@ -1131,11 +1161,7 @@ const MessageInputCustom = (props) => {
             isRecording={isRecording}
             ticketStatus={ticketStatus}
           />
-          
-          {/* Debug: mostrar estados atuais */}
-          <div style={{ fontSize: '10px', color: 'red', padding: '2px' }}>
-            Debug: isRecording={isRecording.toString()}, audioBlob={!!audioBlob ? 'true' : 'false'}, status={ticketStatus}
-          </div>
+
         </div>
       </Paper>
     );

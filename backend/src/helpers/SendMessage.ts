@@ -3,6 +3,7 @@ import GetWhatsappWbot from "./GetWhatsappWbot";
 import { logger } from "../utils/logger";
 import fs from "fs";
 import path from "path";
+import AudioConverter from "../utils/AudioConverter";
 
 export type MessageData = {
   number: number | string;
@@ -62,23 +63,78 @@ const getMessageOptions = async (body: string, mediaPath: string) => {
   
   switch (mediaType) {
     case "image":
+      // Ler imagem como Buffer para garantir envio correto
+      const imageBuffer = fs.readFileSync(mediaPath);
       return {
-        image: { url: mediaPath },
+        image: imageBuffer,
         caption: body
       };
     case "video":
+      // Ler vídeo como Buffer para garantir envio correto
+      const videoBuffer = fs.readFileSync(mediaPath);
       return {
-        video: { url: mediaPath },
+        video: videoBuffer,
         caption: body
       };
     case "audio":
+      // Para áudios, tentar converter para OGG/Opus para melhor compatibilidade PTT
+      let finalMimetype = mimeType;
+      let convertedPath: string | null = null;
+      
+      try {
+        // Verificar se já está em OGG/Opus
+        const isAlreadyOggOpus = await AudioConverter.isOggOpus(mediaPath);
+        
+        if (!isAlreadyOggOpus) {
+          logger.info(`Converting audio to OGG/Opus for better PTT compatibility: ${mediaPath}`);
+          
+          // Converter para OGG/Opus
+          const tempOutputPath = mediaPath.replace(path.extname(mediaPath), '_helper_converted.ogg');
+          convertedPath = await AudioConverter.convertToPTT(mediaPath, tempOutputPath);
+          
+          finalMimetype = 'audio/ogg; codecs=opus';
+          
+          logger.info(`Audio successfully converted to OGG/Opus`);
+          
+          // Limpar arquivo temporário após um tempo
+          setTimeout(() => {
+            AudioConverter.cleanupTempFile(convertedPath!);
+          }, 10000); // 10 segundos
+          
+          // Ler áudio convertido como Buffer (OBRIGATÓRIO para PTT funcionar)
+          const convertedAudioBuffer = fs.readFileSync(convertedPath);
+          
+          return {
+            audio: convertedAudioBuffer, // Buffer direto - NÃO usar { url }
+            mimetype: finalMimetype,
+            ptt: true
+            // NÃO incluir fileName - isso quebra o PTT!
+            // NÃO incluir caption - PTT não tem caption
+          };
+        } else {
+          finalMimetype = 'audio/ogg; codecs=opus';
+          logger.info(`Audio already in OGG/Opus format`);
+        }
+      } catch (conversionError) {
+        logger.warn(`Audio conversion failed, using original format:`, conversionError);
+        // Manter mimetype original
+      }
+      
+      // Ler áudio como Buffer (OBRIGATÓRIO para PTT funcionar)
+      const audioBuffer = fs.readFileSync(mediaPath);
+      
       return {
-        audio: { url: mediaPath },
-        mimetype: mimeType
+        audio: audioBuffer, // Buffer direto - NÃO usar { url }
+        mimetype: finalMimetype,
+        ptt: true // Sempre marcar como PTT
+        // NÃO incluir fileName - isso quebra o PTT!
+        // NÃO incluir caption - PTT não tem caption
       };
     default:
+      // Para documentos, ler como Buffer também
+      const documentBuffer = fs.readFileSync(mediaPath);
       return {
-        document: { url: mediaPath },
+        document: documentBuffer,
         mimetype: mimeType,
         fileName: path.basename(mediaPath)
       };

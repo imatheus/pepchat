@@ -4,6 +4,7 @@ import { getWbot } from "../../libs/wbot";
 import AppError from "../../errors/AppError";
 import Whatsapp from "../../models/Whatsapp";
 import { logger } from "../../utils/logger";
+import AudioConverter from "../../utils/AudioConverter";
 
 interface Request {
   body: string;
@@ -121,8 +122,49 @@ const SendCampaignMessage = async ({
             messageContent.video = mediaBuffer;
             if (body) messageContent.caption = body;
           } else if (messageType === "audio") {
-            messageContent.audio = mediaBuffer;
-            messageContent.mimetype = mimetype;
+            // Para áudios, tentar converter para OGG/Opus para melhor compatibilidade PTT
+            let finalAudioBuffer = mediaBuffer;
+            let finalMimetype = mimetype;
+            let convertedPath: string | null = null;
+            
+            try {
+              // Verificar se já está em OGG/Opus
+              const isAlreadyOggOpus = await AudioConverter.isOggOpus(fullMediaPath);
+              
+              if (!isAlreadyOggOpus) {
+                logger.info(`Converting audio to OGG/Opus for better PTT compatibility: ${mediaName}`);
+                
+                // Converter para OGG/Opus
+                const tempOutputPath = fullMediaPath.replace(path.extname(fullMediaPath), '_campaign_converted.ogg');
+                convertedPath = await AudioConverter.convertToPTT(fullMediaPath, tempOutputPath);
+                
+                // Ler arquivo convertido
+                finalAudioBuffer = fs.readFileSync(convertedPath);
+                finalMimetype = 'audio/ogg; codecs=opus';
+                
+                logger.info(`Audio successfully converted to OGG/Opus for campaign`);
+              } else {
+                finalMimetype = 'audio/ogg; codecs=opus';
+                logger.info(`Audio already in OGG/Opus format for campaign`);
+              }
+            } catch (conversionError) {
+              logger.warn(`Audio conversion failed for campaign, using original format:`, conversionError);
+              // Manter buffer e mimetype originais
+            }
+            
+            // Configurar áudio como PTT (Push-to-Talk) para campanhas
+            messageContent.audio = finalAudioBuffer;
+            messageContent.mimetype = finalMimetype;
+            messageContent.ptt = true; // Marcar como PTT para campanhas também
+            // NÃO incluir fileName para áudios - isso quebra o PTT!
+            // NÃO incluir caption para PTT
+            
+            // Limpar arquivo temporário se foi criado
+            if (convertedPath && convertedPath !== fullMediaPath) {
+              setTimeout(() => {
+                AudioConverter.cleanupTempFile(convertedPath!);
+              }, 5000);
+            }
           } else {
             messageContent.document = mediaBuffer;
             messageContent.fileName = mediaName;
