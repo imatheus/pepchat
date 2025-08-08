@@ -14,6 +14,7 @@ import SendIcon from "@material-ui/icons/Send";
 import CancelIcon from "@material-ui/icons/Cancel";
 import ClearIcon from "@material-ui/icons/Clear";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
+import MicIcon from "@material-ui/icons/Mic";
 import { Menu, MenuItem, ListItemText, Divider, Popper, Paper, ClickAwayListener } from "@material-ui/core";
 
 
@@ -106,6 +107,32 @@ const useStyles = makeStyles((theme) => ({
     color: "grey",
     "&:hover": {
       color: theme.palette.primary.main,
+    },
+  },
+
+  micIcon: {
+    color: "#25d366",
+    "&:hover": {
+      color: "#128c7e",
+    },
+    cursor: "pointer",
+  },
+
+  micIconActive: {
+    color: "#ff4444",
+    animation: "$pulse 1.5s infinite",
+    cursor: "pointer",
+  },
+
+  "@keyframes pulse": {
+    "0%": {
+      transform: "scale(1)",
+    },
+    "50%": {
+      transform: "scale(1.1)",
+    },
+    "100%": {
+      transform: "scale(1)",
     },
   },
 
@@ -351,22 +378,36 @@ const ActionButtons = (props) => {
     inputMessage,
     loading,
     handleSendMessage,
+    handleMicClick,
+    isRecording,
+    ticketStatus,
   } = props;
   const classes = useStyles();
-  if (inputMessage) {
-    return (
+  
+  return (
+    <>
       <IconButton
-        aria-label="sendMessage"
+        aria-label="recordAudio"
         component="span"
-        onClick={handleSendMessage}
-        disabled={loading}
+        onClick={handleMicClick}
+        disabled={loading || ticketStatus !== "open"}
       >
-        <SendIcon className={classes.sendMessageIcons} />
+        <MicIcon 
+          className={isRecording ? classes.micIconActive : classes.micIcon} 
+        />
       </IconButton>
-    );
-  } else {
-    return null;
-  }
+      {inputMessage && (
+        <IconButton
+          aria-label="sendMessage"
+          component="span"
+          onClick={handleSendMessage}
+          disabled={loading}
+        >
+          <SendIcon className={classes.sendMessageIcons} />
+        </IconButton>
+      )}
+    </>
+  );
 };
 
 const CustomInput = (props) => {
@@ -536,6 +577,14 @@ const MessageInputCustom = (props) => {
   const [loading, setLoading] = useState(false);
   const [percentLoading, setPercentLoading] = useState(0);
   const [quickMessages, setQuickMessages] = useState([]);
+  
+  // Audio recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null); // Separar a referência do stream
 
   const inputRef = useRef();
   const { setReplyingMessage, replyingMessage } =
@@ -770,6 +819,161 @@ const MessageInputCustom = (props) => {
     });
   };
 
+  const startRecording = async () => {
+    console.log('🎤 startRecording called');
+    try {
+      console.log('🎤 Requesting microphone access...');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('🎤 Microphone access granted, creating MediaRecorder...');
+      
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      streamRef.current = stream; // Armazenar stream separadamente
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg; codecs=opus' });
+        setAudioBlob(audioBlob);
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+        }
+      };
+
+      console.log('🎤 Starting recording...');
+      mediaRecorder.start();
+      
+      console.log('🎤 Setting isRecording to true');
+      setIsRecording(true);
+      setIsPaused(false);
+      
+      console.log('🎤 Recording state updated, isRecording should be true now');
+    } catch (err) {
+      console.error('❌ Error accessing microphone:', err);
+      if (err.name === 'NotAllowedError') {
+        toastError({ message: 'Permissão do microfone negada. Permita o acesso ao microfone e tente novamente.' });
+      } else if (err.name === 'NotFoundError') {
+        toastError({ message: 'Nenhum microfone encontrado no dispositivo.' });
+      } else {
+        toastError({ message: 'Erro ao acessar o microfone: ' + err.message });
+      }
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setIsPaused(false);
+    }
+  };
+
+  const stopAndSendRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      // Configurar para enviar automaticamente após parar
+      const originalOnStop = mediaRecorderRef.current.onstop;
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg; codecs=opus' });
+        // Enviar imediatamente
+        sendAudioBlob(audioBlob);
+        // Limpar stream
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+        }
+      };
+      
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setIsPaused(false);
+    }
+  };
+
+  const sendAudioBlob = async (blob) => {
+    setLoading(true);
+    const formData = new FormData();
+    
+    // Criar arquivo de áudio com tipo MIME correto
+    const audioFile = new File([blob], `audio_${Date.now()}.ogg`, { 
+      type: 'audio/ogg; codecs=opus' 
+    });
+    
+    formData.append("fromMe", true);
+    formData.append("medias", audioFile);
+    formData.append("body", "🎵 Áudio");
+
+    try {
+      await api.post(`/messages/${ticketId}`, formData);
+    } catch (err) {
+      console.error('Erro ao enviar áudio:', err);
+      toastError(err);
+    }
+
+    setLoading(false);
+  };
+
+  const sendAudio = async () => {
+    if (!audioBlob) return;
+    
+    setLoading(true);
+    const formData = new FormData();
+    
+    // Criar arquivo de áudio com tipo MIME correto
+    const audioFile = new File([audioBlob], `audio_${Date.now()}.ogg`, { 
+      type: 'audio/ogg; codecs=opus' 
+    });
+    
+    formData.append("fromMe", true);
+    formData.append("medias", audioFile);
+    formData.append("body", "🎵 Áudio");
+
+    try {
+      await api.post(`/messages/${ticketId}`, formData);
+      setAudioBlob(null);
+    } catch (err) {
+      console.error('Erro ao enviar áudio:', err);
+      toastError(err);
+    }
+
+    setLoading(false);
+  };
+
+  const cancelAudio = () => {
+    setAudioBlob(null);
+    setIsRecording(false);
+    setIsPaused(false);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  const handleMicClick = () => {
+    console.log('🎤 handleMicClick called', { 
+      isRecording, 
+      audioBlob: !!audioBlob, 
+      isPaused,
+      ticketStatus 
+    });
+    
+    if (!isRecording && !audioBlob) {
+      console.log('🎤 Condition met: starting recording');
+      startRecording();
+    } else if (isRecording && !isPaused) {
+      console.log('🎤 Condition met: stopping recording');
+      stopRecording();
+    } else {
+      console.log('🎤 No condition met, current state:', { isRecording, audioBlob: !!audioBlob, isPaused });
+    }
+  };
+
   const disableOption = () => {
     return ticketStatus !== "open";
   };
@@ -804,7 +1008,52 @@ const MessageInputCustom = (props) => {
     );
   };
 
-  if (medias.length > 0)
+  // Debug: verificar estados antes da renderização
+  console.log('🎨 Render states:', { 
+    isRecording, 
+    audioBlob: !!audioBlob, 
+    mediasLength: medias.length,
+    loading 
+  });
+  
+  // Verificar se deve mostrar interface de gravação
+  if (isRecording || audioBlob) {
+    console.log('🎨 Rendering recording interface');
+    return (
+      <Paper elevation={0} square className={classes.viewMediaInputWrapper}>
+        <IconButton
+          aria-label="cancel-audio"
+          component="span"
+          onClick={cancelAudio}
+        >
+          <CancelIcon className={classes.sendMessageIcons} />
+        </IconButton>
+
+        {loading ? (
+          <div>
+            <LinearWithValueLabel progress={percentLoading} />
+          </div>
+        ) : (
+          <span>
+            {isRecording ? "🎤 Gravando..." : "🎵 Áudio gravado"}
+          </span>
+        )}
+
+        <IconButton
+          aria-label={isRecording ? "stop-and-send-audio" : "send-audio"}
+          component="span"
+          onClick={isRecording ? stopAndSendRecording : sendAudio}
+          disabled={loading}
+          title={isRecording ? "Parar e enviar áudio" : "Enviar áudio"}
+        >
+          <SendIcon className={classes.sendMessageIcons} />
+        </IconButton>
+      </Paper>
+    );
+  }
+  
+  // Interface de upload de arquivos
+  if (medias.length > 0) {
     return (
       <Paper elevation={0} square className={classes.viewMediaInputWrapper}>
         <IconButton
@@ -838,6 +1087,7 @@ const MessageInputCustom = (props) => {
         </IconButton>
       </Paper>
     );
+  }
   else {
     return (
       <Paper square elevation={0} className={classes.mainWrapper}>
@@ -877,7 +1127,15 @@ const MessageInputCustom = (props) => {
             inputMessage={inputMessage}
             loading={loading}
             handleSendMessage={handleSendMessage}
+            handleMicClick={handleMicClick}
+            isRecording={isRecording}
+            ticketStatus={ticketStatus}
           />
+          
+          {/* Debug: mostrar estados atuais */}
+          <div style={{ fontSize: '10px', color: 'red', padding: '2px' }}>
+            Debug: isRecording={isRecording.toString()}, audioBlob={!!audioBlob ? 'true' : 'false'}, status={ticketStatus}
+          </div>
         </div>
       </Paper>
     );

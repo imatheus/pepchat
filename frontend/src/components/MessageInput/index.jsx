@@ -15,6 +15,7 @@ import MoodIcon from "@material-ui/icons/Mood";
 import SendIcon from "@material-ui/icons/Send";
 import CancelIcon from "@material-ui/icons/Cancel";
 import ClearIcon from "@material-ui/icons/Clear";
+import MicIcon from "@material-ui/icons/Mic";
 import ToggleSwitch from "../ToggleSwitch";
 
 import { i18n } from "../../translate/i18n";
@@ -59,6 +60,37 @@ const useStyles = makeStyles(theme => ({
 
 	sendMessageIcons: {
 		color: "grey",
+	},
+
+	micIcon: {
+		color: "#25d366",
+		"&:hover": {
+			color: "#128c7e",
+		},
+		cursor: "pointer",
+	},
+
+	micIconActive: {
+		color: "#ff4444",
+		animation: "$pulse 1.5s infinite",
+		cursor: "pointer",
+	},
+
+	recordingIcon: {
+		color: "#ff4444",
+		animation: "$pulse 1.5s infinite",
+	},
+
+	"@keyframes pulse": {
+		"0%": {
+			transform: "scale(1)",
+		},
+		"50%": {
+			transform: "scale(1.1)",
+		},
+		"100%": {
+			transform: "scale(1)",
+		},
 	},
 
 	uploadInput: {
@@ -157,6 +189,13 @@ const MessageInput = ({ ticketStatus }) => {
 	// Typing indicator state
 	const [isTyping, setIsTyping] = useState(false);
 	const typingTimeoutRef = useRef(null);
+
+	// Audio recording state
+	const [isRecording, setIsRecording] = useState(false);
+	const [isPaused, setIsPaused] = useState(false);
+	const [audioBlob, setAudioBlob] = useState(null);
+	const mediaRecorderRef = useRef(null);
+	const audioChunksRef = useRef([]);
 
 	useEffect(() => {
 		inputRef.current.focus();
@@ -277,6 +316,94 @@ const MessageInput = ({ ticketStatus }) => {
 		setReplyingMessage(null);
 	};
 
+	const startRecording = async () => {
+		try {
+			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			const mediaRecorder = new MediaRecorder(stream);
+			mediaRecorderRef.current = mediaRecorder;
+			audioChunksRef.current = [];
+
+			mediaRecorder.ondataavailable = (event) => {
+				if (event.data.size > 0) {
+					audioChunksRef.current.push(event.data);
+				}
+			};
+
+			mediaRecorder.onstop = () => {
+				const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg; codecs=opus' });
+				setAudioBlob(audioBlob);
+				stream.getTracks().forEach(track => track.stop());
+			};
+
+			mediaRecorder.start();
+			setIsRecording(true);
+			setIsPaused(false);
+		} catch (err) {
+			console.error('Error accessing microphone:', err);
+			toastError({ message: 'Erro ao acessar o microfone' });
+		}
+	};
+
+	const stopRecording = () => {
+		if (mediaRecorderRef.current && isRecording) {
+			mediaRecorderRef.current.stop();
+			setIsRecording(false);
+			setIsPaused(false);
+		}
+	};
+
+	const pauseRecording = () => {
+		if (mediaRecorderRef.current && isRecording) {
+			mediaRecorderRef.current.pause();
+			setIsPaused(true);
+		}
+	};
+
+	const resumeRecording = () => {
+		if (mediaRecorderRef.current && isRecording && isPaused) {
+			mediaRecorderRef.current.resume();
+			setIsPaused(false);
+		}
+	};
+
+	const sendAudio = async () => {
+		if (!audioBlob) return;
+		
+		setLoading(true);
+		const formData = new FormData();
+		const audioFile = new File([audioBlob], `audio_${Date.now()}.ogg`, { type: 'audio/ogg' });
+		
+		formData.append("fromMe", true);
+		formData.append("medias", audioFile);
+		formData.append("body", "🎵 Áudio");
+
+		try {
+			await api.post(`/messages/${ticketId}`, formData);
+			setAudioBlob(null);
+		} catch (err) {
+			toastError(err);
+		}
+
+		setLoading(false);
+	};
+
+	const cancelAudio = () => {
+		setAudioBlob(null);
+		setIsRecording(false);
+		setIsPaused(false);
+		if (mediaRecorderRef.current) {
+			mediaRecorderRef.current.stop();
+		}
+	};
+
+	const handleMicClick = () => {
+		if (!isRecording && !audioBlob) {
+			startRecording();
+		} else if (isRecording && !isPaused) {
+			stopRecording();
+		}
+	};
+
 	const renderReplyingMessage = message => {
 		return (
 			<div className={classes.replyginMsgWrapper}>
@@ -338,7 +465,39 @@ const MessageInput = ({ ticketStatus }) => {
 				</IconButton>
 			</Paper>
 		);
-	else {
+	else if (isRecording || audioBlob) {
+		return (
+			<Paper elevation={0} square className={classes.viewMediaInputWrapper}>
+				<IconButton
+					aria-label="cancel-audio"
+					component="span"
+					onClick={cancelAudio}
+				>
+					<CancelIcon className={classes.sendMessageIcons} />
+				</IconButton>
+
+				{loading ? (
+					<div>
+						<CircularProgress className={classes.circleLoading} />
+					</div>
+				) : (
+					<span>
+						{isRecording ? "🎤 Gravando..." : "🎵 Áudio gravado"}
+					</span>
+				)}
+
+				{audioBlob && !loading && (
+					<IconButton
+						aria-label="send-audio"
+						component="span"
+						onClick={sendAudio}
+					>
+						<SendIcon className={classes.sendMessageIcons} />
+					</IconButton>
+				)}
+			</Paper>
+		);
+	} else {
 		return (
 			<Paper square elevation={0} className={classes.mainWrapper}>
 				{replyingMessage && renderReplyingMessage(replyingMessage)}
@@ -417,7 +576,17 @@ const MessageInput = ({ ticketStatus }) => {
 							}}
 						/>
 					</div>
-					{inputMessage ? (
+					<IconButton
+						aria-label="recordAudio"
+						component="span"
+						onClick={handleMicClick}
+						disabled={loading || ticketStatus !== "open"}
+					>
+						<MicIcon 
+							className={isRecording ? classes.micIconActive : classes.micIcon} 
+						/>
+					</IconButton>
+					{inputMessage && (
 						<IconButton
 							aria-label="sendMessage"
 							component="span"
@@ -426,8 +595,7 @@ const MessageInput = ({ ticketStatus }) => {
 						>
 							<SendIcon className={classes.sendMessageIcons} />
 						</IconButton>
-					) : null}
-				</div>
+					)}
 			</Paper>
 		);
 	}

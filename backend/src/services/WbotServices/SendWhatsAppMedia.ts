@@ -18,6 +18,12 @@ const SendWhatsAppMedia = async ({
 }: Request): Promise<Message> => {
   try {
     const wbot = await GetTicketWbot(ticket);
+    
+    // Verificar se o wbot está conectado
+    if (!wbot || !wbot.user) {
+      console.error("WhatsApp bot not connected or user not available");
+      throw new AppError("ERR_WAPP_NOT_CONNECTED");
+    }
 
     // Determine message type based on media mimetype
     let messageContent: any;
@@ -60,7 +66,25 @@ const SendWhatsAppMedia = async ({
       jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
     }
 
+    console.log("Sending WhatsApp media:", {
+      mediaType,
+      jid,
+      ticketId: ticket.id,
+      mimetype: media.mimetype,
+      filename: media.originalname
+    });
+
     const sentMessage = await wbot.sendMessage(jid, messageContent);
+
+    // Debug: verificar se sentMessage foi retornado corretamente
+    if (!sentMessage || !sentMessage.key || !sentMessage.key.id) {
+      console.error("Error: sentMessage or sentMessage.key.id is undefined", {
+        sentMessage,
+        hasKey: !!sentMessage?.key,
+        hasId: !!sentMessage?.key?.id
+      });
+      throw new AppError("ERR_SENDING_WAPP_MSG: Invalid message response");
+    }
 
     // Organizar arquivo por empresa e categoria
     const fileName = UploadHelper.generateFileName(media.originalname);
