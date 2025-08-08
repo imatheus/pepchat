@@ -79,10 +79,10 @@ class AsaasService {
       }
     });
 
-    // Interceptor para logs
+    // Interceptor para logs (removido para reduzir verbosidade)
     this.api.interceptors.request.use(
       (config) => {
-        logger.info(`Asaas API Request: ${config.method?.toUpperCase()} ${config.url}`);
+        // logger.info(`Asaas API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
       (error) => {
@@ -93,7 +93,7 @@ class AsaasService {
 
     this.api.interceptors.response.use(
       (response) => {
-        logger.info(`Asaas API Response: ${response.status} ${response.config.url}`);
+        // logger.info(`Asaas API Response: ${response.status} ${response.config.url}`);
         return response;
       },
       (error) => {

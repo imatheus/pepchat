@@ -297,7 +297,7 @@ const QuickMessagesButton = (props) => {
           </MenuItem>
         ) : (
           quickMessages.map((message, index) => [
-            <MenuItem key={`item-${index}`} onClick={() => handleSelectMessage(message.value)}>
+            <MenuItem key={`item-${index}`} onClick={() => handleSelectMessage(message)}>
               <ListItemText
                 primary={
                   <div>
@@ -573,10 +573,12 @@ const MessageInputCustom = (props) => {
         const messagesArray = Array.isArray(messages) ? messages : [];
         
         const formattedMessages = messagesArray.map((m) => ({
+          id: m.id,
           shortcode: m.shortcode,
           message: m.message,
           value: m.message,
         }));
+        
         setQuickMessages(formattedMessages);
       } catch (error) {
         console.error("Erro ao carregar mensagens rápidas:", error);
@@ -598,8 +600,36 @@ const MessageInputCustom = (props) => {
     }
   };
 
-  const handleSelectQuickMessage = (message) => {
-    setInputMessage(message);
+  const handleSelectQuickMessage = async (message) => {
+    
+    
+    // Se a mensagem tem ID, usar o novo sistema de envio
+    if (message.id) {
+      
+      setLoading(true);
+      try {
+        const response = await api.post('/quick-messages/send', {
+          quickMessageId: message.id,
+          ticketId: ticketId
+        });
+        
+        
+        // Limpar input após envio bem-sucedido
+        setInputMessage("");
+        setShowEmoji(false);
+        setReplyingMessage(null);
+        
+      } catch (err) {
+        console.error("Error sending quick message:", err);
+        toastError(err);
+      }
+      setLoading(false);
+    } else {
+      
+      // Fallback para o sistema antigo (apenas texto)
+      setInputMessage(message);
+    }
+    
     // Focar imediatamente após selecionar mensagem rápida
     if (inputRef.current) {
       inputRef.current.focus();

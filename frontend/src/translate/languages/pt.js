@@ -294,7 +294,7 @@ const messages = {
         listItems: {
           dashboard: "Dashboard",
           connections: "Minhas Conexões",
-          tickets: "Atendimentos",
+          tickets: "Chats",
           quickMessages: "Respostas Rápidas",
           contacts: "Contatos",
           queues: "Chatbot",

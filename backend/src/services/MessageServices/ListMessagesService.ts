@@ -77,7 +77,7 @@ const ListMessagesService = async ({
   const messagesWithFullUrls = messages.map(message => {
     if (message.mediaUrl && !message.mediaUrl.startsWith('http')) {
       const fullMediaUrl = UploadHelper.getFileUrl(message.mediaUrl);
-      message.dataValues.mediaUrl = fullMediaUrl;
+      (message as any).mediaUrl = fullMediaUrl;
     }
     return message;
   });

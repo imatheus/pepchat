@@ -166,17 +166,20 @@ export const shouldIgnoreGroupMessage = async (
       }
     });
 
-    // Se a configuração não existe ou está desabilitada, processar mensagens de grupos
-    if (!setting || setting.value === "disabled") {
+    // CORREÇÃO: A lógica estava invertida
+    // Se a configuração não existe, processar mensagens de grupos (padrão)
+    if (!setting) {
       return false;
     }
 
-    // Se a configuração está habilitada ("enabled"), ignorar mensagens de grupos
-    if (setting.value === "enabled") {
+    // Se a configuração está "enabled", PROCESSAR mensagens de grupos (não ignorar)
+    // Se a configuração está "disabled", IGNORAR mensagens de grupos
+    if (setting.value === "disabled") {
       logger.info(`Ignoring group message from ${msg.key.remoteJid} - Group messages disabled for company ${companyId}`);
       return true;
     }
 
+    // Se está "enabled" ou qualquer outro valor, processar mensagens de grupos
     return false;
   } catch (error) {
     logger.error(error, "Error checking group message setting");

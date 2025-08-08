@@ -126,15 +126,18 @@ if (process.env.NODE_ENV === 'development') {
     res.on('finish', () => {
       const duration = Date.now() - start;
       
-      // Filtrar logs de requisições frequentes e não importantes
+      // Filtrar logs de requisições GET e POST (todas as consultas de API)
       const skipLogging = [
         '/plans/public',
         '/health',
         '/api/health',
         '/socket.io/',
-        '/favicon.ico'
+        '/favicon.ico',
+        '/uploads/' // Filtrar logs de uploads (GET /uploads/...)
       ].some(path => req.path.includes(path)) || 
-      res.statusCode === 304; // Não logar respostas 304 (Not Modified)
+      res.statusCode === 304 || // Não logar respostas 304 (Not Modified)
+      req.method === 'GET' || // Filtrar todos os logs GET
+      req.method === 'POST'; // Filtrar todos os logs POST
       
       if (!skipLogging) {
         logger.info(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
@@ -156,79 +159,6 @@ app.use("/public", express.static(join(__dirname, "..", "public"), {
   etag: process.env.NODE_ENV === 'production'
 }));
 
-// Rota específica para servir vídeos com headers corretos para streaming
-app.get('/uploads/**/*.mp4', (req: Request, res: Response) => {
-  const filePath = join(__dirname, "..", req.path);
-  
-  // Headers para suporte a streaming de vídeo
-  res.setHeader('Accept-Ranges', 'bytes');
-  res.setHeader('Content-Type', 'video/mp4');
-  res.setHeader('Cache-Control', 'public, max-age=3600');
-  
-  // Verificar se o arquivo existe
-  const fs = require('fs');
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send('Video not found');
-  }
-  
-  const stat = fs.statSync(filePath);
-  const fileSize = stat.size;
-  const range = req.headers.range;
-  
-  if (range) {
-    // Suporte a range requests para streaming
-    const parts = range.replace(/bytes=/, "").split("-");
-    const start = parseInt(parts[0], 10);
-    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-    const chunksize = (end - start) + 1;
-    const file = fs.createReadStream(filePath, { start, end });
-    
-    res.status(206);
-    res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
-    res.setHeader('Content-Length', chunksize);
-    
-    file.pipe(res);
-  } else {
-    // Enviar arquivo completo
-    res.setHeader('Content-Length', fileSize);
-    fs.createReadStream(filePath).pipe(res);
-  }
-});
-
-// Rota específica para outros tipos de vídeo
-app.get('/uploads/**/*.webm', (req: Request, res: Response) => {
-  const filePath = join(__dirname, "..", req.path);
-  
-  res.setHeader('Accept-Ranges', 'bytes');
-  res.setHeader('Content-Type', 'video/webm');
-  res.setHeader('Cache-Control', 'public, max-age=3600');
-  
-  const fs = require('fs');
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send('Video not found');
-  }
-  
-  const stat = fs.statSync(filePath);
-  const fileSize = stat.size;
-  const range = req.headers.range;
-  
-  if (range) {
-    const parts = range.replace(/bytes=/, "").split("-");
-    const start = parseInt(parts[0], 10);
-    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-    const chunksize = (end - start) + 1;
-    const file = fs.createReadStream(filePath, { start, end });
-    
-    res.status(206);
-    res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
-    res.setHeader('Content-Length', chunksize);
-    
-    file.pipe(res);
-  } else {
-    res.setHeader('Content-Length', fileSize);
-    fs.createReadStream(filePath).pipe(res);
-  }
-});
 
 app.use("/uploads", express.static(join(__dirname, "..", "uploads"), {
   maxAge: process.env.NODE_ENV === 'production' ? '1d' : '0',

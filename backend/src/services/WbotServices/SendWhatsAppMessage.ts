@@ -30,6 +30,10 @@ const sendMessageWithRetry = async (
 ): Promise<any> => {
   let lastError: any;
   
+  // Determinar timeout baseado no tipo de destinatário
+  const isGroup = jid.endsWith("@g.us");
+  const timeout = isGroup ? 45000 : 30000; // 45s para grupos, 30s para individuais
+  
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       // Verificar se a conexão ainda está ativa
@@ -37,28 +41,35 @@ const sendMessageWithRetry = async (
         throw new Error("WhatsApp connection lost");
       }
 
+      // Log para debug em produção
+      logger.info(`Sending message attempt ${attempt}/${maxRetries} to ${jid} (${isGroup ? 'group' : 'individual'})`);
+
       // Enviar mensagem com timeout personalizado
       const sentMessage = await Promise.race([
         wbot.sendMessage(jid, content, options),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Custom timeout")), 30000) // 30 segundos
+          setTimeout(() => reject(new Error(`Message timeout after ${timeout}ms`)), timeout)
         )
       ]);
 
+      logger.info(`Message sent successfully to ${jid} on attempt ${attempt}`);
       return sentMessage;
       
     } catch (error: any) {
       lastError = error;
+      logger.warn(`Message send attempt ${attempt} failed for ${jid}: ${error.message}`);
       
       // Se não é a última tentativa, aguardar antes de tentar novamente
       if (attempt < maxRetries) {
-        const waitTime = attempt * 2000; // 2s, 4s, 6s...
+        const waitTime = attempt * 3000; // 3s, 6s, 9s... (aumentado para grupos)
+        logger.info(`Waiting ${waitTime}ms before retry ${attempt + 1}/${maxRetries}`);
         await sleep(waitTime);
       }
     }
   }
   
   // Se chegou aqui, todas as tentativas falharam
+  logger.error(`All ${maxRetries} attempts failed for ${jid}: ${lastError.message}`);
   throw lastError;
 };
 

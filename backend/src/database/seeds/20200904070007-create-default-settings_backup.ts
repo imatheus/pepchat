@@ -9,6 +9,13 @@ module.exports = {
                     "Settings",
                     [
                         {
+                            key: "chatBotType",
+                            value: "text",
+                            companyId: 1,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        },
+                        {
                             key: "userRating",
                             value: "disabled",
                             companyId: 1,

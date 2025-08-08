@@ -297,6 +297,19 @@ const CreateCompanyService = async (
     },
   });
 
+  //chatBotType
+  await Setting.findOrCreate({
+    where: {
+      companyId: company.id,
+      key: "chatBotType"
+    },
+    defaults: {
+      companyId: company.id,
+      key: "chatBotType",
+      value: "text"
+    },
+  });
+
   if (companyData.campaignsEnabled !== undefined) {
     const [setting, created] = await Setting.findOrCreate({
       where: {

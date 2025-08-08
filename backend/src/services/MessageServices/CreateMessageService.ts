@@ -59,7 +59,7 @@ const CreateMessageService = async ({
   if (message.mediaUrl && !message.mediaUrl.startsWith('http')) {
     const fullMediaUrl = UploadHelper.getFileUrl(message.mediaUrl);
     // Atualizar o objeto message com a URL completa para o frontend
-    message.dataValues.mediaUrl = fullMediaUrl;
+    (message as any).mediaUrl = fullMediaUrl;
   }
 
   const io = getIO();
