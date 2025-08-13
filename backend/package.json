@@ -24,7 +24,6 @@
     "script:auto-rating": "ts-node src/scripts/setupAutoRating.ts"
   },
   "dependencies": {
-    "@adiwajshing/baileys": "^4.4.0",
     "@sentry/node": "^9.29.0",
     "@types/node-cron": "^3.0.11",
     "@whiskeysockets/baileys": "^6.7.18",

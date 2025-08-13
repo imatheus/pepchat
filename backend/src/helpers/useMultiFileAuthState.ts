@@ -7,7 +7,7 @@ import {
   SignalDataTypeMap,
   initAuthCreds,
   BufferJSON
-} from "@adiwajshing/baileys";
+} from "@whiskeysockets/baileys";
 import { promisify } from "util";
 import fs from "fs";
 import path from "path";

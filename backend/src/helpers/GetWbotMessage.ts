@@ -1,4 +1,4 @@
-import { proto, WALegacySocket } from "@adiwajshing/baileys";
+import { proto } from "@whiskeysockets/baileys";
 import Ticket from "../models/Ticket";
 import GetTicketWbot from "./GetTicketWbot";
 import AppError from "../errors/AppError";
@@ -17,7 +17,7 @@ export const GetWbotMessage = async (
     proto.WebMessageInfo | Message | null | undefined
   > => {
     if ((getSock as any).type === "legacy") {
-      const wbot: WALegacySocket = getSock as any;
+      const wbot: any = getSock as any;
       const chatMessages = await wbot.fetchMessagesFromWA(
         `${ticket.contact.number}@${
           ticket.isGroup ? "g.us" : "s.whatsapp.net"
