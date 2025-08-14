@@ -108,8 +108,8 @@ export const DEFAULT_AUDIO_CONFIG: AudioConfig = {
     preferredFormats: ['aac', 'mp3', 'ogg'], // AAC primeiro (melhor para iOS)
     enableFallback: true,
     enablePTTForOgg: true,  // OGG como PTT (padrão WhatsApp)
-    enablePTTForAAC: false, // AAC como áudio normal (melhor compatibilidade iOS)
-    enablePTTForMP3: false  // MP3 como áudio normal (universal)
+    enablePTTForAAC: true,  // AAC como PTT (mensagem de voz) - CORRIGIDO
+    enablePTTForMP3: true   // MP3 como PTT (mensagem de voz) - CORRIGIDO
   }
 };
 
