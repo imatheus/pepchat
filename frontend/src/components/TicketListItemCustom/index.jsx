@@ -27,8 +27,11 @@ import AdbIcon from "@material-ui/icons/Adb";
 import DoneIcon from '@material-ui/icons/Done';
 import ClearOutlinedIcon from '@material-ui/icons/ClearOutlined';
 import { socketConnection } from "../../services/socket";
+import { getThemeColors, hexToRgba } from "../../styles/colors";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => {
+  const themeColors = getThemeColors(theme.palette.type === 'dark');
+  return ({
   // Base ticket styles
   ticket: {
     position: "relative",
@@ -59,12 +62,20 @@ const useStyles = makeStyles((theme) => ({
     boxSizing: "border-box",
     borderRadius: "12px",
     border: "1px solid #8c8c8c5f !important",
-    backgroundColor: theme.palette.background.paper,
-    boxShadow: "0 1px 5px rgba(0, 0, 0, 0.1)",
+    backgroundColor: hexToRgba(themeColors.primary.main, 0.18),
+    boxShadow: `0 0 0 2px ${hexToRgba(themeColors.primary.main, 0.2)} inset`,
     "&:hover": {
-      boxShadow: "0 1px 7px rgba(0, 0, 0, 0.1)",
+      boxShadow: `0 0 0 2px ${hexToRgba(themeColors.primary.main, 0.28)} inset`,
       transform: "translateY(-1px)",
     },
+  },
+
+  // Highlight for unread/new tickets
+  unreadHighlight: {
+    backgroundColor: hexToRgba(themeColors.primary.main, 0.18),
+    borderColor: themeColors.primary.main,
+    boxShadow: `0 0 0 2px ${hexToRgba(themeColors.primary.main, 0.22)} inset`,
+    outline: `2px solid ${hexToRgba(themeColors.primary.main, 0.25)}`,
   },
 
   // Empty state styles
@@ -183,7 +194,8 @@ const useStyles = makeStyles((theme) => ({
     color: "#7c7c7c !important",
     backgroundColor: "#e4e4e4 !important",
   },
-}));
+  });
+});
 
 const TicketListItemCustom = ({ ticket, setUpdate }) => {
   const classes = useStyles();
@@ -529,6 +541,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
         selected={ticketId && +ticketId === ticket.id}
         className={clsx(classes.ticket, {
           [classes.pendingTicket]: ticket.status === "pending",
+          [classes.unreadHighlight]: ticket.unreadMessages > 0,
         })}
       >
         <Tooltip

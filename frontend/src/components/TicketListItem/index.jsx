@@ -15,6 +15,7 @@ import Divider from "@material-ui/core/Divider";
 import Badge from "@material-ui/core/Badge";
 
 import { i18n } from "../../translate/i18n";
+import { getThemeColors, hexToRgba } from "../../styles/colors";
 
 import api from "../../services/api";
 import ButtonWithSpinner from "../ButtonWithSpinner";
@@ -23,13 +24,23 @@ import { Tooltip } from "@material-ui/core";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import toastError from "../../errors/toastError";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => {
+  const themeColors = getThemeColors(theme.palette.type === 'dark');
+  return ({
   ticket: {
     position: "relative",
   },
 
   pendingTicket: {
     cursor: "unset",
+    backgroundColor: hexToRgba(themeColors.primary.main, 0.18),
+    borderLeft: `4px solid ${themeColors.primary.main}`,
+  },
+
+  // Destaque visual para não lidos
+  unreadHighlight: {
+    backgroundColor: hexToRgba(themeColors.primary.main, 0.18),
+    borderLeft: `4px solid ${themeColors.primary.main}`,
   },
 
   noTicketsDiv: {
@@ -108,7 +119,8 @@ const useStyles = makeStyles((theme) => ({
     color: "#7c7c7c !important",
     backgroundColor: "#e4e4e4 !important",
   },
-}));
+  });
+});
 
 const TicketListItem = ({ ticket }) => {
   const classes = useStyles();
@@ -157,6 +169,7 @@ const TicketListItem = ({ ticket }) => {
         selected={ticketId && +ticketId === ticket.id}
         className={clsx(classes.ticket, {
           [classes.pendingTicket]: ticket.status === "pending",
+          [classes.unreadHighlight]: ticket.unreadMessages > 0,
         })}
       >
         <Tooltip

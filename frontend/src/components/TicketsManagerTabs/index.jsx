@@ -204,7 +204,7 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
-const TicketsManagerTabs = () => {
+const TicketsManagerTabs = ({ mergeOpenPending = false }) => {
   const classes = useStyles();
   const history = useHistory();
 
@@ -534,53 +534,80 @@ const TicketsManagerTabs = () => {
       </Paper>
       
       <TabPanel value={tab} name="open" className={classes.ticketsWrapper}>
-        <Tabs
-          value={tabOpen}
-          onChange={handleChangeTabOpen}
-          indicatorColor="primary"
-          textColor="primary"
-          variant="fullWidth"
-        >
-          <Tab
-            label={
-              <Badge
-                className={classes.badge}
-                badgeContent={openCount}
-                color="primary"
-              >
-                {i18n.t("ticketsList.assignedHeader")}
-              </Badge>
-            }
-            value={"open"}
-          />
-          <Tab
-            label={
-              <Badge
-                className={classes.badge}
-                badgeContent={pendingCount}
-                color="secondary"
-              >
-                {i18n.t("ticketsList.pendingHeader")}
-              </Badge>
-            }
-            value={"pending"}
-          />
-        </Tabs>
-        <Paper className={classes.ticketsWrapper}>
-          <TicketsList
-            status="open"
-            showAll={showAllTickets}
-            selectedQueueIds={selectedQueueIds}
-            updateCount={(val) => setOpenCount(val)}
-            style={{ display: tabOpen === "open" ? "block" : "none" }}
-          />
-          <TicketsList
-            status="pending"
-            selectedQueueIds={selectedQueueIds}
-            updateCount={(val) => setPendingCount(val)}
-            style={{ display: tabOpen === "pending" ? "block" : "none" }}
-          />
-        </Paper>
+        {!mergeOpenPending ? (
+          <>
+            <Tabs
+              value={tabOpen}
+              onChange={handleChangeTabOpen}
+              indicatorColor="primary"
+              textColor="primary"
+              variant="fullWidth"
+            >
+              <Tab
+                label={
+                  <Badge
+                    className={classes.badge}
+                    badgeContent={openCount}
+                    color="primary"
+                  >
+                    {i18n.t("ticketsList.assignedHeader")}
+                  </Badge>
+                }
+                value={"open"}
+              />
+              <Tab
+                label={
+                  <Badge
+                    className={classes.badge}
+                    badgeContent={pendingCount}
+                    color="secondary"
+                  >
+                    {i18n.t("ticketsList.pendingHeader")}
+                  </Badge>
+                }
+                value={"pending"}
+              />
+            </Tabs>
+            <Paper className={classes.ticketsWrapper}>
+              <TicketsList
+                status="open"
+                showAll={showAllTickets}
+                selectedQueueIds={selectedQueueIds}
+                updateCount={(val) => setOpenCount(val)}
+                style={{ display: tabOpen === "open" ? "block" : "none" }}
+                highlightUnread={mergeOpenPending}
+              />
+              <TicketsList
+                status="pending"
+                selectedQueueIds={selectedQueueIds}
+                updateCount={(val) => setPendingCount(val)}
+                style={{ display: tabOpen === "pending" ? "block" : "none" }}
+                highlightUnread={mergeOpenPending}
+              />
+            </Paper>
+          </>
+        ) : (
+          // Nova visualização: sem aba "Aguardando", listas juntas
+          <Paper className={classes.ticketsWrapper}>
+            <TicketsList
+              status="open"
+              showAll={showAllTickets}
+              selectedQueueIds={selectedQueueIds}
+              updateCount={(val) => setOpenCount(val)}
+              style={{ display: "block" }}
+              highlightUnread={mergeOpenPending}
+              noTopDivider={true}
+            />
+            <TicketsList
+              status="pending"
+              selectedQueueIds={selectedQueueIds}
+              updateCount={(val) => setPendingCount(val)}
+              style={{ display: "block" }}
+              highlightUnread={mergeOpenPending}
+              noTopDivider={true}
+            />
+          </Paper>
+        )}
       </TabPanel>
       
       <TabPanel value={tab} name="closed" className={classes.ticketsWrapper}>

@@ -75,27 +75,32 @@ const useStyles = makeStyles((theme) => ({
 
 const reducer = (state, action) => {
   if (action.type === "LOAD_TICKETS") {
-    const newTickets = action.payload;
+    const incoming = action.payload || [];
+    const newState = [...state];
 
-    newTickets.forEach((ticket) => {
-      const ticketIndex = state.findIndex((t) => t.id === ticket.id);
-      if (ticketIndex !== -1) {
-        state[ticketIndex] = ticket;
+    incoming.forEach((ticket) => {
+      const idx = newState.findIndex(
+        (t) => parseInt(t.id) === parseInt(ticket.id)
+      );
+      if (idx !== -1) {
+        newState[idx] = ticket;
         if (ticket.unreadMessages > 0) {
-          state.unshift(state.splice(ticketIndex, 1)[0]);
+          newState.unshift(newState.splice(idx, 1)[0]);
         }
       } else {
-        state.push(ticket);
+        // Evitar duplicata por UUID
+        const exists = newState.some((t) => String(t.uuid) === String(ticket.uuid));
+        if (!exists) newState.push(ticket);
       }
     });
 
-    return [...newTickets];
+    return newState;
   }
 
   if (action.type === "RESET_UNREAD") {
     const ticketId = action.payload;
 
-    const ticketIndex = state.findIndex((t) => t.id === ticketId);
+    const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticketId));
     if (ticketIndex !== -1) {
       state[ticketIndex].unreadMessages = 0;
     }
@@ -110,7 +115,8 @@ const reducer = (state, action) => {
     if (ticketIndex !== -1) {
       state[ticketIndex] = ticket;
     } else {
-      state.unshift(ticket);
+      const exists = state.some((t) => String(t.uuid) === String(ticket.uuid));
+      if (!exists) state.unshift(ticket);
     }
 
     return [...state];
@@ -124,7 +130,8 @@ const reducer = (state, action) => {
       state[ticketIndex] = ticket;
       state.unshift(state.splice(ticketIndex, 1)[0]);
     } else {
-      state.unshift(ticket);
+      const exists = state.some((t) => String(t.uuid) === String(ticket.uuid));
+      if (!exists) state.unshift(ticket);
     }
 
     return [...state];
@@ -160,6 +167,7 @@ const TicketsList = ({
   tags,
   showAll,
   selectedQueueIds,
+  noTopDivider,
 }) => {
   const classes = useStyles();
   const [pageNumber, setPageNumber] = useState(1);
@@ -284,6 +292,7 @@ const TicketsList = ({
         elevation={0}
         className={classes.ticketsList}
         onScroll={handleScroll}
+        style={noTopDivider ? { borderTop: 'none' } : undefined}
       >
         <List style={{ paddingTop: 0 }}>
           {status === "open" && (

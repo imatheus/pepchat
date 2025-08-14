@@ -53,6 +53,7 @@ const TicketsAdvanced = () => {
 						setUsers={setUsers}
 						date={date}
 						setDate={setDate}
+						mergeOpenPending={props?.mergeOpenPending}
 					/>
 				</Paper>
 			</Grid>

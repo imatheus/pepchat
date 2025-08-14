@@ -65,7 +65,7 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-const TicketsCustom = () => {
+const TicketsCustom = (props) => {
 	const classes = useStyles();
 	const { ticketId } = useParams();
 
@@ -74,7 +74,7 @@ const TicketsCustom = () => {
 			<div className={classes.chatPapper}>
 				<Grid container spacing={0}>
 					<Grid item xs={12} md={4} className={classes.contactsWrapper}>
-						<TicketsManager />
+						<TicketsManager mergeOpenPending={props?.mergeOpenPending} />
 					</Grid>
 					<Grid item xs={12} md={8} className={classes.messagesWrapper}>
 						{ticketId ? (

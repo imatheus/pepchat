@@ -81,7 +81,9 @@ const reducer = (state, action) => {
     let newState = [...state];
 
     newTickets.forEach((ticket) => {
-      const ticketIndex = newState.findIndex((t) => t.id === ticket.id);
+      const ticketIndex = newState.findIndex(
+        (t) => parseInt(t.id) === parseInt(ticket.id)
+      );
       if (ticketIndex !== -1) {
         newState[ticketIndex] = ticket;
         if (ticket.unreadMessages > 0) {
@@ -98,7 +100,9 @@ const reducer = (state, action) => {
 
   if (action.type === "RESET_UNREAD") {
     const ticketId = action.payload;
-    const ticketIndex = state.findIndex((t) => t.id === ticketId);
+    const ticketIndex = state.findIndex(
+      (t) => parseInt(t.id) === parseInt(ticketId)
+    );
     if (ticketIndex !== -1) {
       const newState = [...state];
       newState[ticketIndex] = { ...newState[ticketIndex], unreadMessages: 0 };
@@ -112,6 +116,9 @@ const reducer = (state, action) => {
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
     
     if (ticketIndex === -1) {
+      // Evitar duplicata: se já existe por UUID, não re-adicionar
+      const exists = state.some((t) => String(t.uuid) === String(ticket.uuid));
+      if (exists) return state;
       // Adiciona novo ticket no topo da lista
       return [ticket, ...state];
     } else {
@@ -160,7 +167,9 @@ const reducer = (state, action) => {
       newState.unshift(updatedTicket);
       return newState;
     } else {
-      return [ticket, ...state];
+      // Evitar duplicata: se já existe por UUID, não re-adicionar
+      const exists = state.some((t) => String(t.uuid) === String(ticket.uuid));
+      return exists ? state : [ticket, ...state];
     }
   }
 
@@ -204,6 +213,7 @@ const TicketsListCustom = (props) => {
     selectedQueueIds,
     updateCount,
     style,
+    noTopDivider,
   } = props;
   
   const classes = useStyles();
@@ -257,7 +267,7 @@ const TicketsListCustom = (props) => {
     const shouldUpdateTicket = (ticket) => {
       // Para tickets pending, todos os usuários devem ver novos tickets (sem userId)
       const userCheck = status === "pending" ? 
-        (!ticket.userId || showAll) : 
+        true : 
         (!ticket.userId || ticket.userId === user?.id || showAll);
       
       // Verificar se o ticket deve ser mostrado baseado na seleção de filas
@@ -406,6 +416,7 @@ const TicketsListCustom = (props) => {
         elevation={0}
         className={classes.ticketsList}
         onScroll={handleScroll}
+        style={noTopDivider ? { borderTop: 'none' } : undefined}
       >
         <List style={{ paddingTop: 0, paddingLeft: 0, paddingRight: 0 }}>
           {ticketsList.length === 0 && !loading ? (

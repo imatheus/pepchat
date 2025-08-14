@@ -10,6 +10,7 @@ import useSettings from "../../hooks/useSettings";
 import ToggleSwitch from "../ToggleSwitch";
 import { toast } from 'react-toastify';
 import { makeStyles } from "@material-ui/core/styles";
+import { FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -48,11 +49,13 @@ export default function Options(props) {
   const [callType, setCallType] = useState(true);
   const [CheckMsgIsGroup, setCheckMsgIsGroupType] = useState(true);
   const [chatbotAutoMode, setChatbotAutoMode] = useState(true);
+  const [ticketsView, setTicketsView] = useState("classic");
 
   const [loadingUserRating, setLoadingUserRating] = useState(false);
   const [loadingCallType, setLoadingCallType] = useState(false);
   const [loadingChatbotAutoMode, setLoadingChatbotAutoMode] = useState(false);
   const [loadingGroupMessages, setLoadingGroupMessages] = useState(false);
+  const [loadingTicketsView, setLoadingTicketsView] = useState(false);
 
   const { update } = useSettings();
 
@@ -73,6 +76,12 @@ export default function Options(props) {
       const chatbotAutoMode = settings.find((s) => s.key === "chatbotAutoMode");
       if (chatbotAutoMode) {
         setChatbotAutoMode(chatbotAutoMode.value === "enabled");
+      }
+      const ticketsViewSetting = settings.find((s) => s.key === "ticketsView");
+      if (ticketsViewSetting && ticketsViewSetting.value) {
+        setTicketsView(ticketsViewSetting.value);
+      } else {
+        setTicketsView("classic");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,6 +136,17 @@ export default function Options(props) {
     setLoadingChatbotAutoMode(false);
   }
 
+  async function handleTicketsViewChange(value) {
+    setTicketsView(value);
+    setLoadingTicketsView(true);
+    await update({
+      key: "ticketsView",
+      value,
+    });
+    toast.success("Visualização de tickets atualizada com sucesso.");
+    setLoadingTicketsView(false);
+  }
+
   const optionsConfig = [
     {
       key: 'userRating',
@@ -165,6 +185,37 @@ export default function Options(props) {
   return (
     <Box className={classes.container}>
       <Grid container spacing={3}>
+        {/* Campo: Visualização de Tickets */}
+        <Grid key="ticketsView" xs={12} sm={6} md={6} lg={4} item>
+          <Box className={classes.optionItem}>
+            <Box className={classes.optionTitle}>
+              <Typography className={classes.titleText}>
+                Visualização
+              </Typography>
+              <Tooltip title={"Define a visualização dos tickets."} arrow placement="top">
+                <IconButton size="small">
+                  <HelpOutlineIcon className={classes.helpIcon} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            <Box className={classes.toggleContainer}>
+              <FormControl variant="outlined" size="small" style={{ minWidth: 180 }}>
+                <InputLabel id="tickets-view-label">Visualização</InputLabel>
+                <Select
+                  labelId="tickets-view-label"
+                  value={ticketsView}
+                  onChange={(e) => handleTicketsViewChange(e.target.value)}
+                  label="Visualização"
+                  disabled={loadingTicketsView}
+                >
+                  <MenuItem value="classic">Clássica (padrão atual)</MenuItem>
+                  <MenuItem value="new">Nova</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+        </Grid>
+
         {/* Opções com Toggle */}
         {optionsConfig.map((option) => (
           <Grid key={option.key} xs={12} sm={6} md={6} lg={4} item>
