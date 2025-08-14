@@ -11,6 +11,7 @@ import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
 import AudioConverter from "../../utils/AudioConverter";
+import { shouldSendAsPTT, getMimetypeForFormat } from "../../config/audio.config";
 
 const execAsync = promisify(exec);
 
@@ -68,39 +69,40 @@ const SendWhatsAppMedia = async ({
         let finalAudioBuffer: Buffer;
         let finalMimetype: string;
         let convertedAudioPath: string | null = null;
+        let audioFormat: string = 'unknown';
+        let sendAsPTT: boolean = true; // Padrão: enviar como PTT
         
         try {
-          // Verificar se o arquivo é realmente OGG/Opus válido
-          const isRealOggOpus = await AudioConverter.isOggOpus(media.path, true);
+          console.log("🔄 Iniciando processamento de áudio com estratégia iOS-compatível...");
           
-          if (isRealOggOpus) {
-            console.log("✅ Audio já está em formato OGG/Opus válido");
-            finalAudioBuffer = fs.readFileSync(media.path);
-            finalMimetype = 'audio/ogg; codecs=opus';
-          } else {
-            console.log("🔄 Convertendo áudio para formato compatível com iOS...");
+          if (AudioConverter.isFFmpegAvailable()) {
+            // NOVA ESTRATÉGIA: Usar conversão com múltiplos formatos
+            const tempBasePath = media.path.replace(path.extname(media.path), '_converted');
+            const conversionResult = await AudioConverter.convertToPTTNew(media.path, tempBasePath);
             
-            if (AudioConverter.isFFmpegAvailable()) {
-              // Converter para OGG/Opus REAL
-              const tempOutputPath = media.path.replace(path.extname(media.path), '_converted.ogg');
-              convertedAudioPath = await AudioConverter.convertToPTT(media.path, tempOutputPath);
+            convertedAudioPath = conversionResult.path;
+            finalMimetype = getMimetypeForFormat(conversionResult.format);
+            audioFormat = conversionResult.format;
+            
+            // Verificar se a conversão foi bem-sucedida
+            if (fs.existsSync(convertedAudioPath) && fs.statSync(convertedAudioPath).size > 0) {
+              console.log(`✅ Conversão ${audioFormat.toUpperCase()} concluída com sucesso`);
+              finalAudioBuffer = fs.readFileSync(convertedAudioPath);
               
-              // Verificar se a conversão foi bem-sucedida
-              if (fs.existsSync(convertedAudioPath) && fs.statSync(convertedAudioPath).size > 0) {
-                console.log("✅ Conversão concluída com sucesso");
-                finalAudioBuffer = fs.readFileSync(convertedAudioPath);
-                finalMimetype = 'audio/ogg; codecs=opus';
-              } else {
-                throw new Error('Conversão falhou - arquivo de saída inválido');
-              }
+              // Determinar se deve enviar como PTT baseado na configuração
+              sendAsPTT = shouldSendAsPTT(audioFormat);
+              console.log(`📱 Formato ${audioFormat.toUpperCase()}: ${sendAsPTT ? 'PTT (mensagem de voz)' : 'áudio normal'} baseado na configuração`);
             } else {
-              console.warn("⚠️ FFmpeg não disponível - usando arquivo original");
-              console.warn("💡 Para melhor compatibilidade iOS, instale FFmpeg: npm install");
-              
-              // Usar arquivo original como fallback
-              finalAudioBuffer = fs.readFileSync(media.path);
-              finalMimetype = AudioConverter.getBestMimetype(media.path);
+              throw new Error('Conversão falhou - arquivo de saída inválido');
             }
+          } else {
+            console.warn("⚠️ FFmpeg não disponível - usando arquivo original");
+            console.warn("💡 Para melhor compatibilidade iOS, instale FFmpeg: npm install");
+            
+            // Usar arquivo original como fallback
+            finalAudioBuffer = fs.readFileSync(media.path);
+            finalMimetype = AudioConverter.getBestMimetype(media.path);
+            audioFormat = 'original';
           }
         } catch (conversionError) {
           console.warn("⚠️ Audio conversion failed, using original format:", conversionError);
@@ -108,6 +110,7 @@ const SendWhatsAppMedia = async ({
           // Fallback: usar o arquivo original com melhor mimetype
           finalAudioBuffer = fs.readFileSync(media.path);
           finalMimetype = AudioConverter.getBestMimetype(media.path);
+          audioFormat = 'fallback';
           
           console.log("📱 Using fallback mimetype:", finalMimetype);
         }
@@ -121,23 +124,39 @@ const SendWhatsAppMedia = async ({
           throw new Error("finalAudioBuffer não é um Buffer válido");
         }
         
+        const audioSizeKB = (finalAudioBuffer.length / 1024).toFixed(1);
         console.log("📊 Áudio processado:", {
-          tamanho: `${(finalAudioBuffer.length / 1024).toFixed(1)}KB`,
-          formato: finalMimetype,
-          convertido: !!convertedAudioPath
+          tamanho: `${audioSizeKB}KB`,
+          formato: audioFormat,
+          mimetype: finalMimetype,
+          convertido: !!convertedAudioPath,
+          enviarComoPTT: sendAsPTT
         });
         
-        // Configurar mensagem de áudio como PTT (Push-to-Talk)
-        messageContent = {
-          audio: finalAudioBuffer, // Buffer do áudio (OBRIGATÓRIO)
-          mimetype: finalMimetype, // Mimetype correto (OBRIGATÓRIO)
-          ptt: true, // Flag PTT (OBRIGATÓRIO para mensagem de voz)
-          // NÃO incluir fileName - isso faz o WhatsApp tratar como arquivo!
-          // NÃO incluir caption - PTT não tem caption
-          // seconds: 10 // Opcional - duração estimada
-        };
+        // Verificar se o arquivo não está muito pequeno
+        if (parseFloat(audioSizeKB) < 2) {
+          console.warn(`⚠️ Arquivo muito pequeno (${audioSizeKB}KB) - pode causar problemas no iOS`);
+        }
         
-        console.log("🎤 Mensagem de áudio configurada como PTT");
+        // Configurar mensagem de áudio
+        if (sendAsPTT) {
+          // Enviar como PTT (Push-to-Talk) - mensagem de voz
+          messageContent = {
+            audio: finalAudioBuffer,
+            mimetype: finalMimetype,
+            ptt: true
+          };
+          console.log("🎤 Mensagem configurada como PTT (mensagem de voz)");
+        } else {
+          // Enviar como áudio normal - arquivo de áudio
+          messageContent = {
+            audio: finalAudioBuffer,
+            mimetype: finalMimetype,
+            ptt: false
+            // fileName: media.originalname // Opcional para áudio normal
+          };
+          console.log("🎵 Mensagem configurada como áudio normal (arquivo de áudio)");
+        }
         
         // Limpar arquivo temporário se foi criado
         if (convertedAudioPath && convertedAudioPath !== media.path) {

@@ -6,7 +6,6 @@ import ProcessAsaasWebhookService from "../services/AsaasService/ProcessAsaasWeb
 import SyncAllCompaniesWithAsaasService from "../services/AsaasService/SyncAllCompaniesWithAsaasService";
 import SyncAsaasInvoicesService from "../services/AsaasService/SyncAsaasInvoicesService";
 import CreateAsaasCustomerForCompanyService from "../services/AsaasService/CreateAsaasCustomerForCompanyService";
-import CreateAsaasSubscriptionForCompanyService from "../services/AsaasService/CreateAsaasSubscriptionForCompanyService";
 import RetryFailedSubscriptionUpdatesService from "../services/AsaasService/RetryFailedSubscriptionUpdatesService";
 import { logger } from "../utils/logger";
 

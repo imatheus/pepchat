@@ -3,6 +3,7 @@ import path from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
 import ffmpegFluent from 'fluent-ffmpeg';
+import { getAudioConfig, getMimetypeForFormat, shouldSendAsPTT } from '../config/audio.config';
 
 const execAsync = promisify(exec);
 
@@ -29,7 +30,7 @@ interface AudioConversionConfig {
 const AUDIO_CONFIG: AudioConversionConfig = {
   ptt: {
     sampleRate: parseInt(process.env.PTT_SAMPLE_RATE || '16000'), // 16kHz OBRIGATÓRIO para iOS
-    bitrate: process.env.PTT_BITRATE || '16k', // 16k OBRIGATÓRIO para iOS
+    bitrate: process.env.PTT_BITRATE || '64k', // AUMENTADO para 64k - evita arquivos muito pequenos
     channels: parseInt(process.env.PTT_CHANNELS || '1'), // Mono OBRIGATÓRIO
     codec: process.env.PTT_CODEC || 'libopus', // Opus OBRIGATÓRIO
     format: process.env.PTT_FORMAT || 'ogg', // Container OGG
@@ -44,11 +45,36 @@ const AUDIO_CONFIG: AudioConversionConfig = {
   },
   general: {
     sampleRate: parseInt(process.env.AUDIO_SAMPLE_RATE || '16000'),
-    bitrate: process.env.AUDIO_BITRATE || '16k',
+    bitrate: process.env.AUDIO_BITRATE || '64k', // AUMENTADO para 64k
     channels: parseInt(process.env.AUDIO_CHANNELS || '1'),
     codec: process.env.AUDIO_CODEC || 'libopus',
     format: process.env.AUDIO_FORMAT || 'ogg'
   }
+};
+
+// Configurações específicas para iOS (AAC/M4A)
+const IOS_AUDIO_CONFIG = {
+  sampleRate: parseInt(process.env.IOS_SAMPLE_RATE || '16000'),
+  bitrate: process.env.IOS_BITRATE || '64k', // 64k para qualidade adequada
+  channels: parseInt(process.env.IOS_CHANNELS || '1'),
+  codec: 'aac', // AAC é nativo do iOS
+  format: 'm4a', // M4A é o container preferido do iOS
+  outputOptions: [
+    '-movflags', '+faststart', // Otimização para streaming
+    '-profile:a', 'aac_low' // Perfil AAC de baixa complexidade
+  ]
+};
+
+// Configurações para MP3 (fallback universal)
+const MP3_AUDIO_CONFIG = {
+  sampleRate: parseInt(process.env.MP3_SAMPLE_RATE || '16000'),
+  bitrate: process.env.MP3_BITRATE || '64k',
+  channels: parseInt(process.env.MP3_CHANNELS || '1'),
+  codec: 'libmp3lame',
+  format: 'mp3',
+  outputOptions: [
+    '-q:a', '2' // Qualidade VBR alta
+  ]
 };
 
 // Verificar se ffmpeg está disponível
@@ -262,7 +288,7 @@ class AudioConverter {
       codec: 'libopus',
       channels: 1,
       sampleRate: 16000,
-      bitrate: '16k',
+      bitrate: '64k', // AUMENTADO para 64k
       format: 'ogg',
       outputOptions: [
         // APENAS o mínimo necessário
@@ -515,6 +541,140 @@ class AudioConverter {
     // USAR CONFIGURAÇÃO ULTRA-MINIMALISTA PARA MÁXIMA COMPATIBILIDADE iOS
     console.log('🍎 Aplicando solução definitiva para iOS...');
     return this.convertToiOSCompatible(inputPath, finalOutputPath);
+  }
+
+  /**
+   * Converte áudio para AAC/M4A - FORMATO NATIVO iOS
+   */
+  static async convertToAAC(inputPath: string, outputPath?: string): Promise<string> {
+    const finalOutputPath = outputPath || inputPath.replace(path.extname(inputPath), '.m4a');
+    
+    if (!ffmpegAvailable) {
+      console.warn('⚠️ FFmpeg not available, using original file');
+      if (finalOutputPath !== inputPath) {
+        fs.copyFileSync(inputPath, finalOutputPath);
+      }
+      return finalOutputPath;
+    }
+    
+    console.log('🍎 Convertendo para AAC/M4A (formato nativo iOS)...');
+    
+    const config: FFmpegCommandConfig = {
+      inputPath,
+      outputPath: finalOutputPath,
+      codec: 'aac',
+      channels: 1,
+      sampleRate: 16000,
+      bitrate: '64k',
+      format: 'm4a',
+      outputOptions: ['-movflags', '+faststart', '-profile:a', 'aac_low']
+    };
+    
+    return this.executeFFmpegConversion(config);
+  }
+
+  /**
+   * Converte áudio para MP3 - FORMATO UNIVERSAL
+   */
+  static async convertToMP3(inputPath: string, outputPath?: string): Promise<string> {
+    const finalOutputPath = outputPath || inputPath.replace(path.extname(inputPath), '.mp3');
+    
+    if (!ffmpegAvailable) {
+      console.warn('⚠️ FFmpeg not available, using original file');
+      if (finalOutputPath !== inputPath) {
+        fs.copyFileSync(inputPath, finalOutputPath);
+      }
+      return finalOutputPath;
+    }
+    
+    console.log('🎵 Convertendo para MP3 (formato universal)...');
+    
+    const config: FFmpegCommandConfig = {
+      inputPath,
+      outputPath: finalOutputPath,
+      codec: 'libmp3lame',
+      channels: 1,
+      sampleRate: 16000,
+      bitrate: '64k',
+      format: 'mp3',
+      outputOptions: ['-q:a', '2']
+    };
+    
+    return this.executeFFmpegConversion(config);
+  }
+
+  /**
+   * Estratégia de conversão com múltiplos formatos
+   */
+  static async convertWithFallback(inputPath: string, outputPath?: string): Promise<{ path: string; format: string; mimetype: string }> {
+    const baseOutputPath = outputPath || inputPath.replace(path.extname(inputPath), '');
+    
+    // Tentativa 1: AAC/M4A (melhor para iOS)
+    try {
+      console.log('🍎 Tentativa 1: Conversão para AAC/M4A (iOS nativo)...');
+      const aacPath = await this.convertToAAC(inputPath, `${baseOutputPath}.m4a`);
+      const stats = fs.statSync(aacPath);
+      const sizeKB = stats.size / 1024;
+      
+      if (sizeKB > 2) {
+        console.log(`✅ Conversão AAC bem-sucedida: ${sizeKB.toFixed(1)}KB`);
+        return { path: aacPath, format: 'aac', mimetype: 'audio/mp4' };
+      }
+    } catch (error) {
+      console.warn('⚠️ Conversão AAC falhou:', error.message);
+    }
+    
+    // Tentativa 2: MP3 (universal)
+    try {
+      console.log('🎵 Tentativa 2: Conversão para MP3 (universal)...');
+      const mp3Path = await this.convertToMP3(inputPath, `${baseOutputPath}.mp3`);
+      const stats = fs.statSync(mp3Path);
+      const sizeKB = stats.size / 1024;
+      
+      if (sizeKB > 2) {
+        console.log(`✅ Conversão MP3 bem-sucedida: ${sizeKB.toFixed(1)}KB`);
+        return { path: mp3Path, format: 'mp3', mimetype: 'audio/mpeg' };
+      }
+    } catch (error) {
+      console.warn('⚠️ Conversão MP3 falhou:', error.message);
+    }
+    
+    // Tentativa 3: OGG melhorado
+    try {
+      console.log('🔄 Tentativa 3: OGG/Opus melhorado...');
+      const oggPath = await this.convertToOggOpus(inputPath, `${baseOutputPath}.ogg`);
+      const stats = fs.statSync(oggPath);
+      const sizeKB = stats.size / 1024;
+      
+      if (sizeKB > 2) {
+        console.log(`✅ Conversão OGG bem-sucedida: ${sizeKB.toFixed(1)}KB`);
+        return { path: oggPath, format: 'ogg', mimetype: 'audio/ogg; codecs=opus' };
+      }
+    } catch (error) {
+      console.warn('⚠️ Conversão OGG falhou:', error.message);
+    }
+    
+    // Fallback: arquivo original
+    console.log('📁 Usando arquivo original como fallback...');
+    return { path: inputPath, format: 'original', mimetype: this.getBestMimetype(inputPath) };
+  }
+
+  /**
+   * Nova versão do convertToPTT com múltiplos formatos
+   */
+  static async convertToPTTNew(inputPath: string, outputPath?: string): Promise<{ path: string; format: string; mimetype: string }> {
+    console.log('🎯 Iniciando conversão PTT com estratégia de múltiplos formatos...');
+    
+    const stats = fs.statSync(inputPath);
+    const sizeKB = stats.size / 1024;
+    console.log(`📊 Arquivo original: ${sizeKB.toFixed(1)}KB`);
+    
+    if (!ffmpegAvailable) {
+      console.warn('⚠️ FFmpeg não disponível - usando arquivo original');
+      return { path: inputPath, format: 'original', mimetype: this.getBestMimetype(inputPath) };
+    }
+
+    return this.convertWithFallback(inputPath, outputPath);
   }
 }
 
