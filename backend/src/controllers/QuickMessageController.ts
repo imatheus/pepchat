@@ -19,6 +19,8 @@ import SendWhatsAppMessage from "../services/WbotServices/SendWhatsAppMessage";
 import CreateMessageService from "../services/MessageServices/CreateMessageService";
 import UploadHelper from "../helpers/UploadHelper";
 import formatBody from "../helpers/Mustache";
+import AudioConverter from "../utils/AudioConverter";
+import { shouldSendAsPTT, getMimetypeForFormat } from "../config/audio.config";
 
 import AppError from "../errors/AppError";
 
@@ -160,6 +162,92 @@ const ensureDirectoryExists = (dirPath: string): void => {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
+};
+
+// Função auxiliar para processar áudio com compatibilidade nativa
+const processAudioForNativeCompatibility = async (filePath: string): Promise<{
+  buffer: Buffer;
+  mimetype: string;
+  format: string;
+  sendAsPTT: boolean;
+}> => {
+  console.log("🎵 Processando áudio para compatibilidade nativa:", path.basename(filePath));
+  
+  let finalAudioBuffer: Buffer;
+  let finalMimetype: string;
+  let audioFormat: string = 'unknown';
+  let sendAsPTT: boolean = true;
+  let convertedAudioPath: string | null = null;
+  
+  try {
+    if (AudioConverter.isFFmpegAvailable()) {
+      console.log("🔄 Iniciando conversão de áudio com estratégia iOS-compatível...");
+      
+      // Usar conversão com múltiplos formatos
+      const tempBasePath = filePath.replace(path.extname(filePath), '_converted');
+      const conversionResult = await AudioConverter.convertToPTTNew(filePath, tempBasePath);
+      
+      convertedAudioPath = conversionResult.path;
+      finalMimetype = getMimetypeForFormat(conversionResult.format);
+      audioFormat = conversionResult.format;
+      
+      // Verificar se a conversão foi bem-sucedida
+      if (fs.existsSync(convertedAudioPath) && fs.statSync(convertedAudioPath).size > 0) {
+        console.log(`✅ Conversão ${audioFormat.toUpperCase()} concluída com sucesso`);
+        finalAudioBuffer = fs.readFileSync(convertedAudioPath);
+        
+        // Determinar se deve enviar como PTT baseado na configuração
+        sendAsPTT = shouldSendAsPTT(audioFormat);
+        console.log(`📱 Formato ${audioFormat.toUpperCase()}: ${sendAsPTT ? 'PTT (mensagem de voz)' : 'áudio normal'} baseado na configuração`);
+        
+        // Limpar arquivo temporário
+        setTimeout(() => {
+          AudioConverter.cleanupTempFile(convertedAudioPath!);
+        }, 5000);
+      } else {
+        throw new Error('Conversão falhou - arquivo de saída inválido');
+      }
+    } else {
+      console.warn("⚠️ FFmpeg não disponível - usando arquivo original");
+      
+      // Usar arquivo original como fallback
+      finalAudioBuffer = fs.readFileSync(filePath);
+      finalMimetype = AudioConverter.getBestMimetype(filePath);
+      audioFormat = 'original';
+    }
+  } catch (conversionError) {
+    console.warn("⚠️ Conversão de áudio falhou, usando formato original:", conversionError);
+    
+    // Fallback: usar o arquivo original
+    finalAudioBuffer = fs.readFileSync(filePath);
+    finalMimetype = AudioConverter.getBestMimetype(filePath);
+    audioFormat = 'fallback';
+  }
+  
+  // Validação do buffer de áudio
+  if (!finalAudioBuffer || finalAudioBuffer.length === 0) {
+    throw new Error("Buffer de áudio está vazio ou inválido");
+  }
+  
+  const audioSizeKB = (finalAudioBuffer.length / 1024).toFixed(1);
+  console.log("📊 Áudio processado para mensagem rápida:", {
+    tamanho: `${audioSizeKB}KB`,
+    formato: audioFormat,
+    mimetype: finalMimetype,
+    enviarComoPTT: sendAsPTT
+  });
+  
+  // Verificar se o arquivo não está muito pequeno
+  if (parseFloat(audioSizeKB) < 2) {
+    console.warn(`⚠️ Arquivo muito pequeno (${audioSizeKB}KB) - pode causar problemas no iOS`);
+  }
+  
+  return {
+    buffer: finalAudioBuffer,
+    mimetype: finalMimetype,
+    format: audioFormat,
+    sendAsPTT
+  };
 };
 
 // Upload de arquivos de mensagens rápidas
@@ -377,6 +465,8 @@ export const sendQuickMessage = async (
               mimetype = `image/${ext.substring(1)}`;
             } else if (['.mp4', '.avi', '.mov', '.wmv'].includes(ext)) {
               mimetype = `video/${ext.substring(1)}`;
+            } else if (['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.opus'].includes(ext)) {
+              mimetype = `audio/${ext.substring(1)}`;
             } else if (['.pdf'].includes(ext)) {
               mimetype = 'application/pdf';
             } else if (['.doc', '.docx'].includes(ext)) {
@@ -393,26 +483,72 @@ export const sendQuickMessage = async (
               jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
             }
 
-            const fileBuffer = fs.readFileSync(filePath);
+            let fileBuffer: Buffer;
+            let finalMimetype: string = mimetype;
             let sentMessage: any;
             
-            if (mimetype.startsWith('image/')) {
-              sentMessage = await wbot.sendMessage(jid, {
-                image: fileBuffer,
-                caption: ""
-              });
-            } else if (mimetype.startsWith('video/')) {
-              sentMessage = await wbot.sendMessage(jid, {
-                video: fileBuffer,
-                caption: "",
-                mimetype: mimetype
-              });
+            // PROCESSAMENTO ESPECIAL PARA ÁUDIO - Compatibilidade nativa
+            if (mimetype.startsWith('audio/')) {
+              console.log("🎵 Arquivo de áudio detectado em mensagem rápida:", filename);
+              
+              try {
+                // Processar áudio para compatibilidade nativa
+                const audioResult = await processAudioForNativeCompatibility(filePath);
+                
+                fileBuffer = audioResult.buffer;
+                finalMimetype = audioResult.mimetype;
+                
+                // Enviar como áudio nativo (PTT ou áudio normal)
+                if (audioResult.sendAsPTT) {
+                  // Enviar como PTT (mensagem de voz)
+                  sentMessage = await wbot.sendMessage(jid, {
+                    audio: fileBuffer,
+                    mimetype: finalMimetype,
+                    ptt: true
+                  });
+                  console.log("🎤 Áudio enviado como PTT (mensagem de voz)");
+                } else {
+                  // Enviar como áudio normal
+                  sentMessage = await wbot.sendMessage(jid, {
+                    audio: fileBuffer,
+                    mimetype: finalMimetype,
+                    ptt: false
+                  });
+                  console.log("🎵 Áudio enviado como áudio normal");
+                }
+              } catch (audioError) {
+                console.error("Erro no processamento de áudio:", audioError);
+                // Fallback: enviar como documento
+                fileBuffer = fs.readFileSync(filePath);
+                sentMessage = await wbot.sendMessage(jid, {
+                  document: fileBuffer,
+                  fileName: filename,
+                  mimetype: mimetype
+                });
+                console.log("📄 Áudio enviado como documento (fallback)");
+              }
             } else {
-              sentMessage = await wbot.sendMessage(jid, {
-                document: fileBuffer,
-                fileName: filename,
-                mimetype: mimetype
-              });
+              // Processamento normal para outros tipos de arquivo
+              fileBuffer = fs.readFileSync(filePath);
+              
+              if (mimetype.startsWith('image/')) {
+                sentMessage = await wbot.sendMessage(jid, {
+                  image: fileBuffer,
+                  caption: ""
+                });
+              } else if (mimetype.startsWith('video/')) {
+                sentMessage = await wbot.sendMessage(jid, {
+                  video: fileBuffer,
+                  caption: "",
+                  mimetype: mimetype
+                });
+              } else {
+                sentMessage = await wbot.sendMessage(jid, {
+                  document: fileBuffer,
+                  fileName: filename,
+                  mimetype: mimetype
+                });
+              }
             }
 
             // Salvar arquivo no diretório organizado
@@ -431,12 +567,12 @@ export const sendQuickMessage = async (
             }
 
             // Criar registro da mensagem no banco de dados
-            const mediaType = mimetype.split("/")[0];
+            const mediaType = finalMimetype.split("/")[0]; // Usar finalMimetype para áudio processado
             const messageData = {
               id: sentMessage.key.id,
               ticketId: ticket.id,
               contactId: undefined,
-              body: "",
+              body: "", // Deixar vazio para não mostrar nome do arquivo
               fromMe: true,
               read: true,
               mediaType: mediaType,

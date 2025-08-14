@@ -454,7 +454,6 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                   cursor: "pointer",
                   margin: '0 5 0 5',
                   padding: 2,
-                  right: 56,
                   height: 23,
                   width: 23,
                   fontSize: 12,

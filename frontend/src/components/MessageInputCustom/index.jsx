@@ -821,27 +821,10 @@ const MessageInputCustom = (props) => {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
-        } 
-      });
-      
-      // Tentar usar formato mais compatível
-      let options = {};
-      if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        options = { mimeType: 'audio/mp4' };
-        console.log('🎤 Using MP4 format');
-      } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        options = { mimeType: 'audio/webm;codecs=opus' };
-        console.log('🎤 Using WebM with Opus');
-      } else {
-        console.log('🎤 Using default format');
-      }
-      
-      const mediaRecorder = new MediaRecorder(stream, options);
+      const { getMediaConstraints, DEFAULT_AUDIO_OPTIONS } = await import('../../config/audioConfig');
+      const stream = await navigator.mediaDevices.getUserMedia(getMediaConstraints());
+
+      const mediaRecorder = new MediaRecorder(stream, DEFAULT_AUDIO_OPTIONS);
       mediaRecorderRef.current = mediaRecorder;
       streamRef.current = stream;
       audioChunksRef.current = [];

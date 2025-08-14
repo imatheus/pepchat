@@ -1,5 +1,5 @@
 import {
-  AnyWASocket,
+  WASocket,
   BinaryNode,
   Contact as BContact,
 } from "@whiskeysockets/baileys";
@@ -16,14 +16,10 @@ import { logger } from "../../utils/logger";
 import createOrUpdateBaileysService from "../BaileysServices/CreateOrUpdateBaileysService";
 import CreateMessageService from "../MessageServices/CreateMessageService";
 
-type Session = AnyWASocket & {
+type Session = WASocket & {
   id?: number;
   store?: Store;
 };
-
-interface IContact {
-  contacts: BContact[];
-}
 
 const wbotMonitor = async (
   wbot: Session,
@@ -47,10 +43,10 @@ const wbotMonitor = async (
         if (sendMsgCall.value === "disabled") {
           await wbot.sendMessage(node.attrs.from, {
             text:
-              "*Mensagem Automática:*\n\nAs chamadas de voz e vídeo estão desabilitas para esse WhatsApp, favor enviar uma mensagem de texto. Obrigado",
+              "*Mensagem Automática:*\\n\\nAs chamadas de voz e vídeo estão desabilitas para esse WhatsApp, favor enviar uma mensagem de texto. Obrigado",
           });
 
-          const number = node.attrs.from.replace(/\D/g, "");
+          const number = node.attrs.from.replace(/\\D/g, "");
 
           const contact = await Contact.findOne({
             where: { companyId, number },
@@ -58,14 +54,14 @@ const wbotMonitor = async (
 
           const ticket = await Ticket.findOne({
             where: {
-              contactId: contact.id,
+              contactId: contact?.id,
               whatsappId: wbot.id,
               //status: { [Op.or]: ["close"] },
               companyId
             },
           });
           // se não existir o ticket não faz nada.
-          if (!ticket) return;
+          if (!ticket || !contact) return;
 
           const date = new Date();
           const hours = date.getHours();
@@ -108,9 +104,8 @@ const wbotMonitor = async (
       });
     });
 
-    wbot.ev.on("contacts.set", async (contacts: IContact) => {
-      console.log("set", contacts);
-    });
+    // Removed non-existent event "contacts.set" in Baileys v6
+    // Use contacts.upsert/contacts.update if needed going forward.
   } catch (err) {
     Sentry.captureException(err);
     logger.error(err);
