@@ -248,7 +248,8 @@ const TicketsList = ({
     });
 
     socket.on(`company-${companyId}-appMessage`, (data) => {
-      if (data.action === "create" && shouldUpdateTicket(data.ticket)) {
+      // Evitar duplicidade: só processar mensagens na lista correspondente ao status do ticket
+      if (data.action === "create" && shouldUpdateTicket(data.ticket) && data.ticket.status === status) {
         dispatch({
           type: "UPDATE_TICKET_UNREAD_MESSAGES",
           payload: data.ticket,

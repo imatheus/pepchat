@@ -35,6 +35,42 @@ import { socketConnection } from "../../services/socket";
 import { getCompanyId } from "../../utils/authUtils";
 
 
+// Exibe apenas o player nativo, mas garante que o Chrome consiga ler metadados (duração)
+const guessMimeFromUrl = (u) => {
+  try {
+    const clean = u.split('?')[0].toLowerCase();
+    if (clean.endsWith('.webm')) return 'audio/webm; codecs=opus';
+    if (clean.endsWith('.ogg') || clean.endsWith('.oga')) return 'audio/ogg; codecs=opus';
+    if (clean.endsWith('.mp3')) return 'audio/mpeg';
+    if (clean.endsWith('.wav')) return 'audio/wav';
+    if (clean.endsWith('.mp4') || clean.endsWith('.m4a')) return 'audio/mp4';
+  } catch {}
+  return undefined;
+};
+
+const AudioMessage = ({ url, classes }) => {
+  const type = guessMimeFromUrl(url);
+  return (
+    <audio
+      className={classes.messageMedia}
+      controls
+      preload="metadata"
+      style={{ width: "250px", height: "40px" }}
+      onError={(e) => {
+        console.error('Erro ao carregar áudio:', e);
+        console.error('URL do áudio:', url);
+      }}
+    >
+      {/* Usar <source> com type ajuda o Chrome a obter duração sem precisar dar play */}
+      <source src={url} {...(type ? { type } : {})} />
+      {/* Fallbacks genéricos caso a extensão não informe o tipo corretamente */}
+      {!type && <source src={url} type="audio/webm; codecs=opus" />}
+      {!type && <source src={url} type="audio/ogg; codecs=opus" />}
+      Seu navegador não suporta a reprodução de áudio.
+    </audio>
+  );
+};
+
 const useStyles = makeStyles((theme) => ({
   messagesListWrapper: {
     overflow: "hidden",
@@ -626,19 +662,7 @@ useEffect(() => {
       }
       
       return (
-        <audio
-          className={classes.messageMedia}
-          src={audioUrl}
-          controls
-          preload="metadata"
-          style={{ width: "250px", height: "40px" }}
-          onError={(e) => {
-            console.error('Erro ao carregar áudio:', e);
-            console.error('URL do áudio:', audioUrl);
-          }}
-        >
-          Seu navegador não suporta a reprodução de áudio.
-        </audio>
+        <AudioMessage url={audioUrl} classes={classes} />
       );
     }
     

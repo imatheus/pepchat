@@ -273,17 +273,18 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
         status: "open",
         userId: user?.id,
       });
-      
-      // Forçar atualização das listas
-      if (setUpdate) {
-        setUpdate(prev => prev + 1);
+
+      // Não forçar refresh global aqui para evitar apagar a lista temporariamente.
+      // O socket de atualização irá inserir o ticket aceito no topo da lista "Abertos"
+      // e removê-lo da lista "Aguardando" automaticamente.
+
+      // Remover imediatamente o card da lista "Aguardando" (UI otimista)
+      try {
+        window.dispatchEvent(new CustomEvent('ticket-accepted', { detail: { ticketId: id, ticketUuid: ticket.uuid } }));
+      } catch (e) {
+        // ignore
       }
-      
-      // Trigger refresh global
-      if (triggerRefresh) {
-        triggerRefresh();
-      }
-      
+
       // Navegar para o ticket após aceitar
       history.push(`/tickets/${ticket.uuid}`);
     } catch (err) {

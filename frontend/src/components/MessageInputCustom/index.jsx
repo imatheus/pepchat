@@ -586,6 +586,17 @@ const MessageInputCustom = (props) => {
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null); // Separar a referência do stream
 
+  const stopStream = () => {
+    if (streamRef.current) {
+      try {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      } catch (e) {
+        console.warn('Error stopping media tracks', e);
+      }
+      streamRef.current = null;
+    }
+  };
+
   const inputRef = useRef();
   const { setReplyingMessage, replyingMessage } =
     useContext(ReplyMessageContext);
@@ -605,10 +616,21 @@ const MessageInputCustom = (props) => {
   useEffect(() => {
     // Apenas limpar estado quando mudar de ticket
     return () => {
+      // Stop any recording/stream when changing ticket
+      try {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } catch {}
+      stopStream();
+
       setInputMessage("");
       setShowEmoji(false);
       setMedias([]);
       setReplyingMessage(null);
+      setIsRecording(false);
+      setIsPaused(false);
+      setAudioBlob(null);
     };
   }, [ticketId, setReplyingMessage]);
 
@@ -639,6 +661,18 @@ const MessageInputCustom = (props) => {
       loadQuickMessages();
     }
   }, [user.id, listQuickMessages]);
+
+  // Cleanup on component unmount to ensure microphone is released
+  useEffect(() => {
+    return () => {
+      try {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } catch {}
+      stopStream();
+    };
+  }, []);
 
   const handleAddEmoji = (e) => {
     let emoji = e.native;
@@ -821,13 +855,41 @@ const MessageInputCustom = (props) => {
 
   const startRecording = async () => {
     try {
-      const { getMediaConstraints, DEFAULT_AUDIO_OPTIONS } = await import('../../config/audioConfig');
-      const stream = await navigator.mediaDevices.getUserMedia(getMediaConstraints());
+      const { getMediaConstraints, DEFAULT_AUDIO_OPTIONS, MAX_RECORDING_MS } = await import('../../config/audioConfig.js');
 
-      const mediaRecorder = new MediaRecorder(stream, DEFAULT_AUDIO_OPTIONS);
+      // Ensure we don't keep previous streams open
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try { mediaRecorderRef.current.stop(); } catch {}
+      }
+      stopStream();
+
+      const constraints = getMediaConstraints();
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      // Validate mimeType support, fallback if necessary
+      let options = DEFAULT_AUDIO_OPTIONS;
+      if (options?.mimeType && !MediaRecorder.isTypeSupported(options.mimeType)) {
+        const fallbacks = [
+          'audio/webm;codecs=opus',
+          'audio/webm',
+          'audio/ogg;codecs=opus'
+        ];
+        const supported = fallbacks.find(type => MediaRecorder.isTypeSupported(type));
+        options = supported ? { mimeType: supported } : {};
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       streamRef.current = stream;
       audioChunksRef.current = [];
+
+      // Safety timer to auto-stop after MAX_RECORDING_MS
+      const safetyTimer = setTimeout(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          console.warn('Auto-stopping recording after safety timeout');
+          mediaRecorderRef.current.stop();
+        }
+      }, MAX_RECORDING_MS || 120000);
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -835,9 +897,19 @@ const MessageInputCustom = (props) => {
         }
       };
 
+      mediaRecorder.onerror = (e) => {
+        console.error('MediaRecorder error:', e);
+        clearTimeout(safetyTimer);
+        stopStream();
+        setIsRecording(false);
+        setIsPaused(false);
+        toastError({ message: 'Erro na gravação de áudio. Tente novamente.' });
+      };
+
       mediaRecorder.onstop = () => {
-        // Usar o tipo MIME do MediaRecorder ou fallback para MP4
-        const mimeType = mediaRecorder.mimeType || 'audio/mp4';
+        clearTimeout(safetyTimer);
+        // Use recorder mimeType or a safe fallback
+        const mimeType = mediaRecorder.mimeType || 'audio/webm;codecs=opus';
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         
         console.log('🎤 Áudio gravado:', {
@@ -847,13 +919,11 @@ const MessageInputCustom = (props) => {
         });
         
         setAudioBlob(audioBlob);
-        
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-        }
+        stopStream();
       };
 
-      mediaRecorder.start();
+      // pass a timeslice to receive dataavailable periodically (safety)
+      mediaRecorder.start(1000);
       setIsRecording(true);
       setIsPaused(false);
     } catch (err) {
@@ -868,9 +938,14 @@ const MessageInputCustom = (props) => {
     }
   };
 
+
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.warn('Attempted to stop recorder not in recording state');
+      }
       setIsRecording(false);
       setIsPaused(false);
     }
@@ -879,15 +954,14 @@ const MessageInputCustom = (props) => {
   const stopAndSendRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       // Configurar para enviar automaticamente após parar
-      const originalOnStop = mediaRecorderRef.current.onstop;
       mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg; codecs=opus' });
+        // Usar o mesmo mimeType do recorder quando possível
+        const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm;codecs=opus';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         // Enviar imediatamente
         sendAudioBlob(audioBlob);
         // Limpar stream
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-        }
+        stopStream();
       };
       
       mediaRecorderRef.current.stop();
@@ -895,6 +969,7 @@ const MessageInputCustom = (props) => {
       setIsPaused(false);
     }
   };
+
 
   const sendAudioBlob = async (blob) => {
     setLoading(true);
@@ -978,12 +1053,9 @@ const MessageInputCustom = (props) => {
     setIsRecording(false);
     setIsPaused(false);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
+      try { mediaRecorderRef.current.stop(); } catch {}
     }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
+    stopStream();
   };
 
   const handleMicClick = () => {

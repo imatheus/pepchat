@@ -113,6 +113,11 @@ const reducer = (state, action) => {
 
   if (action.type === "ADD_TICKET") {
     const ticket = action.payload;
+    // Se o ticket não pertence ao status desta lista, ignore para evitar duplicidade
+    if (ticket.status !== action.listStatus) {
+      return state;
+    }
+
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
     
     if (ticketIndex === -1) {
@@ -127,7 +132,7 @@ const reducer = (state, action) => {
       newState[ticketIndex] = ticket;
       
       // Se tem mensagens não lidas ou foi recém aceito, mover para o topo
-      if (ticket.unreadMessages > 0 || ticket.status === "open") {
+      if (ticket.unreadMessages > 0 || ticket.status === action.listStatus) {
         const updatedTicket = newState.splice(ticketIndex, 1)[0];
         newState.unshift(updatedTicket);
       }
@@ -314,18 +319,18 @@ const TicketsListCustom = (props) => {
       }
 
       if (data.action === "update") {
-        // Se o status do ticket não corresponde ao status da lista atual
+        // Evitar duplicidade entre listas: sempre manter apenas na lista do status correspondente
         if (data.ticket.status !== status) {
           // Se o ticket foi aceito (pending -> open) e estamos na lista "open", adicionar o ticket
           if (status === "open" && data.ticket.status === "open" && shouldUpdateTicket(data.ticket)) {
             dispatch({
               type: "ADD_TICKET",
               payload: data.ticket,
+              listStatus: "open",
             });
-          } else {
-            // Remover da lista atual se não pertence mais
-            dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });
           }
+          // Em qualquer outro caso, remover da lista atual porque o status diverge
+          dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });
           return;
         }
         
@@ -346,6 +351,7 @@ const TicketsListCustom = (props) => {
           dispatch({
             type: "ADD_TICKET",
             payload: data.ticket,
+            listStatus: status,
           });
         }
       }
@@ -366,7 +372,8 @@ const TicketsListCustom = (props) => {
         return;
       }
 
-      if (data.action === "create" && shouldUpdateTicket(data.ticket)) {
+      // Evitar duplicidade: só processar mensagens na lista correspondente ao status do ticket
+      if (data.action === "create" && shouldUpdateTicket(data.ticket) && data.ticket.status === status) {
         dispatch({
           type: "UPDATE_TICKET_UNREAD_MESSAGES",
           payload: data.ticket,
@@ -393,6 +400,19 @@ const TicketsListCustom = (props) => {
       updateCount(ticketsList.length);
     }
   }, [ticketsList, updateCount]);
+
+  // Remoção otimista do ticket da lista "Aguardando" assim que for aceito
+  useEffect(() => {
+    const onTicketAccepted = (e) => {
+      const { ticketId } = (e && e.detail) || {};
+      if (!ticketId) return;
+      if (status === "pending") {
+        dispatch({ type: "DELETE_TICKET", payload: ticketId });
+      }
+    };
+    window.addEventListener('ticket-accepted', onTicketAccepted);
+    return () => window.removeEventListener('ticket-accepted', onTicketAccepted);
+  }, [status]);
 
   const loadMore = () => {
     setPageNumber((prevState) => prevState + 1);

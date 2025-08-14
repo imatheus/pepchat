@@ -80,6 +80,13 @@ const TicketActionButtonsCustom = ({ ticket, onTicketUpdate }) => {
 				onTicketUpdate(updatedTicket);
 			}
 
+			// Disparar evento para remoção otimista do card na lista "Aguardando"
+			if (status === "open") {
+				try {
+					window.dispatchEvent(new CustomEvent('ticket-accepted', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+				} catch (e) { /* noop */ }
+			}
+
 			setLoading(false);
 			if (status === "open") {
 				setCurrentTicket({ ...ticket, code: "#open" });
@@ -88,8 +95,10 @@ const TicketActionButtonsCustom = ({ ticket, onTicketUpdate }) => {
 				history.push("/tickets");
 			}
 			
-			// Forçar atualização da lista de tickets
-			triggerRefresh();
+			// Não forçar atualização global ao aceitar; o socket cuidará da inclusão/remoção
+			if (status !== "open") {
+				triggerRefresh();
+			}
 			
 		} catch (err) {
 			setLoading(false);
