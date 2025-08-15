@@ -12,11 +12,11 @@ import { i18n } from "../../translate/i18n";
 const useStyles = makeStyles(theme => ({
 	chatContainer: {
 		flex: 1,
-		// backgroundColor: "#eee",
 		padding: "5px",
 		height: `calc(100% - 48px)`,
 		overflowY: "hidden",
 		marginTop: "25px",
+		backgroundColor: theme.palette.background.default,
 		[theme.breakpoints.between("sm", "md")]: {
 			padding: "3px",
 			marginTop: "15px",
@@ -28,9 +28,9 @@ const useStyles = makeStyles(theme => ({
 	},
 
 	chatPapper: {
-		// backgroundColor: "red",
 		display: "flex",
 		height: "100%",
+		backgroundColor: theme.palette.background.paper,
 		[theme.breakpoints.down("md")]: {
 			flexDirection: "column",
 		},
@@ -41,6 +41,7 @@ const useStyles = makeStyles(theme => ({
 		height: "100%",
 		flexDirection: "column",
 		overflowY: "hidden",
+		backgroundColor: theme.palette.background.paper,
 		[theme.breakpoints.down("md")]: {
 			height: "40%",
 			minHeight: "300px",
@@ -50,6 +51,7 @@ const useStyles = makeStyles(theme => ({
 		display: "flex",
 		height: "100%",
 		flexDirection: "column",
+		backgroundColor: theme.palette.background.paper,
 		[theme.breakpoints.down("md")]: {
 			height: "60%",
 		},

@@ -23,6 +23,7 @@ import {
 
 import NewTicketModal from "../NewTicketModal";
 import TicketsList from "../TicketsListCustom";
+import UnifiedTicketsList from "../UnifiedTicketsList";
 import TabPanel from "../TabPanel";
 
 import { i18n } from "../../translate/i18n";
@@ -587,23 +588,19 @@ const TicketsManagerTabs = ({ mergeOpenPending = false }) => {
             </Paper>
           </>
         ) : (
-          // Nova visualização: sem aba "Aguardando", listas juntas
+          // Nova visualização: sem aba "Aguardando" e sem separação de listas (open + pending juntos)
           <Paper className={classes.ticketsWrapper}>
-            <TicketsList
-              status="open"
+            {/* Lista unificada para open + pending */}
+            {/** Substitui as duas listas por uma unificada */}
+            {/** Usa componente novo UnifiedTicketsList */}
+            {/** Sem cabeçalho e sem mensagem de "Nenhum atendimento" aqui */}
+            {/* Componente importado dinamicamente abaixo */}
+            <UnifiedTicketsList
+              searchParam={searchParam}
               showAll={showAllTickets}
+              tags={selectedTags}
+              users={selectedUsers}
               selectedQueueIds={selectedQueueIds}
-              updateCount={(val) => setOpenCount(val)}
-              style={{ display: "block" }}
-              highlightUnread={mergeOpenPending}
-              noTopDivider={true}
-            />
-            <TicketsList
-              status="pending"
-              selectedQueueIds={selectedQueueIds}
-              updateCount={(val) => setPendingCount(val)}
-              style={{ display: "block" }}
-              highlightUnread={mergeOpenPending}
               noTopDivider={true}
             />
           </Paper>

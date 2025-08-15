@@ -16,6 +16,7 @@ const useStyles = makeStyles(theme => ({
 		padding: "10px",
 		overflowY: "hidden",
 		marginTop: "25px",
+		backgroundColor: theme.palette.background.default,
 		[theme.breakpoints.between("sm", "md")]: {
 			padding: "6px",
 			marginTop: "15px",
@@ -30,6 +31,7 @@ const useStyles = makeStyles(theme => ({
 		// backgroundColor: "red",
 		display: "flex",
 		height: "100%",
+		backgroundColor: theme.palette.background.paper,
 		[theme.breakpoints.down("md")]: {
 			flexDirection: "column",
 		},
@@ -40,6 +42,7 @@ const useStyles = makeStyles(theme => ({
 		height: "100%",
 		flexDirection: "column",
 		overflowY: "hidden",
+		backgroundColor: theme.palette.background.paper,
 		[theme.breakpoints.down("md")]: {
 			height: "40%",
 			minHeight: "300px",
@@ -49,6 +52,7 @@ const useStyles = makeStyles(theme => ({
 		display: "flex",
 		height: "100%",
 		flexDirection: "column",
+		backgroundColor: theme.palette.background.paper,
 		[theme.breakpoints.down("md")]: {
 			height: "60%",
 		},

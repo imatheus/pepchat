@@ -664,7 +664,7 @@ const Financial = () => {
               textAlign: 'left',
               fontWeight: 600,
               color: '#333',
-              marginTop:-15,
+              marginTop: 20,
               marginBottom: 10
             }}
           >
@@ -738,18 +738,11 @@ const Financial = () => {
               }}
             >
               <ListItemIcon style={{ minWidth: 25 }}>
-                <Typography
-                  style={{
-                    backgroundColor: "#3c741eff",
-                    padding: "0 5px",
-                    borderRadius: "20px",
-                    color: '#bfffc1ff',
-                    fontSize: '0.8em',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  ✓
-                </Typography>
+                {feature.included ? (
+                  <CheckIcon className={classes.featureIcon} />
+                ) : (
+                  <CloseIcon className={classes.featureIconMissing} />
+                )}
               </ListItemIcon>
               <ListItemText
                 primary={

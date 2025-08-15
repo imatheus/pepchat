@@ -50,6 +50,11 @@ const useStyles = makeStyles((theme) => {
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
       transform: "translateY(-1px)",
     },
+    // Mostrar ícones de ação somente no hover do card
+    "&:hover $iconOnHover": {
+      opacity: 1,
+      pointerEvents: "auto",
+    },
   },
 
   // Variant styles
@@ -120,6 +125,22 @@ const useStyles = makeStyles((theme) => {
     justifyContent: "space-between",
   },
 
+  ticketNameRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  ticketNumber: {
+    marginLeft: -3,
+    color: grey[600],
+    fontWeight: 600,
+    fontSize: 12,
+    backgroundColor:"#e9e9e9",
+    padding: "0px 10px",
+    borderRadius:"100px"
+  },
+
   contactLastMessage: {
     paddingRight: 80, // Space for buttons
   },
@@ -184,6 +205,13 @@ const useStyles = makeStyles((theme) => {
   acceptButton: {
     position: "absolute",
     right: 108,
+  },
+
+  // Ícones de ação exibidos somente no hover do card
+  iconOnHover: {
+    opacity: 0,
+    transition: "opacity 0.2s ease",
+    pointerEvents: "none",
   },
 
   groupAvatar: {
@@ -387,6 +415,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               <ClearOutlinedIcon
                 onClick={() => handleCloseTicket(ticket.id)}
                 fontSize="small"
+                className={classes.iconOnHover}
                 style={{
                   color: '#fff',
                   backgroundColor: red[700],
@@ -461,6 +490,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               <ClearOutlinedIcon
                 onClick={() => handleCloseTicket(ticket.id)}
                 fontSize="small"
+                className={classes.iconOnHover}
                 style={{
                   color: '#fff',
                   backgroundColor: red[700],
@@ -491,6 +521,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               <ClearOutlinedIcon
                 onClick={() => handleCloseTicket(ticket.id)}
                 fontSize="small"
+                className={classes.iconOnHover}
                 style={{
                   color: red[700],
                   cursor: "pointer",
@@ -507,6 +538,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               <DoneIcon
                 onClick={() => handleAcepptTicket(ticket.id)}
                 fontSize="small"
+                className={classes.iconOnHover}
                 style={{
                   color: '#fff',
                   backgroundColor: green[700],
@@ -586,14 +618,19 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
           disableTypography
           primary={
             <span className={classes.contactNameWrapper}>
-            <Typography
-                noWrap
-                component="span"
-                variant="body2"
-                color="textPrimary"
-              >
-                {ticket.contact.name}
-              </Typography>
+              <span className={classes.ticketNameRow}>
+                <Typography
+                  noWrap
+                  component="span"
+                  variant="body2"
+                  color="textPrimary"
+                >
+                  {ticket.contact.name}
+                </Typography>
+                <Typography component="span" className={classes.ticketNumber}>
+                  #{ticket.id}
+                </Typography>
+              </span>
             </span>
           }
           secondary={

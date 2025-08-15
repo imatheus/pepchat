@@ -5,12 +5,25 @@ import { isArray, isString } from "lodash";
 import toastError from "../../errors/toastError";
 import api from "../../services/api";
 import { darkenColor, getContrastColor } from "../../utils/colorGenerator";
+import { makeStyles } from "@material-ui/core/styles";
+
+const useStyles = makeStyles(() => ({
+  tagInputRoot: {
+    minWidth: 300,
+    "& .MuiOutlinedInput-root": {
+      borderRadius: 50,
+      paddingLeft: 10,
+      paddingRight: 10,
+    },
+  },
+}));
 
 export function TagsContainer ({ ticket }) {
 
     const [tags, setTags] = useState([]);
     const [selecteds, setSelecteds] = useState([]);
     const isMounted = useRef(true);
+    const classes = useStyles();
 
     useEffect(() => {
         return () => {
@@ -72,10 +85,20 @@ export function TagsContainer ({ ticket }) {
             }
             await loadTags();
         } else {
-            optionsChanged = value;
+            optionsChanged = value || [];
         }
-        setSelecteds(optionsChanged);
-        await syncTags({ ticketId: ticket.id, tags: optionsChanged });
+        // Remover duplicatas por id (ou name se id ausente)
+        const seen = new Set();
+        const dedup = [];
+        for (const t of optionsChanged) {
+            const key = t?.id != null ? `id:${t.id}` : `name:${String(t?.name || t).toLowerCase()}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                dedup.push(t);
+            }
+        }
+        setSelecteds(dedup);
+        await syncTags({ ticketId: ticket.id, tags: dedup });
     }
 
     return (
@@ -86,8 +109,30 @@ export function TagsContainer ({ ticket }) {
                 options={tags}
                 value={selecteds}
                 freeSolo
+                filterSelectedOptions
+                disableCloseOnSelect
+                getOptionSelected={(option, value) => option?.id === value?.id}
                 onChange={(e, v, r) => onChange(v, r)}
                 getOptionLabel={(option) => option.name}
+                renderOption={(option) => {
+                    const bg = darkenColor(option.color || '#eee', 0.2);
+                    const fg = getContrastColor(bg);
+                    return (
+                        <span
+                            style={{
+                                backgroundColor: bg,
+                                color: fg,
+                                border: `1px solid ${darkenColor(bg, 0.1)}`,
+                                padding: '2px 10px',
+                                borderRadius: 100,
+                                fontSize: 12,
+                                display: 'inline-block'
+                            }}
+                        >
+                            {option.name}
+                        </span>
+                    );
+                }}
                 renderTags={(value, getTagProps) => {
                     return (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -101,7 +146,8 @@ export function TagsContainer ({ ticket }) {
                                             backgroundColor: backgroundColor,
                                             color: textColor,
                                             border: `1px solid ${darkenColor(backgroundColor, 0.1)}`,
-                                            margin: 0
+                                            margin: 0,
+                                            borderRadius:"100px"
                                         }}
                                         label={option.name}
                                         {...getTagProps({ index })}
@@ -117,7 +163,8 @@ export function TagsContainer ({ ticket }) {
                         {...params} 
                         variant="outlined" 
                         placeholder="Tags"
-                        style={{ minWidth: '300px' }}
+                        className={classes.tagInputRoot}
+                        style={{ minWidth: '500px' }}
                     />
                 )}
                 PaperComponent={({ children }) => (

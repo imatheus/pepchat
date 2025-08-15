@@ -10,6 +10,7 @@ const useStyles = makeStyles(theme => ({
 		width: "100%",
 		height: "100%",
 		marginTop: "25px",
+		backgroundColor: theme.palette.background.default,
 		[theme.breakpoints.between("sm", "md")]: {
 			marginTop: "15px",
 		},
@@ -23,6 +24,7 @@ const useStyles = makeStyles(theme => ({
 		overflow: "auto",
 		flexDirection: "column",
 		height: "100%",
+		backgroundColor: theme.palette.background.paper,
 		[theme.breakpoints.between("sm", "md")]: {
 			padding: theme.spacing(1.5),
 		},
@@ -32,7 +34,7 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-const TicketsAdvanced = () => {
+const TicketsAdvanced = (props) => {
 	const classes = useStyles();
 
 	const [searchParam, setSearchParam] = useState("");

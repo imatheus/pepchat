@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
 	actionButtons: {
 		marginRight: 6,
 		flex: "none",
-		alignSelf: "flex-start",
+		alignSelf: "center",
 		marginLeft: "auto",
 		display: "flex",
 		alignItems: "center",

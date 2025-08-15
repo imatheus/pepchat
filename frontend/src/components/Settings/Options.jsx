@@ -200,12 +200,9 @@ export default function Options(props) {
             </Box>
             <Box className={classes.toggleContainer}>
               <FormControl variant="outlined" size="small" style={{ minWidth: 180 }}>
-                <InputLabel id="tickets-view-label">Visualização</InputLabel>
                 <Select
-                  labelId="tickets-view-label"
                   value={ticketsView}
                   onChange={(e) => handleTicketsViewChange(e.target.value)}
-                  label="Visualização"
                   disabled={loadingTicketsView}
                 >
                   <MenuItem value="classic">Clássica (padrão atual)</MenuItem>
