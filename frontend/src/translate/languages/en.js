@@ -256,6 +256,8 @@ const messages = {
 					tickets: "Tickets",
 					contacts: "Contacts",
 					queues: "Queues",
+					tags: "Tags",
+					schedules: "Schedules",
 					administration: "Administration",
 					users: "Users",
 					settings: "Settings",
@@ -410,6 +412,32 @@ const messages = {
 				ERR_WAPP_GREETING_REQUIRED:
 					"Greeting message is required if there is more than one queue.",
 			},
+				schedules: {
+					title: "Schedules",
+					buttons: { add: "New schedule" },
+					table: {
+						contact: "Contact",
+						body: "Message",
+						sendAt: "Send at",
+						status: "Status",
+						actions: "Actions",
+					},
+					confirmationModal: {
+						deleteTitle: "Delete",
+						deleteMessage: "Are you sure you want to delete this schedule? This action cannot be undone.",
+					},
+				},
+				scheduleModal: {
+					form: {
+						body: "Message",
+						sendAt: "Send at",
+					},
+					buttons: {
+						cancel: "Cancel",
+						okAdd: "Create",
+						okEdit: "Save",
+					},
+				},
 		},
 	},
 };

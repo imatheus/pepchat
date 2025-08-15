@@ -14,6 +14,7 @@ import Users from "../pages/Users";
 import Contacts from "../pages/Contacts/";
 import Queues from "../pages/Queues/";
 import Tags from "../pages/Tags/";
+import Schedules from "../pages/Schedules";
 import Integrations from "../pages/Integrations/";
 import ContactLists from "../pages/ContactLists/";
 import ContactListItems from "../pages/ContactListItems/";
@@ -71,6 +72,7 @@ const RoutesContent = () => {
                 isPrivate
               />
               <Route exact path="/tags" component={Tags} isPrivate />
+              <Route exact path="/schedules" component={Schedules} isPrivate />
               <Route exact path="/contacts" component={Contacts} isPrivate />
               <Route exact path="/users" component={Users} isPrivate />
               <Route

@@ -20,6 +20,7 @@ import { i18n } from "../../translate/i18n";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
 import { FormControl } from "@material-ui/core";
+import Avatar from "@material-ui/core/Avatar";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import moment from "moment"
 import { AuthContext } from "../../context/Auth/AuthContext";
@@ -59,7 +60,7 @@ const ScheduleSchema = Yup.object().shape({
 	body: Yup.string()
 		.min(5, "Mensagem muito curta")
 		.required("Obrigatório"),
-	contactId: Yup.number().required("Obrigatório"),
+	// contactId será validado manualmente no submit para suportar múltiplos contatos
 	sendAt: Yup.string().required("Obrigatório")
 });
 
@@ -82,12 +83,14 @@ const ScheduleModal = ({ open, onClose, scheduleId, contactId, cleanContact, rel
 
 	const [schedule, setSchedule] = useState(initialState);
 	const [currentContact, setCurrentContact] = useState(initialContact);
+	const [selectedContacts, setSelectedContacts] = useState([]);
 	const [contacts, setContacts] = useState([initialContact]);
 	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
 		if (contactId && contacts.length) {
-			const contact = contacts.find(c => c.id === contactId);
+			const idNum = typeof contactId === 'string' ? parseInt(contactId) : contactId;
+			const contact = contacts.find(c => c.id === idNum);
 			if (contact) {
 				setCurrentContact(contact);
 			}
@@ -101,16 +104,16 @@ const ScheduleModal = ({ open, onClose, scheduleId, contactId, cleanContact, rel
 				(async () => {
 					// Carregar lista de contatos
 					const { data: contactList } = await api.get('/contacts/list', { params: { companyId: companyId } });
-					let customList = contactList.map((c) => ({id: c.id, name: c.name}));
+					let customList = contactList.map((c) => ({id: c.id, name: c.name, profilePicUrl: c.profilePicUrl || "", number: c.number }));
 					if (isArray(customList)) {
 						setContacts([{id: "", name: ""}, ...customList]);
 					}
 					
 					// Se tem contactId, definir no schedule
 					if (contactId) {
-						setSchedule(prevState => {
-							return { ...prevState, contactId }
-						});
+						setSchedule(prevState => ({ ...prevState, contactId }));
+						const found = customList.find(c => c.id === (typeof contactId === 'string' ? parseInt(contactId) : contactId));
+						if (found) setSelectedContacts([found]);
 					}
 
 					// Se é edição, carregar dados do agendamento
@@ -121,6 +124,7 @@ const ScheduleModal = ({ open, onClose, scheduleId, contactId, cleanContact, rel
 							sendAt: moment(data.sendAt).format('YYYY-MM-DDTHH:mm')
 						});
 						setCurrentContact(data.contact);
+						setSelectedContacts([data.contact]);
 					} else {
 						// Se é criação, resetar para estado inicial
 						setSchedule(initialState);
@@ -131,17 +135,27 @@ const ScheduleModal = ({ open, onClose, scheduleId, contactId, cleanContact, rel
 				toastError(err);
 			}
 		}
-	}, [scheduleId, contactId, open, user, initialState, initialContact]);
+	// Remover initialState/initialContact das dependências para não resetar a seleção a cada render
+	}, [scheduleId, contactId, open, user]);
 
 	const handleClose = () => {
 		onClose();
 		setSchedule(initialState);
 		setCurrentContact(initialContact);
+		setSelectedContacts([]);
 		setSaving(false);
 	};
 
 	const handleSaveSchedule = async values => {
 		const scheduleData = { ...values, userId: user.id };
+		// Validar contatos (single ou múltiplos)
+		const contactIds = selectedContacts.length > 0 
+			? selectedContacts.map(c => c.id) 
+			: (values.contactId ? [values.contactId] : []);
+		if (contactIds.length === 0) {
+			toast.error("❌ Selecione pelo menos um contato");
+			return Promise.reject(new Error("Contato obrigatório"));
+		}
 		
 		setSaving(true);
 		
@@ -160,11 +174,14 @@ const ScheduleModal = ({ open, onClose, scheduleId, contactId, cleanContact, rel
 			const formattedDate = sendAtMoment.format('DD/MM/YYYY [às] HH:mm');
 			
 			if (scheduleId) {
-				await api.put(`/schedules/${scheduleId}`, scheduleData);
+				// Edição: permitir apenas um contato
+				const firstId = contactIds[0];
+				await api.put(`/schedules/${scheduleId}`, { ...scheduleData, contactId: firstId });
 				toast.success(`✅ Agendamento atualizado com sucesso! Nova data: ${formattedDate}`);
 			} else {
-				await api.post("/schedules", scheduleData);
-				toast.success(`✅ Agendamento criado com sucesso! A mensagem será enviada automaticamente em ${formattedDate}.`);
+				// Criação: criar N agendamentos, um por contato selecionado
+				await Promise.all(contactIds.map(id => api.post("/schedules", { ...scheduleData, contactId: id })));
+				toast.success(`✅ ${contactIds.length} agendamento(s) criado(s)! Envio em ${formattedDate}.`);
 			}
 			
 			// Recarregar lista se função fornecida
@@ -229,24 +246,49 @@ const ScheduleModal = ({ open, onClose, scheduleId, contactId, cleanContact, rel
 										variant="outlined"
 										fullWidth
 									>
-										<Autocomplete
-											fullWidth
-											value={currentContact}
-											options={contacts}
-											disabled={saving}
-											onChange={(e, contact) => {
-												const contactId = contact ? contact.id : '';
-												setSchedule({ ...schedule, contactId });
-												setCurrentContact(contact ? contact : initialContact);
-											}}
-											getOptionLabel={(option) => option.name}
-											getOptionSelected={(option, value) => {
-												return value.id === option.id
-											}}
-											renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Contato" />}
-										/>
-									</FormControl>
+					<Autocomplete
+						fullWidth
+						disablePortal
+						multiple
+						value={selectedContacts}
+						options={contacts}
+						disabled={saving}
+						onChange={(e, newValue) => {
+							setSelectedContacts(newValue || []);
+							// sincronizar contactId único quando houver exatamente 1 selecionado (para compatibilidade)
+							if (newValue && newValue.length === 1) {
+								const onlyId = newValue[0]?.id || '';
+								setSchedule({ ...schedule, contactId: onlyId });
+								if (values && values.contactId !== onlyId) values.contactId = onlyId;
+							} else {
+								setSchedule({ ...schedule, contactId: '' });
+								if (values) values.contactId = '';
+							}
+						}}
+						getOptionLabel={(option) => {
+							if (!option) return "";
+							return typeof option === 'string' ? option : (option.name || "");
+						}}
+						getOptionSelected={(option, value) => {
+							if (!option || !value) return false;
+							return String(option.id) === String(value.id);
+						}}
+						noOptionsText={"Nenhum contato encontrado"}
+						renderOption={(option) => (
+							<div style={{ display: 'flex', alignItems: 'center' }}>
+								<Avatar src={option.profilePicUrl} style={{ width: 28, height: 28, marginRight: 8 }} />
+								<div style={{ display: 'flex', flexDirection: 'column' }}>
+									<span>{option.name}</span>
+									<small style={{ color: '#666' }}>{option.number}</small>
 								</div>
+							</div>
+						)}
+						renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Contatos" />}
+					/>
+									</FormControl>
+
+								</div>
+
 								<br />
 								<div className={classes.multFieldLine}>
 									<Field

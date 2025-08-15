@@ -19,6 +19,8 @@ import IconButton from "@material-ui/core/IconButton";
 import SearchIcon from "@material-ui/icons/Search";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
+import Chip from "@material-ui/core/Chip";
+import Avatar from "@material-ui/core/Avatar";
 
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import EditIcon from "@material-ui/icons/Edit";
@@ -27,6 +29,7 @@ import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import MainHeaderButtonsWrapper from "../../components/MainHeaderButtonsWrapper";
 import Title from "../../components/Title";
+// import AccessTimeOutlinedIcon from "@material-ui/icons/AccessTimeOutlined";
 
 import api from "../../services/api";
 import { i18n } from "../../translate/i18n";
@@ -91,6 +94,12 @@ const useStyles = makeStyles((theme) => ({
     overflowY: "scroll",
     ...theme.scrollbarStyles,
   },
+  statusChip: {
+    height: 22,
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#fff',
+  },
 }));
 
 const Schedules = () => {
@@ -152,8 +161,14 @@ const Schedules = () => {
     const socket = socketConnection({ companyId: user.companyId });
 
     socket.on("schedule", (data) => {
-      if (data.action === "update" || data.action === "create") {
-        dispatch({ type: "UPDATE_SCHEDULES", payload: data.schedule });
+      if ((data.action === "update" || data.action === "create") && data.schedule) {
+        // Garantir que schedule tenha as chaves esperadas para não quebrar a renderização
+        const safeSchedule = {
+          ...data.schedule,
+          contact: data.schedule.contact || { id: 0, name: "" },
+          user: data.schedule.user || { id: 0, name: "" },
+        };
+        dispatch({ type: "UPDATE_SCHEDULES", payload: safeSchedule });
       }
 
       if (data.action === "delete") {
@@ -227,6 +242,22 @@ const Schedules = () => {
     return str;
   };
 
+  const renderStatusChip = (status) => {
+    const s = (status || '').toUpperCase();
+    let label = 'Pendente';
+    let bg = '#ff9800'; // default: pending - orange
+    if (s === 'ENVIADO') { label = 'Enviado'; bg = '#4caf50'; }
+    if (s === 'ERRO') { label = 'Erro'; bg = '#f44336'; }
+    return (
+      <Chip
+        label={label}
+        className={classes.statusChip}
+        style={{ backgroundColor: bg }}
+        size="small"
+      />
+    );
+  };
+
   return (
     <MainContainer>
       <ConfirmationModal
@@ -282,7 +313,7 @@ const Schedules = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell align="center">
+              <TableCell align="left">
                 {i18n.t("schedules.table.contact")}
               </TableCell>
               <TableCell align="center">
@@ -303,15 +334,21 @@ const Schedules = () => {
             <>
               {schedules.map((schedule) => (
                 <TableRow key={schedule.id}>
-                  <TableCell align="center">{schedule.contact.name}</TableCell>
+                  <TableCell align="left">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-start' }}>
+                      <Avatar src={schedule.contact?.profilePicUrl} style={{ width: 28, height: 28 }} />
+                      <span>{schedule.contact?.name || ""}</span>
+                    </div>
+                  </TableCell>
                   <TableCell align="center" title={schedule.body}>
                     {truncate(schedule.body, 25)}
                   </TableCell>
+
                   <TableCell align="center">
                     {moment(schedule.sendAt).format("DD/MM/YYYY HH:mm:ss")}
                   </TableCell>
                   <TableCell align="center">
-                    {capitalize(schedule.status)}
+                    {renderStatusChip(schedule.status)}
                   </TableCell>
                   <TableCell align="center">
                     {schedule.status === 'PENDENTE' && (
@@ -338,9 +375,7 @@ const Schedules = () => {
                     )}
                     
                     {schedule.status !== 'PENDENTE' && (
-                      <span style={{ color: '#666', fontSize: '12px' }}>
-                        {schedule.status === 'ENVIADO' ? 'Enviado' : 'Erro'}
-                      </span>
+                      <span style={{ color: '#999', fontSize: '12px' }}>—</span>
                     )}
                   </TableCell>
                 </TableRow>

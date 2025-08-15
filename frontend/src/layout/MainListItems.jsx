@@ -24,6 +24,7 @@ import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PeopleIcon from "@material-ui/icons/People";
 import ListIcon from "@material-ui/icons/ListAlt";
+import AccessTimeOutlinedIcon from "@material-ui/icons/AccessTimeOutlined";
 
 import { i18n } from "../translate/i18n";
 import { WhatsAppsContext } from "../context/WhatsApp/WhatsAppsContext";
@@ -186,6 +187,30 @@ const MainListItems = (props) => {
         to="/tags"
         primary={i18n.t("mainDrawer.listItems.tags")}
         icon={<LocalOfferOutlinedIcon />}
+        drawerCollapsed={drawerCollapsed}
+        disabled={isCompanyBlocked}
+      />
+
+      <ListItemLink
+        to="/schedules"
+        primary={
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            {i18n.t("mainDrawer.listItems.schedules")}
+            <span
+              style={{
+                background: '#fff',
+                color: '#333',
+                borderRadius: 12,
+                fontSize: 10,
+                padding: '2px 6px',
+                lineHeight: 1,
+              }}
+            >
+              Novo
+            </span>
+          </span>
+        }
+        icon={<AccessTimeOutlinedIcon />}
         drawerCollapsed={drawerCollapsed}
         disabled={isCompanyBlocked}
       />

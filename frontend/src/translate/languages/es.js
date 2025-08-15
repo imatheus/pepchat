@@ -260,6 +260,8 @@ const messages = {
 					tickets: "Tickets",
 					contacts: "Contactos",
 					queues: "Linhas",
+					tags: "Tags",
+					schedules: "Agendamientos",
 					administration: "Administración",
 					users: "Usuarios",
 					settings: "Configuración",
@@ -415,6 +417,32 @@ const messages = {
 					"Este color ya está en uso, elija otro.",
 				ERR_WAPP_GREETING_REQUIRED:
 					"El mensaje de saludo es obligatorio cuando hay más de una cola.",
+			},
+			schedules: {
+				title: "Agendamientos",
+				buttons: { add: "Nuevo agendamiento" },
+				table: {
+					contact: "Contacto",
+					body: "Mensaje",
+					sendAt: "Enviar en",
+					status: "Estado",
+					actions: "Acciones",
+				},
+				confirmationModal: {
+					deleteTitle: "Eliminar",
+					deleteMessage: "¿Está seguro de eliminar este agendamiento? Esta acción no se puede deshacer.",
+				},
+			},
+			scheduleModal: {
+				form: {
+					body: "Mensaje",
+					sendAt: "Programar para",
+				},
+				buttons: {
+					cancel: "Cancelar",
+					okAdd: "Crear",
+					okEdit: "Guardar",
+				},
 			},
 		},
 	},

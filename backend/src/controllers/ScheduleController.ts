@@ -61,15 +61,18 @@ export const store = async (req: Request, res: Response): Promise<void> => {
 
     console.log("📝 Creating schedule - Schedule created successfully:", schedule.id);
 
+    // Garantir que as associações estejam presentes na emissão e resposta
+    const fullSchedule = await ShowService(schedule.id, companyId);
+
     const io = getIO();
     io.emit("schedule", {
       action: "create",
-      schedule
+      schedule: fullSchedule
     });
 
     console.log("📝 Creating schedule - WebSocket event emitted");
 
-    res.status(200).json(schedule);
+    res.status(200).json(fullSchedule);
   } catch (error) {
     console.error("❌ Error creating schedule:", error);
     res.status(400).json({ 
@@ -83,8 +86,9 @@ export const show = async (req: Request, res: Response): Promise<void> => {
   const { companyId } = req.user;
 
   const schedule = await ShowService(scheduleId, companyId);
-
-  res.status(200).json(schedule);
+  // Garantir que venha com profilePicUrl
+  const fullSchedule = await ShowService(schedule.id, companyId);
+  res.status(200).json(fullSchedule);
 };
 
 export const update = async (
@@ -104,15 +108,18 @@ export const update = async (
 
     console.log("✏️ Updating schedule - Schedule updated successfully:", schedule?.id);
 
+    // Recarregar com associações para emissão e resposta consistentes
+    const fullSchedule = await ShowService(schedule.id, companyId);
+
     const io = getIO();
     io.emit("schedule", {
       action: "update",
-      schedule
+      schedule: fullSchedule
     });
 
     console.log("✏️ Updating schedule - WebSocket event emitted");
 
-    res.status(200).json(schedule);
+    res.status(200).json(fullSchedule);
   } catch (error) {
     console.error("❌ Error updating schedule:", error);
     res.status(400).json({ 

@@ -299,6 +299,7 @@ const messages = {
           contacts: "Contatos",
           queues: "Chatbot",
           tags: "Tags",
+          schedules: "Agendamentos",
           administration: "Administração",
           users: "Usuários",
           settings: "Configurações",
@@ -402,6 +403,32 @@ const messages = {
         },
         toasts: {
           deleted: "Registro excluído",
+        },
+      },
+      schedules: {
+        title: "Agendamentos",
+        buttons: { add: "Novo agendamento" },
+        table: {
+          contact: "Contato",
+          body: "Mensagem",
+          sendAt: "Enviar em",
+          status: "Status",
+          actions: "Ações",
+        },
+        confirmationModal: {
+          deleteTitle: "Excluir",
+          deleteMessage: "Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.",
+        },
+      },
+      scheduleModal: {
+        form: {
+          body: "Mensagem",
+          sendAt: "Agendar para",
+        },
+        buttons: {
+          cancel: "Cancelar",
+          okAdd: "Criar",
+          okEdit: "Salvar",
         },
       },
       campaigns: {

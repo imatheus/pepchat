@@ -104,6 +104,16 @@ const UpdateService = async ({
 
   await schedule.reload();
 
+  // Garantir include com profilePicUrl no retorno e socket
+  try {
+    schedule = await Schedule.findByPk(schedule.id, {
+      include: [
+        { model: require("../../models/Contact").default, as: "contact", attributes: ["id", "name", "profilePicUrl"] },
+        { model: require("../../models/User").default, as: "user", attributes: ["id", "name"] }
+      ]
+    }) || schedule;
+  } catch {}
+
   // Reagendar se necessário (não falhar se não conseguir)
   if (shouldReschedule) {
     try {

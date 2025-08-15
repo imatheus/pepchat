@@ -64,6 +64,16 @@ const CreateService = async ({
   await schedule.reload();
   console.log("🔧 CreateService - Schedule reloaded successfully");
 
+  // Garantir include com profilePicUrl no retorno e socket
+  try {
+    schedule = await Schedule.findByPk(schedule.id, {
+      include: [
+        { model: require("../../models/Contact").default, as: "contact", attributes: ["id", "name", "profilePicUrl"] },
+        { model: require("../../models/User").default, as: "user", attributes: ["id", "name"] }
+      ]
+    }) || schedule;
+  } catch {}
+
   // Agendar o job para processamento (não falhar se não conseguir)
   try {
     await ScheduleJobService(schedule);

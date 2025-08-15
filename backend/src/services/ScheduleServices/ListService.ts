@@ -76,7 +76,7 @@ const ListService = async ({
     offset,
     order: [["createdAt", "DESC"]],
     include: [
-      { model: Contact, as: "contact", attributes: ["id", "name"] },
+      { model: Contact, as: "contact", attributes: ["id", "name", "profilePicUrl"] },
       { model: User, as: "user", attributes: ["id", "name"] },
     ]
   });
