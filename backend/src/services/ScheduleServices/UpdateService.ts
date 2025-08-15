@@ -16,6 +16,7 @@ interface ScheduleData {
   companyId?: number;
   ticketId?: number;
   userId?: number;
+  status?: string;
 }
 
 interface Request {
@@ -59,8 +60,8 @@ const UpdateService = async ({
     throw new AppError(err.message);
   }
 
-  // Se a data de envio mudou, validar e reagendar
-  const shouldReschedule = sendAt && new Date(sendAt).getTime() !== schedule.sendAt.getTime() && schedule.status === 'PENDENTE';
+  // Se a data de envio mudou, validar e reagendar (independente do status atual)
+  const shouldReschedule = !!sendAt && new Date(sendAt).getTime() !== schedule.sendAt.getTime();
   
   if (shouldReschedule) {
     // Validar nova data
@@ -96,10 +97,11 @@ const UpdateService = async ({
   await schedule.update({
     body,
     sendAt: sendAt ? new Date(sendAt) : schedule.sendAt,
-    sentAt: sentAt ? new Date(sentAt) : schedule.sentAt,
+    sentAt: shouldReschedule ? null : (sentAt ? new Date(sentAt) : schedule.sentAt),
     contactId,
     ticketId,
     userId,
+    status: shouldReschedule ? 'PENDENTE' : (schedule as any).status,
   });
 
   await schedule.reload();

@@ -24,6 +24,7 @@ import Avatar from "@material-ui/core/Avatar";
 
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import EditIcon from "@material-ui/icons/Edit";
+import ReplayIcon from "@material-ui/icons/Replay";
 
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
@@ -168,6 +169,7 @@ const Schedules = () => {
           contact: data.schedule.contact || { id: 0, name: "" },
           user: data.schedule.user || { id: 0, name: "" },
         };
+
         dispatch({ type: "UPDATE_SCHEDULES", payload: safeSchedule });
       }
 
@@ -202,6 +204,20 @@ const Schedules = () => {
   const handleEditSchedule = (schedule) => {
     setSelectedSchedule(schedule);
     setScheduleModalOpen(true);
+  };
+
+  const handleReschedule = async (schedule) => {
+    try {
+      const newSendAt = moment().add(1, 'hour').toISOString();
+      // Atualizar o agendamento existente (não mostrar feedback na UI)
+      await api.put(`/schedules/${schedule.id}`, {
+        sendAt: newSendAt,
+      });
+      // intencionalmente sem toasts/sem reload imediato; a lista será atualizada via socket "update"
+    } catch (err) {
+      // intencionalmente silencioso para UX "nada acontece"
+      console.error('Reschedule (update existing) failed', err);
+    }
   };
 
   const handleDeleteSchedule = async (scheduleId) => {
@@ -373,8 +389,18 @@ const Schedules = () => {
                         <DeleteOutlineIcon />
                       </IconButton>
                     )}
+
+                    {schedule.status === 'ERRO' && (
+                      <IconButton
+                        size="small"
+                        onClick={() => handleReschedule(schedule)}
+                        title="Reagendar em 1 hora"
+                      >
+                        <ReplayIcon />
+                      </IconButton>
+                    )}
                     
-                    {schedule.status !== 'PENDENTE' && (
+                    {(schedule.status !== 'PENDENTE' && schedule.status !== 'ERRO') && (
                       <span style={{ color: '#999', fontSize: '12px' }}>—</span>
                     )}
                   </TableCell>
