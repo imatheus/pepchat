@@ -1,26 +1,23 @@
-interface SocketConfig {
-  transports: ("websocket" | "polling")[];
-  pingTimeout: number;
-  pingInterval: number;
-  connectTimeout: number;
-  allowEIO3: boolean;
-  cors: {
-    origin: string | string[];
-    methods: string[];
-    credentials: boolean;
-    allowedHeaders?: string[];
-  };
-}
+import { ServerOptions } from "socket.io";
+import { ServerOptions as EngineOptions } from "engine.io";
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
-export const socketConfig: SocketConfig = {
-  transports: ["polling", "websocket"],
+const forcePolling = process.env.SOCKET_FORCE_POLLING === 'true';
+
+export const socketConfig: Partial<ServerOptions & EngineOptions> = {
+  transports: forcePolling ? ["polling"] : ["polling", "websocket"],
   pingTimeout: 60000,
   pingInterval: 25000,
   connectTimeout: 45000,
   allowEIO3: true,
+  // Desabilitar upgrade quando forçar polling para evitar erros de probe no navegador
+  allowUpgrades: !forcePolling,
+  upgradeTimeout: 10000,
+  // Aumentar limite de payload do Socket.IO para evitar queda em tickets com mensagens grandes
+  maxHttpBufferSize: 10 * 1024 * 1024, // 10MB
+  perMessageDeflate: { threshold: 32 * 1024 }, // comprimir somente mensagens >32KB
   cors: {
     origin: process.env.FRONTEND_URL ? 
       (Array.isArray(process.env.FRONTEND_URL) ? 

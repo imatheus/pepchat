@@ -51,7 +51,7 @@ const CreateService = async ({
 
   console.log("🔧 CreateService - Creating schedule in database");
 
-  const schedule = await Schedule.create({
+  let schedule = await Schedule.create({
     body,
     sendAt: new Date(sendAt),
     contactId: typeof contactId === 'string' ? parseInt(contactId) : contactId,

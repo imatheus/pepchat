@@ -30,7 +30,7 @@ const UpdateService = async ({
   id,
   companyId
 }: Request): Promise<Schedule | undefined> => {
-  const schedule = await ShowService(id, companyId);
+  let schedule = await ShowService(id, companyId);
 
   if (schedule?.companyId !== companyId) {
     throw new AppError("Não é possível alterar registros de outra empresa");

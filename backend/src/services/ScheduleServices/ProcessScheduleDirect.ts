@@ -79,9 +79,9 @@ export const ProcessScheduleDirect = async (scheduleId: number): Promise<void> =
         if (!looksLikeGroupId && typeof (wbot as any).groupFetchAllParticipating === 'function') {
           try {
             const groups = await (wbot as any).groupFetchAllParticipating();
-            const match = Object.values(groups || {}).find((g: any) => g.subject === schedule.contact.name);
-            if (match && match.id) {
-              const id = String(match.id).replace(/@g\.us$/, "");
+            const match = Object.values(groups || {}).find((g: any) => (g as any)?.subject === schedule.contact.name) as { id?: string } | undefined;
+            if (match && (match as any).id) {
+              const id = String((match as any).id).replace(/@g\.us$/, "");
               groupId = id;
               // atualizar contact.number para o id do grupo para próximos envios
               try { await schedule.contact.update({ number: id }); } catch {}

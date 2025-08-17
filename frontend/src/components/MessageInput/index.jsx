@@ -318,7 +318,17 @@ const MessageInput = ({ ticketStatus }) => {
 
 	const startRecording = async () => {
 		try {
-			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			// Use robust helper with fallbacks
+			let stream;
+			try {
+				const { getMicrophoneStream } = await import('../../utils/getMicrophoneStream.js');
+				const result = await getMicrophoneStream();
+				stream = result.stream;
+				console.log('🎤 Microfone obtido', result);
+			} catch (gmsErr) {
+				console.warn('Helper getMicrophoneStream falhou, tentando audio:true', gmsErr);
+				stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			}
 			const mediaRecorder = new MediaRecorder(stream);
 			mediaRecorderRef.current = mediaRecorder;
 			audioChunksRef.current = [];
@@ -340,7 +350,12 @@ const MessageInput = ({ ticketStatus }) => {
 			setIsPaused(false);
 		} catch (err) {
 			console.error('Error accessing microphone:', err);
-			toastError({ message: 'Erro ao acessar o microfone' });
+			try {
+				const { getFriendlyMicErrorMessage } = await import('../../utils/micErrors.js');
+				toastError({ message: getFriendlyMicErrorMessage(err) });
+			} catch (_) {
+				toastError({ message: 'Erro ao acessar o microfone.' });
+			}
 		}
 	};
 
@@ -396,7 +411,21 @@ const MessageInput = ({ ticketStatus }) => {
 		}
 	};
 
-	const handleMicClick = () => {
+	const handleMicClick = async () => {
+		try {
+			const { getAudioSupportStatus } = await import('../../utils/audioSupport.js');
+			const status = getAudioSupportStatus();
+			if (!status.secure) {
+				return toastError({ message: 'Para gravar áudio, acesse via HTTPS ou localhost (contexto seguro).' });
+			}
+			if (!status.mediaDevices) {
+				return toastError({ message: 'Seu navegador não suporta getUserMedia. Atualize o navegador.' });
+			}
+			if (!status.mediaRecorder) {
+				return toastError({ message: 'Seu navegador não suporta gravação de áudio (MediaRecorder).' });
+			}
+		} catch {}
+
 		if (!isRecording && !audioBlob) {
 			startRecording();
 		} else if (isRecording && !isPaused) {

@@ -857,14 +857,28 @@ const MessageInputCustom = (props) => {
     try {
       const { getMediaConstraints, DEFAULT_AUDIO_OPTIONS, MAX_RECORDING_MS } = await import('../../config/audioConfig.js');
 
+      if (typeof window === 'undefined' || typeof window.MediaRecorder === 'undefined') {
+        throw new Error('Navegador não suporta gravação de áudio (MediaRecorder indisponível). Use Chrome/Edge recentes.');
+      }
+
       // Ensure we don't keep previous streams open
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         try { mediaRecorderRef.current.stop(); } catch {}
       }
       stopStream();
 
-      const constraints = getMediaConstraints();
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      // Try robust microphone acquisition helper (with fallbacks)
+      let stream;
+      try {
+        const { getMicrophoneStream } = await import('../../utils/getMicrophoneStream.js');
+        const result = await getMicrophoneStream();
+        stream = result.stream;
+        console.log('🎤 Microfone obtido', result);
+      } catch (gmsErr) {
+        console.warn('Helper getMicrophoneStream falhou, tentando constraints padrão:', gmsErr);
+        const constraints = getMediaConstraints();
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      }
 
       // Validate mimeType support, fallback if necessary
       let options = DEFAULT_AUDIO_OPTIONS;
@@ -928,12 +942,11 @@ const MessageInputCustom = (props) => {
       setIsPaused(false);
     } catch (err) {
       console.error('Error accessing microphone:', err);
-      if (err.name === 'NotAllowedError') {
-        toastError({ message: 'Permissão do microfone negada. Permita o acesso ao microfone e tente novamente.' });
-      } else if (err.name === 'NotFoundError') {
-        toastError({ message: 'Nenhum microfone encontrado no dispositivo.' });
-      } else {
-        toastError({ message: 'Erro ao acessar o microfone: ' + err.message });
+      try {
+        const { getFriendlyMicErrorMessage } = await import('../../utils/micErrors.js');
+        toastError({ message: getFriendlyMicErrorMessage(err) });
+      } catch (_) {
+        toastError({ message: 'Erro ao acessar o microfone.' });
       }
     }
   };
@@ -1058,7 +1071,21 @@ const MessageInputCustom = (props) => {
     stopStream();
   };
 
-  const handleMicClick = () => {
+  const handleMicClick = async () => {
+    try {
+      const { getAudioSupportStatus } = await import('../../utils/audioSupport.js');
+      const status = getAudioSupportStatus();
+      if (!status.secure) {
+        return toastError({ message: 'Para gravar áudio, acesse via HTTPS ou localhost (contexto seguro).' });
+      }
+      if (!status.mediaDevices) {
+        return toastError({ message: 'Seu navegador não suporta getUserMedia. Atualize o navegador.' });
+      }
+      if (!status.mediaRecorder) {
+        return toastError({ message: 'Seu navegador não suporta gravação de áudio (MediaRecorder).' });
+      }
+    } catch {}
+
     if (!isRecording && !audioBlob) {
       startRecording();
     } else if (isRecording && !isPaused) {

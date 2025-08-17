@@ -63,23 +63,33 @@ const CreateMessageService = async ({
   }
 
   const io = getIO();
-  
+
+  // Sanitizar payload para reduzir tamanho
+  const safeMessage: any = JSON.parse(JSON.stringify(message));
+  if (safeMessage?.dataJson) delete safeMessage.dataJson;
+
   // Emitir apenas uma vez para o room específico do ticket
-  io.to(`ticket:${message.ticketId}`)
+  io
+    .to(`ticket:${message.ticketId}`)
+    .to(`company-${companyId}-ticket:${message.ticketId}`)
+    .to(`company:${companyId}`)
     .emit(`company-${companyId}-appMessage`, {
       action: "create",
-      message,
+      message: safeMessage,
       ticket: message.ticket,
       contact: message.ticket.contact
     });
 
   // Se for mensagem do cliente, também emitir para notificações (mas não duplicar)
   if (!message.fromMe) {
-    io.to("notification")
+    io
+      .to("notification")
+      .to(`company-${companyId}-notification`)
       .to(`status:${message.ticket.status}`)
+      .to(`company-${companyId}-${message.ticket.status}`)
       .emit(`company-${companyId}-appMessage`, {
         action: "create",
-        message,
+        message: safeMessage,
         ticket: message.ticket,
         contact: message.ticket.contact
       });

@@ -187,10 +187,10 @@ const Ticket = () => {
         })}
       >
         <TicketHeader loading={loading}>
-          <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 12, minWidth: 0, }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', width: '100%' }}>
+            <div style={{ flex: 1 }}>
               {renderTicketInfo()}
-              <div style={{ display: 'flex', alignItems: 'center',  }}>
+              <div style={{ marginLeft: 72, marginTop: -8 }}>
                 <TagsContainer ticket={ticket} />
               </div>
             </div>
