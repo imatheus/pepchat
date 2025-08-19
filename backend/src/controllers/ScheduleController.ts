@@ -33,8 +33,6 @@ export const index = async (req: Request, res: Response): Promise<void> => {
 
 export const store = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("📝 Creating schedule - Request received:", req.body);
-    
     const {
       body,
       sendAt,
@@ -42,14 +40,6 @@ export const store = async (req: Request, res: Response): Promise<void> => {
       userId
     } = req.body;
     const { companyId } = req.user;
-
-    console.log("📝 Creating schedule - Calling CreateService with:", {
-      body: body?.substring(0, 50) + "...",
-      sendAt,
-      contactId,
-      companyId,
-      userId
-    });
 
     const schedule = await CreateService({
       body,
@@ -59,8 +49,6 @@ export const store = async (req: Request, res: Response): Promise<void> => {
       userId
     });
 
-    console.log("📝 Creating schedule - Schedule created successfully:", schedule.id);
-
     // Garantir que as associações estejam presentes na emissão e resposta
     const fullSchedule = await ShowService(schedule.id, companyId);
 
@@ -69,8 +57,6 @@ export const store = async (req: Request, res: Response): Promise<void> => {
       action: "create",
       schedule: fullSchedule
     });
-
-    console.log("📝 Creating schedule - WebSocket event emitted");
 
     res.status(200).json(fullSchedule);
   } catch (error) {
@@ -96,17 +82,11 @@ export const update = async (
   res: Response
 ): Promise<void> => {
   try {
-    console.log("✏️ Updating schedule - Request received:", { scheduleId: req.params.scheduleId, body: req.body });
-    
     const { scheduleId } = req.params;
     const scheduleData = req.body;
     const { companyId } = req.user;
 
-    console.log("✏️ Updating schedule - Calling UpdateService");
-
     const schedule = await UpdateService({ scheduleData, id: scheduleId, companyId });
-
-    console.log("✏️ Updating schedule - Schedule updated successfully:", schedule?.id);
 
     // Recarregar com associações para emissão e resposta consistentes
     const fullSchedule = await ShowService(schedule.id, companyId);
@@ -116,8 +96,6 @@ export const update = async (
       action: "update",
       schedule: fullSchedule
     });
-
-    console.log("✏️ Updating schedule - WebSocket event emitted");
 
     res.status(200).json(fullSchedule);
   } catch (error) {
@@ -133,24 +111,16 @@ export const remove = async (
   res: Response
 ): Promise<void> => {
   try {
-    console.log("🗑️ Deleting schedule - Request received:", { scheduleId: req.params.scheduleId });
-    
     const { scheduleId } = req.params;
     const { companyId } = req.user;
 
-    console.log("🗑️ Deleting schedule - Calling DeleteService");
-
     await DeleteService(scheduleId, companyId);
-
-    console.log("🗑️ Deleting schedule - Schedule deleted successfully");
 
     const io = getIO();
     io.emit("schedule", {
       action: "delete",
       scheduleId
     });
-
-    console.log("🗑️ Deleting schedule - WebSocket event emitted");
 
     res.status(200).json({ message: "Schedule deleted" });
   } catch (error) {

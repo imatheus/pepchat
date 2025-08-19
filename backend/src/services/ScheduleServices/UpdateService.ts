@@ -65,15 +65,27 @@ const UpdateService = async ({
   
   let normalizedSendAt: moment.Moment | null = null;
   if (shouldReschedule) {
-    // Normalizar nova data (suporta apenas data)
+    // Normalizar nova data (suporta data e hora, com correção de fuso se necessário)
+    const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(String(sendAt));
+    const hasTime = /\d{2}:\d{2}/.test(String(sendAt));
+    const hasExplicitTz = /([Zz]|[+-]\d{2}:?\d{2})$/.test(String(sendAt));
+    const defaultOffsetMinutes = process.env.APP_TZ_OFFSET
+      ? parseInt(String(process.env.APP_TZ_OFFSET), 10)
+      : -180; // -03:00 default
+
     normalizedSendAt = moment(sendAt);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(sendAt!)) {
-      const baseDay = moment(sendAt);
+    if (!isDateOnly && hasTime && !hasExplicitTz) {
+      normalizedSendAt = moment(String(sendAt)).utcOffset(defaultOffsetMinutes, true);
+    }
+
+    if (isDateOnly) {
+      const baseDay = moment(String(sendAt));
       const now = moment();
       if (baseDay.isSame(now, 'day')) {
         normalizedSendAt = now.add(2, 'minutes').seconds(0).milliseconds(0);
       } else {
-        normalizedSendAt = baseDay.hour(8).minute(0).second(0).millisecond(0);
+        const base = moment(String(sendAt)).startOf('day').add(8, 'hours');
+        normalizedSendAt = moment(base.format('YYYY-MM-DDTHH:mm')).utcOffset(defaultOffsetMinutes, true);
       }
     }
 

@@ -43,8 +43,21 @@ import Setting from "../../models/Setting";
 import { cacheLayer } from "../../libs/cache";
 import { debounce } from "../../helpers/Debounce";
 import { provider } from "./providers";
-import { shouldIgnoreMessage } from "./MessageFilterService";
-import SendGreetingMessageService from "./SendGreetingMessageService";
+import { shouldIgimport SendGreetingMessageService from "./SendGreetingMessageService";
+noreMessage } from "./MessageFilterService";
+
+// Função para obter o tipo de chatbot das configurações da empresa
+const getChatbotType = async (companyId: number): Promise<string> => {
+  try {
+    const setting = await Setting.findOne({
+      where: { key: "chatBotType", companyId }
+    });
+    return setting?.value || 'text';
+  } catch (error) {
+    logger.error(error, "Error getting chatbot type setting");
+    return 'text';
+  }
+};
 
 // Função para verificar se o modo automático do chatbot está habilitado
 const isChatbotAutoModeEnabled = async (companyId: number): Promise<boolean> => {
@@ -83,10 +96,10 @@ const selectBestQueueForUser = async (userQueues: Queue[], companyId: number): P
 
     // Ordenar por menor carga de trabalho
     queueWorkloads.sort((a, b) => a.activeTickets - b.activeTickets);
-
+    
     const selectedQueue = queueWorkloads[0];
     logger.info(`Selected queue for user: ${selectedQueue.queueName} (${selectedQueue.activeTickets} active tickets)`);
-
+    
     return selectedQueue.queueId;
   } catch (error) {
     logger.error(error, "Error selecting best queue for user, using first queue");
@@ -109,8 +122,7 @@ interface IMe {
   id: string;
 }
 
-// Corrigir o tipo do writeFileAsync para aceitar Buffer
-const writeFileAsync = promisify(writeFile) as (path: string, data: Buffer | Uint8Array | string) => Promise<void>;
+const writeFileAsync = promisify(writeFile);
 
 const getTypeMessage = (msg: proto.IWebMessageInfo): string => {
   return getContentType(msg.message);
@@ -130,9 +142,11 @@ export const getBodyMessage = (msg: proto.IWebMessageInfo): string | null => {
       stickerMessage: "sticker",
       contactMessage: msg.message?.contactMessage?.vcard,
       locationMessage: `Latitude: ${msg.message?.locationMessage?.degreesLatitude} - Longitude: ${msg.message?.locationMessage?.degreesLongitude}`,
-      liveLocationMessage: `Latitude: ${msg.message?.liveLocationMessage?.degreesLatitude} - Longitude: ${msg.message?.liveLocationMessage?.degreesLongitude}`,
-      documentMessage: msg.message?.documentMessage?.title,
+      liveLocationMessage: `Latitude: ${msg.message?.liveLocationMessage?.deg      audioMessage: "🎵 Áudio", // Adicionar suporte para mensagens de áudio
       reactionMessage: msg.message?.reactionMessage?.text || "reaction",
+}`,
+      documentMessage: msg.message?.documentMessage?.title,
+            reactionMessage: msg.message?.reactionMessage?.text || "reaction",
     };
 
     return types[type];
@@ -154,7 +168,7 @@ export const sleep = (ms: number): Promise<void> => {
 export const validaCpfCnpj = (cpfCnpj: string): boolean => {
   // Remove caracteres especiais
   const cleanCpfCnpj = cpfCnpj.replace(/[^\d]/g, '');
-
+  
   if (cleanCpfCnpj.length === 11) {
     // Validação de CPF
     return validaCpf(cleanCpfCnpj);
@@ -162,7 +176,7 @@ export const validaCpfCnpj = (cpfCnpj: string): boolean => {
     // Validação de CNPJ
     return validaCnpj(cleanCpfCnpj);
   }
-
+  
   return false;
 };
 
@@ -220,34 +234,21 @@ const validaCnpj = (cnpj: string): boolean => {
   }
 
   result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-  if (result !== parseInt(digits.charAt(1))) return false;
-
-  return true;
-};
-
-export const sendMessageImage = async (
-  wbot: WASocket,
-  contact: Contact,
-  ticket: Ticket,
-  url: string,
-  caption: string
-): Promise<void> => {
-  try {
-    // Construir o JID corretamente para grupos e contatos individuais
+  if     // Construir o JID corretamente para grupos e contatos individuais
     const isGroup = ticket.contact.isGroup || ticket.contact.number.includes("-") || ticket.contact.number.endsWith("@g.us");
     let jid: string;
-
+    
     if (ticket.contact.number.includes("@")) {
       jid = ticket.contact.number;
     } else {
       jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
     }
-
+    
     const sentMessage = await wbot.sendMessage(jid, {
       image: { url },
       caption: caption || ""
     });
-
+    
     await verifyMessage(sentMessage, ticket, contact);
   } catch (error) {
     logger.error(error, "Error sending image message");
@@ -265,19 +266,29 @@ export const sendMessageLink = async (
     // Construir o JID corretamente para grupos e contatos individuais
     const isGroup = ticket.contact.isGroup || ticket.contact.number.includes("-") || ticket.contact.number.endsWith("@g.us");
     let jid: string;
-
+    
     if (ticket.contact.number.includes("@")) {
       jid = ticket.contact.number;
     } else {
       jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
     }
-
+    
     const sentMessage = await wbot.sendMessage(jid, {
       document: { url },
       fileName: filename,
       mimetype: "application/pdf"
     });
-
+d> => {
+  try {
+    const sentMessage = await wbot.sendMessage(
+      `${ticket.contact.number}@${ticket.contact.isGroup ? "g.us" : "s.whatsapp.net"}`,
+      {
+        document: { url },
+        fileName: filename,
+        mimetype: "application/pdf"
+      }
+    );
+    
     await verifyMessage(sentMessage, ticket, contact);
   } catch (error) {
     logger.error(error, "Error sending document message");
@@ -287,9 +298,19 @@ export const sendMessageLink = async (
 export const makeid = (length: number): string => {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      ticketTraking.ratingAt !== null &&
+    !ticketTraking.rated
+  ) {
+    // Verificar se ainda está dentro do período de avaliação (ex: 24 horas após ratingAt)
+    const ratingTime = moment(ticketTraking.ratingAt);
+    const now = moment();
+    const hoursDiff = now.diff(ratingTime, 'hours');
+    
+    // Permitir avaliação até 24 horas após o ratingAt ser definido
+    if (hoursDiff <= 24) {
+      return true;
+    }
+th.random() * charactersLength));
   }
   return result;
 };
@@ -297,18 +318,11 @@ export const makeid = (length: number): string => {
 export const verifyRating = (ticketTraking: TicketTraking): boolean => {
   if (
     ticketTraking &&
+    ticketTraking.finishedAt === null &&
     ticketTraking.ratingAt !== null &&
     !ticketTraking.rated
   ) {
-    // Verificar se ainda está dentro do período de avaliação (ex: 24 horas após ratingAt)
-    const ratingTime = moment(ticketTraking.ratingAt);
-    const now = moment();
-    const hoursDiff = now.diff(ratingTime, 'hours');
-
-    // Permitir avaliação até 24 horas após o ratingAt ser definido
-    if (hoursDiff <= 24) {
-      return true;
-    }
+    return true;
   }
   return false;
 };
@@ -331,15 +345,27 @@ const getSenderMessage = (msg: proto.IWebMessageInfo, wbot: Session): string => 
 
 const getContactMessage = async (msg: proto.IWebMessageInfo, wbot: Session) => {
   const isGroup = msg.key.remoteJid.endsWith("@g.us");
-  const rawNumber = msg.key.remoteJid.replace(/\D/g, "");
-  return isGroup
-    ? { id: getSenderMessage(msg, wbot), name: msg.pushName }
-    : { id: msg.key.remoteJid, name: msg.key.fromMe ? rawNumber : msg.pushName || msg.key.remoteJid.replace(/\D/g, "") };
-};
+  con  const mineType = msg.message?.imageMessage || msg.message?.videoMessage || msg.message?.stickerMessage || msg.message?.documentMessage || msg.message?.audioMessage;
+  
+  if (!mineType) {
+    logger.error("No media type found in message");
+    return null;
+  }
 
-const downloadMedia = async (msg: proto.IWebMessageInfo) => {
-  const mineType = msg.message?.imageMessage || msg.message?.videoMessage || msg.message?.stickerMessage || msg.message?.documentMessage;
-  const messageType = mineType.mimetype.split("/")[0].replace("application", "document") as MediaType;
+  let messageType: MediaType;
+  
+  // Determinar o tipo de mídia corretamente
+  if (msg.message?.audioMessage) {
+    messageType = "audio" as MediaType;
+  } else {
+    messageType = mineType.mimetype.split("/")[0].replace("application", "document") as MediaType;
+  }
+
+  console.log("Downloading media:", { 
+    messageType, 
+    mimetype: mineType.mimetype,
+    hasAudio: !!msg.message?.audioMessage 
+  });
 
   let stream: any;
   try {
@@ -354,6 +380,34 @@ const downloadMedia = async (msg: proto.IWebMessageInfo) => {
     buffer = Buffer.concat([buffer, chunk]);
   }
 
+  if (!buffer || buffer.length === 0) {
+    throw new Error("ERR_WAPP_DOWNLOAD_MEDIA");
+  }
+
+  let filename = msg.message?.documentMessage?.fileName || "";
+  if (!filename) {
+    const ext = mineType.mimetype.split("/")[1].split(";")[0];
+    
+    // Para áudios, usar extensão apropriada
+    if (msg.message?.audioMessage) {
+      const audioExt = mineType.mimetype.includes('ogg') ? 'ogg' : 
+                      mineType.mimetype.includes('mp4') ? 'm4a' :
+                      mineType.mimetype.includes('webm') ? 'webm' : 'ogg';
+      filename = `audio_${new Date().getTime()}.${audioExt}`;
+    } else {
+      filename = `${new Date().getTime()}.${ext}`;
+    }
+  }
+
+  console.log("Media downloaded successfully:", { 
+    filename, 
+    size: buffer.length, 
+    mimetype: mineType.mimetype 
+  });
+t chunk of stream) {
+    buffer = Buffer.concat([buffer, chunk]);
+  }
+
   if (!buffer) {
     throw new Error("ERR_WAPP_DOWNLOAD_MEDIA");
   }
@@ -364,26 +418,25 @@ const downloadMedia = async (msg: proto.IWebMessageInfo) => {
     filename = `${new Date().getTime()}.${ext}`;
   }
 
-  const media = { data: buffer, mimetype: mineType.mimetype, filename };
-  return media;
-};
-
-const verifyContact = async (msgContact: IMe, wbot: Session, companyId: number): Promise<Contact> => {
-  let profilePicUrl: string;
-  try {
-    profilePicUrl = await wbot.profilePictureUrl(msgContact.id);
-  } catch (e) {
-    profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
-  }
-
-  const isGroup = msgContact.id.endsWith("g.us");
-
+  const media = { data: buffer, mimetyp  const isGroup = msgContact.id.endsWith("g.us");
+  
   const contactData = {
     name: msgContact?.name || msgContact.id.replace(/\D/g, ""),
     // Para grupos, manter o ID completo; para contatos individuais, remover caracteres não numéricos
     number: isGroup ? msgContact.id : msgContact.id.replace(/\D/g, ""),
     profilePicUrl,
     isGroup,
+{
+    profilePicUrl = await wbot.profilePictureUrl(msgContact.id);
+  } catch (e) {
+    profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
+  }
+
+  const contactData = {
+    name: msgContact?.name || msgContact.id.replace(/\D/g, ""),
+    number: msgContact.id.replace(/\D/g, ""),
+    profilePicUrl,
+    isGroup: msgContact.id.endsWith("g.us"),
     companyId,
   };
 
@@ -416,19 +469,7 @@ const verifyMediaMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, co
   let mediaPath: string;
   try {
     mediaPath = await UploadHelper.saveBuffer(media.data, uploadConfig, fileName);
-  } catch (err) {
-    logger.error(err, "Error organizing media file");
-    // Fallback para método antigo se falhar
-    try {
-      await writeFileAsync(join(__dirname, "..", "..", "..", "public", media.filename), media.data);
-      mediaPath = media.filename;
-    } catch (fallbackErr) {
-      logger.error(fallbackErr, "Error writing media file");
-      throw new Error("ERR_SAVING_MEDIA");
-    }
-  }
-
-  const body = getBodyMessage(msg) || ""; // Não mostrar nome do arquivo se não houver caption
+  } catch (err)   const body = getBodyMessage(msg) || ""; // Não mostrar nome do arquivo se não houver caption
   const mediaType = media.mimetype.split("/")[0];
   const messageData = {
     id: msg.key.id,
@@ -445,11 +486,26 @@ const verifyMediaMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, co
   };
 
   // Atualizar última mensagem do ticket com descrição mais amigável
-  const lastMessageText = body || (mediaType === 'image' ? '📷 Imagem' :
-    mediaType === 'video' ? '🎥 Vídeo' :
-      mediaType === 'audio' ? '🎵 Áudio' :
-        '📄 Documento');
+  const lastMessageText = body || (mediaType === 'image' ? '📷 Imagem' : 
+                                  mediaType === 'video' ? '🎥 Vídeo' : 
+                                  mediaType === 'audio' ? '🎵 Áudio' : 
+                                  '📄 Documento');
   await ticket.update({ lastMessage: lastMessageText });
+
+    id: msg.key.id,
+    ticketId: ticket.id,
+    contactId: msg.key.fromMe ? undefined : contact.id,
+    body,
+    fromMe: msg.key.fromMe,
+    read: msg.key.fromMe,
+    mediaUrl: mediaPath, // Usar caminho organizado
+    mediaType: media.mimetype.split("/")[0],
+    quotedMsgId: quotedMsg?.id,
+    ack: msg.status,
+    dataJson: JSON.stringify(msg),
+  };
+
+  await ticket.update({ lastMessage: body });
 
   const newMessage = await CreateMessageService({ messageData, companyId: ticket.companyId });
 
@@ -492,7 +548,7 @@ export const verifyMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, 
 
   await ticket.update({ lastMessage: body });
 
-  const createdMessage = await CreateMessageService({ messageData, companyId: ticket.companyId });
+  await CreateMessageService({ messageData, companyId: ticket.companyId });
 
   if (!msg.key.fromMe && ticket.status === "closed") {
     await ticket.update({ status: "pending" });
@@ -517,82 +573,139 @@ const isValidMsg = (msg: proto.IWebMessageInfo): boolean => {
   }
 };
 
-// Emojis customizados para números e comandos
-const glyphFor = (value: string): string => {
-  const map: Record<string, string> = {
-    '0': '0️⃣',
-    '1': '1️⃣',
-    '2': '2️⃣',
-    '3': '3️⃣',
-    '4': '4️⃣',
-    '5': '5️⃣',
-    '6': '6️⃣',
-    '7': '7️⃣',
-    '8': '8️⃣',
-    '9': '9️⃣',
-    '#': '#️⃣'
-
+// Função para criar mensagem com botões (formato correto para Baileys 6.x)
+const createButtonMessage = (body: string, buttons: Array<{id: string, text: string}>) => {
+  return {
+    text: body,
+    footer: "Escolha uma opção:",
+    interactiveButtons: buttons.map((btn) => ({
+      name: "quick_reply",
+      buttonParamsJson: JSON.stringify({
+        display_text: btn.text,
+        id: btn.id
+      })
+    }))
   };
-  return map[value] || '';
 };
 
-// Helper antigo mantido (não usado mais para menus)
-const toKeycapEmoji = (value: string): string => {
-  if (!/^\d+$/.test(value)) return "";
-  return value.replace(/[0-9]/g, d => `${d}\uFE0F\u20E3`);
+// Função para criar mensagem com lista (formato correto para Baileys 6.x)
+const createListMessage = (body: string, title: string, options: Array<{id: string, title: string, description?: string}>) => {
+  return {
+    text: body,
+    footer: "Escolha uma opção:",
+    title: title,
+    buttonText: "📋 Ver opções",
+    sections: [{
+      title: title,
+      rows: options.map(opt => ({
+        rowId: opt.id,
+        title: opt.title,
+        description: opt.description || ""
+      }))
+    }]
+  };
 };
 
-// Função simplificada para enviar mensagem de chatbot (sempre texto)
+// Função para enviar mensagem baseada no tipo de chatbot
 const sendChatbotMessage = async (
-  ticket: Ticket,
-  body: string,
-  options: Array<{ option: string, title: string }>
+  ticket: Ticket, 
+  body: string, 
+  options: Array<{option: string, title: string}>,
+  chatbotType: string = 'text'
 ) => {
   try {
     // Adicionar opções de navegação
     const allOptions = [
       ...options,
       { option: '0', title: 'Voltar ao menu anterior' },
-      { option: '#', title: '#️⃣ Voltar ao Menu Principal' }
+      { option: '#', title: 'Voltar ao Menu Principal' }
     ];
 
-    // Sempre usar formato texto (Baileys sempre usa texto)
-    const navOptions = [
-      { option: '0', title: '0️⃣ Voltar ao menu anterior' },
-      { option: '#', title: '#️⃣ Voltar ao Menu Principal' }
-    ];
+    // Log para debug
+    logger.info(`Sending chatbot message - Type: ${chatbotType}, Options: ${allOptions.length}`);
 
-    const optionsPart = options.map((opt, idx) => {
-      const num = (idx + 1).toString();
-      const emoji = glyphFor(num);
-      const prefix = emoji ? `${emoji} ` : '';
-      return `${prefix}${opt.title}`;
-    }).join('\n');
-
-    const navPart = navOptions.map(n => n.title).join('\n');
-    const textOptions = optionsPart ? `${optionsPart}\n\n${navPart}\n` : "";
-
+    // Por enquanto, forçar uso de texto até resolver o problema das mensagens interativas
+    logger.info("Using text format (interactive messages temporarily disabled)");
+    
+    // Formato texto padrão
+    let textOptions = "";
+    allOptions.forEach((option) => {
+      textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+    });
+    
     const textMessage = formatBody(`${body}\n\n${textOptions}`, ticket.contact);
     await SendWhatsAppMessage({ body: textMessage, ticket });
 
+    // Código comentado para mensagens interativas (para debug futuro)
+    /*
+    switch (chatbotType.toLowerCase()) {
+      case 'button':
+        // Máximo 3 botões no WhatsApp
+        if (allOptions.length <= 3) {
+          logger.info("Sending button message");
+          const buttons = allOptions.map(opt => ({
+            id: opt.option,
+            text: opt.title
+          }));
+          
+          const buttonMessage = createButtonMessage(body, buttons);
+          await SendWhatsAppMessage({ 
+            body: JSON.stringify(buttonMessage), 
+            ticket,
+            isButton: true 
+          });
+          return;
+        }
+        logger.info("Too many options for buttons, falling back to list");
+        // fall through
+      
+      case 'list':
+        if (allOptions.length > 1) {
+          logger.info("Sending list message");
+          const listOptions = allOptions.map(opt => ({
+            id: opt.option,
+            title: opt.title,
+            description: `Opção ${opt.option}`
+          }));
+          
+          const listMessage = createListMessage(body, "Escolha uma opção:", listOptions);
+          await SendWhatsAppMessage({ 
+            body: JSON.stringify(listMessage), 
+            ticket,
+            isList: true 
+          });
+          return;
+        }
+        logger.info("Not enough options for list, falling back to text");
+        // fall through
+      
+      default:
+        logger.info("Sending text message");
+        // Formato texto padrão
+        let textOptions = "";
+        allOptions.forEach((option) => {
+          textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+        });
+        
+        const textMessage = formatBody(`${body}\n\n${textOptions}`, ticket.contact);
+        await SendWhatsAppMessage({ body: textMessage, ticket });
+        break;
+    }
+    */
   } catch (error) {
-    logger.error(error, "Error sending chatbot message");
+    logger.error(error, "Error sending chatbot message, falling back to text");
     // Fallback para texto em caso de erro
-    const navOptions = [
-      { option: '0', title: '⿠ Voltar ao menu anterior' },
-      { option: '#', title: '⿪ Voltar ao Menu Principal' }
+    let textOptions = "";
+    const allOptions = [
+      ...options,
+      { option: '0', title: 'Voltar ao menu anterior' },
+      { option: '#', title: 'Voltar ao Menu Principal' }
     ];
-
-    const optionsPart = options.map((opt, idx) => {
-      const num = (idx + 1).toString();
-      const emoji = glyphFor(num);
-      const prefix = emoji ? `${emoji} ` : '';
-      return `${prefix}${opt.title}`;
-    }).join('\n');
-
-    const navPart = navOptions.map(n => n.title).join('\n');
-    const textOptions = optionsPart ? `${optionsPart}\n\n${navPart}\n` : "";
-
+    
+    allOptions.forEach((option) => {
+      textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+    });
+    
     const textMessage = formatBody(`${body}\n\n${textOptions}`, ticket.contact);
     await SendWhatsAppMessage({ body: textMessage, ticket });
   }
@@ -607,27 +720,27 @@ const verifyQueue = async (wbot: Session, msg: proto.IWebMessageInfo, ticket: Ti
   }
 
   const selectedOption = getBodyMessage(msg);
-
+  
   // Verificar se o usuário selecionou uma opção válida
   const optionNumber = parseInt(selectedOption);
   if (selectedOption && !isNaN(optionNumber) && optionNumber >= 1 && optionNumber <= queues.length) {
     // Usuário selecionou um setor válido
-    const choosenQueue = queues[optionNumber - 1];
+    const choosenQueue = queues[optionNumber - 1];    
     // Verificar se o setor tem opções de chatbot
     const queueOptionsCount = await QueueOption.count({
       where: { queueId: choosenQueue.id, parentId: null }
     });
-
-    const chatbot = queueOptionsCount > 0;
-    await UpdateTicketService({
-      ticketData: { queueId: choosenQueue.id, chatbot },
-      ticketId: ticket.id,
-      companyId: ticket.companyId
-    });
+    
+    const chatbot = queueOptionsCount > 0;    
+    await UpdateTicketService({ 
+      ticketData: { queueId: choosenQueue.id, chatbot }, 
+      ticketId: ticket.id, 
+      companyId: ticket.companyId 
+    });    
     // Se tem chatbot, verificar horário de funcionamento antes de mostrar opções
     if (chatbot) {
       const queue = await Queue.findByPk(choosenQueue.id);
-
+      
       // Verificar horário de funcionamento ANTES de mostrar as opções
       const { schedules }: any = queue;
       const now = moment();
@@ -643,8 +756,7 @@ const verifyQueue = async (wbot: Session, msg: proto.IWebMessageInfo, ticket: Ti
         const startTime = moment(schedule.startTime, "HH:mm");
         const endTime = moment(schedule.endTime, "HH:mm");
 
-        if (now.isBefore(startTime) || now.isAfter(endTime)) {
-          const body = formatBody(`${queue.outOfHoursMessage}\n\n⿪ Voltar ao Menu Principal`, contact);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {          const body = formatBody(`${queue.outOfHoursMessage}\n\n*[ # ]* - Voltar ao Menu Principal`, contact);
           await SendWhatsAppMessage({ body, ticket });
           return;
         }
@@ -655,36 +767,45 @@ const verifyQueue = async (wbot: Session, msg: proto.IWebMessageInfo, ticket: Ti
         where: { queueId: choosenQueue.id, parentId: null },
         order: [["option", "ASC"], ["createdAt", "ASC"]]
       });
-      const opts = queueOptions.map(o => ({ option: o.option, title: o.title }));
-      await sendChatbotMessage(ticket, queue.greetingMessage, opts);
-    }
+      
+      let options = "";
+      queueOptions.forEach((option) => {
+        options += `*[ ${option.option} ]* - ${option.title}\n`;
+      });
+      options += `\n*[ # ]* - Voltar ao Menu Principal`;
 
+      const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${options}`, contact);      await SendWhatsAppMessage({ body: textMessage, ticket });
+    }
+    
     return;
   }
-
+  
   // Se chegou aqui, é primeira mensagem ou opção inválida - mostrar opções de setores
   const queueOptions = queues.map((queue, index) => ({
     option: (index + 1).toString(),
     title: queue.name
   }));
-
-  await sendChatbotMessage(ticket, greetingMessage, queueOptions);
+  
+  // Usar o tipo de chatbot configurado nas configurações da empresa
+  const chatbotType = await getChatbotType(ticket.companyId);
+  
+  await sendChatbotMessage(ticket, greetingMessage, queueOptions, chatbotType);
 };
 
 const handleChatbot = async (
-  ticket: Ticket,
-  msg: proto.IWebMessageInfo,
-  wbot: Session,
+  ticket: Ticket, 
+  msg: proto.IWebMessageInfo, 
+  wbot: Session, 
   dontReadTheFirstQuestion: boolean = false
-): Promise<void> => {
+): Promise<void> => {  
   const queue = await Queue.findByPk(ticket.queueId);
-
+  
   if (!queue) {
     return;
   }
 
   const messageBody = getBodyMessage(msg);
-
+  
   // Voltar para o menu inicial
   if (messageBody == "#") {
     await ticket.update({ queueOptionId: null, chatbot: false, queueId: null });
@@ -702,17 +823,10 @@ const handleChatbot = async (
 
     // Se o usuário enviou uma mensagem, verificar se corresponde a uma opção
     if (messageBody && !dontReadTheFirstQuestion) {
-      let selectedOption = queueOptions.find((o) => o.option == messageBody);
-      // Fallback: permitir seleção por índice (1..n)
-      if (!selectedOption && /^\d+$/.test(messageBody)) {
-        const idx = parseInt(messageBody, 10) - 1;
-        if (idx >= 0 && idx < queueOptions.length) {
-          selectedOption = queueOptions[idx];
-        }
-      }
+      const selectedOption = queueOptions.find((o) => o.option == messageBody);
       if (selectedOption) {
         await ticket.update({ queueOptionId: selectedOption.id });
-
+        
         // Verificar se esta opção tem sub-opções
         const hasSubOptions = await QueueOption.count({
           where: { parentId: selectedOption.id }
@@ -730,10 +844,13 @@ const handleChatbot = async (
             title: option.title
           }));
 
-          await sendChatbotMessage(ticket, selectedOption.message, subOptionsFormatted);
+          // Usar o tipo de chatbot configurado
+          const chatbotType = await getChatbotType(ticket.companyId);
+          
+          await sendChatbotMessage(ticket, selectedOption.message, subOptionsFormatted, chatbotType);
         } else {
           // Se não tem sub-opções, enviar apenas a mensagem
-          const body = formatBody(`\u200e${selectedOption.message}`, ticket.contact);
+          const body = formatBody(`\u200e${selectedOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
           await SendWhatsAppMessage({ body, ticket });
         }
         return;
@@ -747,9 +864,69 @@ const handleChatbot = async (
         title: option.title
       }));
 
+      // Usar o tipo de chatbot configurado
+      const chatbotType = await getChatbotType(ticket.companyId);
+      
       // Para opções principais, não incluir "voltar ao menu anterior"
-      const finalOptions = [...optionsFormatted];
-      await sendChatbotMessage(ticket, queue.greetingMessage, finalOptions);
+      const mainOptions = [...optionsFormatted, { option: '#', title: 'Voltar ao Menu Principal' }];
+      
+      try {
+        switch (chatbotType.toLowerCase()) {
+          case 'button':
+            if (mainOptions.length <= 3) {
+              const buttons = mainOptions.map(opt => ({
+                id: opt.option,
+                text: opt.title
+              }));
+              
+              const buttonMessage = createButtonMessage(queue.greetingMessage, buttons);
+              await SendWhatsAppMessage({ 
+                body: JSON.stringify(buttonMessage), 
+                ticket,
+                isButton: true 
+              });
+              return;
+            }
+            // fall through
+          
+          case 'list':
+            if (mainOptions.length > 1) {
+              const listOptions = mainOptions.map(opt => ({
+                id: opt.option,
+                title: opt.title,
+                description: `Opção ${opt.option}`
+              }));
+              
+              const listMessage = createListMessage(queue.greetingMessage, "Escolha uma opção:", listOptions);
+              await SendWhatsAppMessage({ 
+                body: JSON.stringify(listMessage), 
+                ticket,
+                isList: true 
+              });
+              return;
+            }
+            // fall through
+          
+          default:
+            let textOptions = "";
+            mainOptions.forEach((option) => {
+              textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+            });
+            
+            const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
+            await SendWhatsAppMessage({ body: textMessage, ticket });
+            break;
+        }
+      } catch (error) {
+        logger.error(error, "Error sending main chatbot options, falling back to text");
+        let textOptions = "";
+        mainOptions.forEach((option) => {
+          textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+        });
+        
+        const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
+        await SendWhatsAppMessage({ body: textMessage, ticket });
+      }
     } else {
       await ticket.update({ chatbot: false });
     }
@@ -767,7 +944,7 @@ const handleChatbot = async (
         const currentOption = await QueueOption.findByPk(ticket.queueOptionId);
         if (currentOption && currentOption.parentId) {
           await ticket.update({ queueOptionId: currentOption.parentId });
-
+          
           // Mostrar opções do nível anterior
           const parentOptions = await QueueOption.findAll({
             where: { parentId: currentOption.parentId },
@@ -781,7 +958,9 @@ const handleChatbot = async (
             }));
 
             const parentOption = await QueueOption.findByPk(currentOption.parentId);
-            await sendChatbotMessage(ticket, parentOption?.message || queue.greetingMessage, parentOptionsFormatted);
+            const chatbotType = await getChatbotType(ticket.companyId);
+            
+            await sendChatbotMessage(ticket, parentOption?.message || queue.greetingMessage, parentOptionsFormatted, chatbotType);
           }
         } else {
           // Voltar para as opções principais
@@ -796,24 +975,77 @@ const handleChatbot = async (
             title: option.title
           }));
 
+          const chatbotType = await getChatbotType(ticket.companyId);
+          
           // Para opções principais, não incluir "voltar ao menu anterior"
-          const finalOptions = [...mainOptionsFormatted];
-          await sendChatbotMessage(ticket, queue.greetingMessage, finalOptions);
+          const finalOptions = [...mainOptionsFormatted, { option: '#', title: 'Voltar ao Menu Principal' }];
+          
+          try {
+            switch (chatbotType.toLowerCase()) {
+              case 'button':
+                if (finalOptions.length <= 3) {
+                  const buttons = finalOptions.map(opt => ({
+                    id: opt.option,
+                    text: opt.title
+                  }));
+                  
+                  const buttonMessage = createButtonMessage(queue.greetingMessage, buttons);
+                  await SendWhatsAppMessage({ 
+                    body: JSON.stringify(buttonMessage), 
+                    ticket,
+                    isButton: true 
+                  });
+                  return;
+                }
+                // fall through
+              
+              case 'list':
+                if (finalOptions.length > 1) {
+                  const listOptions = finalOptions.map(opt => ({
+                    id: opt.option,
+                    title: opt.title,
+                    description: `Opção ${opt.option}`
+                  }));
+                  
+                  const listMessage = createListMessage(queue.greetingMessage, "Escolha uma opção:", listOptions);
+                  await SendWhatsAppMessage({ 
+                    body: JSON.stringify(listMessage), 
+                    ticket,
+                    isList: true 
+                  });
+                  return;
+                }
+                // fall through
+              
+              default:
+                let textOptions = "";
+                finalOptions.forEach((option) => {
+                  textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+                });
+                
+                const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
+                await SendWhatsAppMessage({ body: textMessage, ticket });
+                break;
+            }
+          } catch (error) {
+            logger.error(error, "Error sending main options, falling back to text");
+            let textOptions = "";
+            finalOptions.forEach((option) => {
+              textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
+            });
+            
+            const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
+            await SendWhatsAppMessage({ body: textMessage, ticket });
+          }
         }
         return;
       }
 
       // Verificar se selecionou uma sub-opção válida
-      let selectedSubOption = subOptions.find((o) => o.option == messageBody);
-      if (!selectedSubOption && /^\d+$/.test(messageBody)) {
-        const idx = parseInt(messageBody, 10) - 1;
-        if (idx >= 0 && idx < subOptions.length) {
-          selectedSubOption = subOptions[idx];
-        }
-      }
+      const selectedSubOption = subOptions.find((o) => o.option == messageBody);
       if (selectedSubOption) {
         await ticket.update({ queueOptionId: selectedSubOption.id });
-
+        
         // Verificar se esta sub-opção tem filhos
         const hasChildren = await QueueOption.count({
           where: { parentId: selectedSubOption.id }
@@ -831,10 +1063,12 @@ const handleChatbot = async (
             title: option.title
           }));
 
-          await sendChatbotMessage(ticket, selectedSubOption.message, childOptionsFormatted);
+          const chatbotType = await getChatbotType(ticket.companyId);
+          
+          await sendChatbotMessage(ticket, selectedSubOption.message, childOptionsFormatted, chatbotType);
         } else {
           // Opção final, sem filhos
-          const body = formatBody(`\u200e${selectedSubOption.message}`, ticket.contact);
+          const body = formatBody(`\u200e${selectedSubOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
           await SendWhatsAppMessage({ body, ticket });
         }
         return;
@@ -849,13 +1083,21 @@ const handleChatbot = async (
         title: option.title
       }));
 
-      await sendChatbotMessage(ticket, currentOption?.message || 'Escolha uma opção:', subOptionsFormatted);
+      const chatbotType = await getChatbotType(ticket.companyId);
+      
+      await sendChatbotMessage(ticket, currentOption?.message || 'Escolha uma opção:', subOptionsFormatted, chatbotType);
     } else {
       // Opção final sem sub-opções
-      const currentOption = await QueueOption.findByPk(ticket.queueOptionId);
-      if (currentOption) {
-        const body = formatBody(`\u200e${currentOption.message}`, ticket.contact);
-        await SendWhatsAppMessage({ body, ticket });
+      const       finishedAt: moment().toDate() // Finalizar o tracking agora que foi avaliado
+    });
+
+    // Agora que o usuário avaliou, finalizar definitivamente o ticket
+    // Isso enviará a mensagem de finalização e fechará completamente o ticket
+    setTimeout(async () => {
+      try {
+        await UpdateTicketService({
+          ticketData: { status: "closed", justClose: true }, // justClose=true para forçar finalização
+t SendWhatsAppMessage({ body, ticket });
       }
     }
   }
@@ -866,6 +1108,7 @@ const handleRating = async (
   ticket: Ticket,
   ticketTraking: TicketTraking
 ) => {
+  const io = getIO();
   const bodyMessage = getBodyMessage(msg);
   let rate: number | null = null;
 
@@ -874,6 +1117,11 @@ const handleRating = async (
   }
 
   if (!Number.isNaN(rate) && Number.isInteger(rate) && !isNull(rate)) {
+    const { complationMessage } = await ShowWhatsAppService(
+      ticket.whatsappId,
+      ticket.companyId
+    );
+
     let finalRate = rate;
 
     if (rate < 1) {
@@ -890,24 +1138,37 @@ const handleRating = async (
       rate: finalRate,
     });
 
+    const body = formatBody(`\u200e${complationMessage}`, ticket.contact);
+    await SendWhatsAppMessage({ body, ticket });
+
     await ticketTraking.update({
+      finishedAt: moment().toDate(),
       rated: true,
-      finishedAt: moment().toDate() // Finalizar o tracking agora que foi avaliado
     });
 
-    // Agora que o usuário avaliou, finalizar definitivamente o ticket
-    // Isso enviará a mensagem de finalização e fechará completamente o ticket
     setTimeout(async () => {
-      try {
-        await UpdateTicketService({
-          ticketData: { status: "closed", justClose: true }, // justClose=true para forçar finalização
+      await ticket.update({
+        queueId: null,
+        chatbot: null,
+        queueOptionId: null,
+        userId: null,
+        status: "closed",
+      });
+
+      io.to("open").emit(`company-${ticket.companyId}-ticket`, {
+        action: "delete",
+        ticket,
+        ticketId: ticket.id,
+      });
+
+      io.to(ticket.status)
+        .to(ticket.id.toString())
+        .emit(`company-${ticket.companyId}-ticket`, {
+          action: "update",
+          ticket,
           ticketId: ticket.id,
-          companyId: ticket.companyId
         });
-      } catch (error) {
-        logger.error(error, "Error closing ticket after rating");
-      }
-    }, 500);
+    }, 4000);
   }
 };
 
@@ -915,22 +1176,18 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
   if (!isValidMsg(msg)) return;
 
   try {
-    // Verificar se a mensagem deve ser ignorada (filtros aprimorados)
-    const shouldIgnore = await shouldIgnoreMessage(msg, {
-      whatsappId: wbot.id!,
-      companyId
+    // Verific    // Verificar se é uma avaliação antes de processar outras lógicas
+    const ticketTraking = await FindOrCreateATicketTrakingService({
+      ticketId: ticket.id,
+      companyId,
+      whatsappId: wbot.id!
     });
 
-    if (shouldIgnore) {
-      return;
-    }
-
-    // Verificar se o modo automático do chatbot está habilitado
-    const chatbotAutoModeEnabled = await isChatbotAutoModeEnabled(companyId);
-
-    let msgContact: IMe;
-    let groupContact: Contact | undefined;
-    const isGroup = msg.key.remoteJid?.endsWith("@g.us");
+    if (!msg.key.fromMe) {
+      if (ticketTraking !== null && verifyRating(ticketTraking)) {
+        await handleRating(msg, ticket, ticketTraking);
+        return;
+s");
     const bodyMessage = getBodyMessage(msg);
 
     msgContact = await getContactMessage(msg, wbot);
@@ -945,27 +1202,19 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
     const contact = await verifyContact(msgContact, wbot, companyId);
     const ticket = await FindOrCreateTicketService(contact, wbot.id!, 0, companyId, groupContact);
 
-    // Verificar se é um ticket novo e enviar mensagem de saudação se necessário
-    if ((ticket as any).isNewTicket && !msg.key.fromMe && !isGroup) {
-      logger.info(`New ticket created: ${ticket.id}, sending greeting message`);
-      try {
-        await SendGreetingMessageService(ticket, contact, wbot.id!, companyId);
-      } catch (greetingError) {
-        logger.error(greetingError, `Error sending greeting message for ticket ${ticket.id}`);
-      }
-    }
+    // Verificar se é uma avaliação antes de processar outras lógicas (apenas se modo automático estiver habilitado)
+    if (chatbotAutoModeEnabled) {
+      const ticketTraking = await FindOrCreateATicketTrakingService({
+        ticketId: ticket.id,
+        companyId,
+        whatsappId: wbot.id!
+      });
 
-    // Verificar se é uma avaliação antes de processar outras lógicas
-    const ticketTraking = await FindOrCreateATicketTrakingService({
-      ticketId: ticket.id,
-      companyId,
-      whatsappId: wbot.id!
-    });
-
-    if (!msg.key.fromMe) {
-      if (ticketTraking !== null && verifyRating(ticketTraking)) {
-        await handleRating(msg, ticket, ticketTraking);
-        return;
+      if (!msg.key.fromMe) {
+        if (ticketTraking !== null && verifyRating(ticketTraking)) {
+          await handleRating(msg, ticket, ticketTraking);
+          return;
+        }
       }
     }
 
@@ -989,10 +1238,10 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
       const user = await User.findByPk(ticket.userId, {
         include: [{ model: Queue, as: "queues" }]
       });
-
+      
       if (user && user.queues && user.queues.length > 0) {
         let selectedQueueId: number;
-
+        
         if (user.queues.length === 1) {
           // Se tem apenas uma fila, usar ela
           selectedQueueId = user.queues[0].id;
@@ -1000,13 +1249,13 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
           // Se tem múltiplas filas, escolher a com menor carga de trabalho
           selectedQueueId = await selectBestQueueForUser(user.queues, ticket.companyId);
         }
-
+        
         await UpdateTicketService({
           ticketData: { queueId: selectedQueueId },
           ticketId: ticket.id,
           companyId: ticket.companyId
         });
-
+        
         // Recarregar o ticket com as informações atualizadas
         await ticket.reload({
           include: [{ model: Queue, as: "queue" }, { model: User, as: "user" }, { model: Contact, as: "contact" }]
@@ -1052,11 +1301,13 @@ const wbotMessageListener = async (wbot: Session, companyId: number): Promise<vo
       const messages = messageUpsert.messages.filter(filterMessages);
       if (!messages) return;
 
+
       for (const message of messages) {
         try {
           const messageExists = await Message.count({ where: { id: message.key.id!, companyId } });
           if (!messageExists) {
             await handleMessage(message, wbot, companyId);
+          } else {
           }
         } catch (error) {
           logger.error(error, `Error processing message ${message.key.id}`);

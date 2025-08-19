@@ -76,7 +76,7 @@ const ProcessScheduleJob = async (job: Job<ProcessScheduleData>): Promise<void> 
 
       // Criar a mensagem
       const messageData = {
-        body: schedule.body,
+        body: schedule.body || '',
         fromMe: true,
         read: true,
         quotedMsgId: null

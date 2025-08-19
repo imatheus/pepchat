@@ -42,12 +42,14 @@ const CreateOrUpdateContactService = async ({
   });
 
   if (contact) {
-    contact.update({ profilePicUrl });
-
-    io.emit(`company-${companyId}-contact`, {
-      action: "update",
-      contact
-    });
+    // Atualizar apenas se vier um profilePicUrl válido e diferente
+    if (typeof profilePicUrl === 'string' && profilePicUrl.trim() !== '' && profilePicUrl !== contact.profilePicUrl) {
+      await contact.update({ profilePicUrl });
+      io.emit(`company-${companyId}-contact`, {
+        action: "update",
+        contact
+      });
+    }
   } else {
     contact = await Contact.create({
       name,

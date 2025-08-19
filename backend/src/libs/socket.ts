@@ -21,7 +21,7 @@ export const initIO = (httpServer: Server): SocketIOServer => {
           await user.save();
           socket.join(`user:${userId}`);
           socket.join(`company:${companyId}`);
-        }
+                  }
       } catch (err) {
         logger.error(err, `Error connecting user ${userId}`);
       }
@@ -31,20 +31,17 @@ export const initIO = (httpServer: Server): SocketIOServer => {
 
     socket.on("joinChatBox", (ticketId: string) => {
       socket.join(`ticket:${ticketId}`);
-      socket.join(`company-${companyId}-ticket:${ticketId}`);
-      // Removed verbose logging for ticket chat joins
+      logger.info(`Client joined ticket chat ${ticketId}`);
     });
 
     socket.on("joinNotification", () => {
       socket.join("notification");
-      socket.join(`company-${companyId}-notification`);
-      // Removed verbose logging for notification connections
+      logger.info(`Client connected to notifications`);
     });
 
     socket.on("joinTickets", (status: string) => {
       socket.join(`status:${status}`);
-      socket.join(`company-${companyId}-${status}`);
-      // Removed verbose logging for ticket status connections
+      logger.info(`Client connected to ${status} tickets`);
     });
 
     socket.on("typing", (data: { ticketId: string; fromMe: boolean; typing: boolean }) => {
@@ -97,7 +94,8 @@ export const initIO = (httpServer: Server): SocketIOServer => {
               online: false,
               updatedAt: new Date()
             });
-          }
+            
+                      }
         } catch (err) {
           logger.error(err, `Error disconnecting user ${userId}`);
         }

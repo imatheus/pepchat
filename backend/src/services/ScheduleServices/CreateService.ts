@@ -36,18 +36,40 @@ const CreateService = async ({
     throw new AppError(err.message);
   }
 
-  // Normalizar sendAt para lidar com datas sem horário (ex.: "YYYY-MM-DD")
+  // Normalizar sendAt para lidar com datas sem horário (ex.: "YYYY-MM-DD") e ajustar horários de hoje no passado
+  // Além disso, corrigir fuso horário quando o servidor estiver em UTC e o cliente enviar horário local sem offset.
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(sendAt);
+  const hasTime = /\d{2}:\d{2}/.test(sendAt);
+  const hasExplicitTz = /([Zz]|[+-]\d{2}:?\d{2})$/.test(sendAt);
+
+  const defaultOffsetMinutes = process.env.APP_TZ_OFFSET
+    ? parseInt(String(process.env.APP_TZ_OFFSET), 10)
+    : -180; // Padrão: -03:00 (Brasil)
+
   let normalizedSendAt = moment(sendAt);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(sendAt)) {
+  // Se possui horário mas não possui timezone explícito, aplicar offset padrão mantendo a hora local informada
+  if (!isDateOnly && hasTime && !hasExplicitTz) {
+    normalizedSendAt = moment(sendAt).utcOffset(defaultOffsetMinutes, true);
+  }
+
+  const now = moment();
+  if (isDateOnly) {
     // Se vier apenas a data, ajustar para daqui a 2 minutos no dia atual selecionado
     const baseDay = moment(sendAt);
-    const now = moment();
     if (baseDay.isSame(now, 'day')) {
-      normalizedSendAt = now.add(2, 'minutes').seconds(0).milliseconds(0);
+      normalizedSendAt = now.clone().add(2, 'minutes').seconds(0).milliseconds(0);
     } else {
-      // Para outras datas (futuras), definir um horário padrão (08:00) no fuso local do servidor
-      normalizedSendAt = baseDay.hour(8).minute(0).second(0).millisecond(0);
+      // Para outras datas (futuras), definir um horário padrão (08:00) no fuso local configurado
+      const base = moment(sendAt).startOf('day').add(8, 'hours');
+      // Aplicar offset padrão mantendo 08:00 como hora local desejada
+      normalizedSendAt = moment(base.format('YYYY-MM-DDTHH:mm')).utcOffset(defaultOffsetMinutes, true);
     }
+  }
+
+  // Se for no mesmo dia e o horário informado já passou (ou é muito próximo), ajustar para daqui a 2 minutos
+  const minFuture = now.clone().add(1, 'minute');
+  if (normalizedSendAt.isSame(now, 'day') && normalizedSendAt.isBefore(minFuture)) {
+    normalizedSendAt = now.clone().add(2, 'minutes').seconds(0).milliseconds(0);
   }
 
   if (!normalizedSendAt.isValid()) {

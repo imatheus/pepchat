@@ -1,32 +1,33 @@
-import { ServerOptions } from "socket.io";
-import { ServerOptions as EngineOptions } from "engine.io";
+interface SocketConfig {
+  transports: ("websocket" | "polling")[];
+  pingTimeout: number;
+  pingInterval: number;
+  connectTimeout: number;
+  allowEIO3: boolean;
+  cors: {
+    origin: string | string[];
+    methods: string[];
+    credentials: boolean;
+  };
+}
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
-const forcePolling = process.env.SOCKET_FORCE_POLLING === 'true';
-
-export const socketConfig: Partial<ServerOptions & EngineOptions> = {
-  transports: forcePolling ? ["polling"] : ["polling", "websocket"],
-  pingTimeout: 60000,
-  pingInterval: 25000,
-  connectTimeout: 45000,
-  allowEIO3: true,
-  // Desabilitar upgrade quando forçar polling para evitar erros de probe no navegador
-  allowUpgrades: !forcePolling,
-  upgradeTimeout: 10000,
-  // Aumentar limite de payload do Socket.IO para evitar queda em tickets com mensagens grandes
-  maxHttpBufferSize: 10 * 1024 * 1024, // 10MB
-  perMessageDeflate: { threshold: 32 * 1024 }, // comprimir somente mensagens >32KB
+export const socketConfig: SocketConfig = {
+  transports: ["websocket", "polling"], // Allow fallback for better compatibility
+  pingTimeout: isProduction ? 60000 : 30000, // Longer timeout in production
+  pingInterval: 25000, // Keep connection alive
+  connectTimeout: 45000, // Connection timeout
+  allowEIO3: true, // Backward compatibility
   cors: {
     origin: process.env.FRONTEND_URL ? 
       (Array.isArray(process.env.FRONTEND_URL) ? 
         process.env.FRONTEND_URL : 
         [process.env.FRONTEND_URL]) : 
-      (isDevelopment ? ["http://localhost:3000"] : ["https://app.pepchat.com.br"]),
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      (isDevelopment ? ["http://localhost:3000"] : ["https://pepchat.com.br"]),
+    methods: ["GET", "POST"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
   },
 };
 

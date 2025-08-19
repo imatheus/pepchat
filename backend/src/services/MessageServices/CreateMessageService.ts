@@ -29,7 +29,9 @@ const CreateMessageService = async ({
   messageData,
   companyId
 }: Request): Promise<Message> => {
-  await Message.upsert({ ...messageData, companyId });
+  // Garantir que body nunca seja nulo/undefined (coluna NOT NULL no banco)
+  const payload = { ...messageData, body: messageData.body ?? "", companyId } as any;
+  await Message.upsert(payload);
 
   const message = await Message.findByPk(messageData.id, {
     include: [
