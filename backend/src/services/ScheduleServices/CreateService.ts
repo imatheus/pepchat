@@ -36,15 +36,26 @@ const CreateService = async ({
     throw new AppError(err.message);
   }
 
-  // Validar se a data de envio não é no passado (permitir até 2 minutos atrás)
-  const sendAtMoment = moment(sendAt);
-  const now = moment();
-  
-  if (!sendAtMoment.isValid()) {
+  // Normalizar sendAt para lidar com datas sem horário (ex.: "YYYY-MM-DD")
+  let normalizedSendAt = moment(sendAt);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(sendAt)) {
+    // Se vier apenas a data, ajustar para daqui a 2 minutos no dia atual selecionado
+    const baseDay = moment(sendAt);
+    const now = moment();
+    if (baseDay.isSame(now, 'day')) {
+      normalizedSendAt = now.add(2, 'minutes').seconds(0).milliseconds(0);
+    } else {
+      // Para outras datas (futuras), definir um horário padrão (08:00) no fuso local do servidor
+      normalizedSendAt = baseDay.hour(8).minute(0).second(0).millisecond(0);
+    }
+  }
+
+  if (!normalizedSendAt.isValid()) {
     throw new AppError("Data de envio inválida");
   }
-  
-  if (sendAtMoment.isBefore(now.subtract(2, 'minutes'))) {
+
+  // Exigir pelo menos 1 minuto no futuro
+  if (normalizedSendAt.isBefore(moment().add(1, 'minute'))) {
     console.log("🔧 CreateService - Date validation failed");
     throw new AppError("A data de envio deve ser pelo menos 1 minuto no futuro");
   }
@@ -53,7 +64,7 @@ const CreateService = async ({
 
   let schedule = await Schedule.create({
     body,
-    sendAt: new Date(sendAt),
+    sendAt: normalizedSendAt.toDate(),
     contactId: typeof contactId === 'string' ? parseInt(contactId) : contactId,
     companyId: typeof companyId === 'string' ? parseInt(companyId) : companyId,
     userId: typeof userId === 'string' ? parseInt(userId) : userId,

@@ -57,6 +57,17 @@ const TicketActionButtons = ({ ticket }) => {
 			}
 		} catch (err) {
 			setLoading(false);
+			// Mensagem vinda do backend (se existir)
+			const backendMsg = err?.response?.data?.error || err?.response?.data?.message;
+			if (backendMsg) {
+				toastError({ message: backendMsg });
+				return;
+			}
+			// Caso específico ao aceitar sem fila
+			if (status === "open") {
+				toastError({ message: "Não é possível aceitar um ticket sem fila" });
+				return;
+			}
 			toastError(err);
 		}
 	};

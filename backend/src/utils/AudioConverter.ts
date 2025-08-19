@@ -91,9 +91,7 @@ try {
     fluentFfmpeg.setFfmpegPath(ffmpegStatic);
   }
   ffmpegAvailable = true;
-  console.log('✅ FFmpeg dependencies loaded successfully');
 } catch (error) {
-  console.warn('⚠️ FFmpeg dependencies not available, using fallback mode:', error.message);
   ffmpegAvailable = false;
 }
 

@@ -19,23 +19,16 @@ const ProcessPendingSchedules = async (): Promise<void> => {
     });
 
     if (pendingSchedules.length > 0) {
-      logger.info(`Found ${pendingSchedules.length} pending schedules`);
-
       // Reagendar cada um
       for (const schedule of pendingSchedules) {
         try {
           await ScheduleJobService(schedule);
-          logger.info(`Schedule ${schedule.id} rescheduled successfully`);
         } catch (error) {
-          logger.error(`Error rescheduling schedule ${schedule.id}:`, error);
           // Marcar como erro se não conseguir reagendar
           await schedule.update({ status: 'ERRO' });
         }
       }
-
-      logger.info("Schedule processing completed");
     }
-    // Removed "No pending schedules found" log to reduce noise
 
   } catch (error) {
     logger.error("Error processing schedules:", error);

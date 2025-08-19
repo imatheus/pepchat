@@ -30,6 +30,10 @@ const toastError = (err) => {
     // Mensagens conhecidas vindas do backend
     const backendError = data?.error || data?.message;
     if (backendError) {
+      // Se for exatamente a mensagem pedida, mostrar como veio
+      if (backendError === "Não é possível aceitar um ticket sem fila") {
+        return showToast(backendError, 'no-queue-accept');
+      }
       if (i18n.exists(`backendErrors.${backendError}`)) {
         return showToast(i18n.t(`backendErrors.${backendError}`), backendError);
       }

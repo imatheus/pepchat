@@ -102,6 +102,17 @@ const TicketActionButtonsCustom = ({ ticket, onTicketUpdate }) => {
 			
 		} catch (err) {
 			setLoading(false);
+			// Tentar extrair mensagem do backend e exibir no toast
+			const backendMsg = err?.response?.data?.error || err?.response?.data?.message;
+			if (backendMsg) {
+				toastError({ message: backendMsg });
+				return;
+			}
+			// Caso específico: aceitar ticket sem fila pode gerar 400/500 dependendo do backend
+			if (status === "open") {
+				toastError({ message: "Não é possível aceitar um ticket sem fila" });
+				return;
+			}
 			toastError(err);
 		}
 	};

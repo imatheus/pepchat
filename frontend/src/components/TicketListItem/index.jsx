@@ -145,7 +145,14 @@ const TicketListItem = ({ ticket }) => {
       });
     } catch (err) {
       setLoading(false);
-      toastError(err);
+      // Mostrar mensagem do backend se existir, ou mensagem padrão para aceitar sem fila
+      const backendMsg = err?.response?.data?.error || err?.response?.data?.message;
+      if (backendMsg) {
+        toastError({ message: backendMsg });
+      } else {
+        toastError({ message: "Não é possível aceitar um ticket sem fila" });
+      }
+      return;
     }
     if (isMounted.current) {
       setLoading(false);

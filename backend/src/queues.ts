@@ -51,7 +51,6 @@ const testRedisConnection = async () => {
 // Inicializar filas com tratamento de erro
 const initializeQueues = async () => {
   try {
-    logger.info("Testing Redis connection...");
     redisAvailable = await testRedisConnection();
     
     if (redisAvailable) {
@@ -74,12 +73,10 @@ const initializeQueues = async () => {
         redisAvailable = false;
       });
       
-      logger.info("Background job queues initialized successfully with Redis");
     } else {
       // Redis not available - campaigns will be processed directly (logging removed)
     }
   } catch (error) {
-    logger.warn("Failed to initialize Redis queues:", error.message);
     redisAvailable = false;
   }
 };
@@ -92,10 +89,7 @@ export { scheduleQueue, campaignQueue, autoAssignQueue, redisAvailable };
 
 export const startQueueProcess = async () => {
   try {
-    // Reduced logging for queue initialization
-    
     if (!redisAvailable || !scheduleQueue || !campaignQueue || !autoAssignQueue) {
-      // Only log Redis unavailability once during startup
       return;
     }
 
@@ -115,7 +109,6 @@ export const startQueueProcess = async () => {
 
     // Event listeners para logs
     scheduleQueue.on("completed", (job, result) => {
-      logger.info(`Schedule job ${job.id} completed`);
     });
 
     scheduleQueue.on("failed", (job, err) => {
@@ -124,7 +117,6 @@ export const startQueueProcess = async () => {
     });
 
     campaignQueue.on("completed", (job, result) => {
-      logger.info(`Campaign job ${job.id} completed`);
     });
 
     campaignQueue.on("failed", (job, err) => {
@@ -133,7 +125,6 @@ export const startQueueProcess = async () => {
     });
 
     autoAssignQueue.on("completed", (job, result) => {
-      logger.info(`Auto assign job ${job.id} completed`);
     });
 
     autoAssignQueue.on("failed", (job, err) => {
@@ -162,10 +153,8 @@ export const startQueueProcess = async () => {
       // Ignorar erros de limpeza silenciosamente
     }
     
-    logger.info("Background job processors started successfully with Redis");
     
   } catch (error) {
-    logger.warn("Queue processes not started (Redis unavailable):", error.message);
     // Não falhar a inicialização do servidor se as filas falharem
   }
 };

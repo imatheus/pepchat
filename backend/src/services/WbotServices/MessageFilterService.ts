@@ -47,7 +47,6 @@ export const shouldProcessMessage = async (
 
     // Verificar limite de dias configurado
     if (!HistoryConfigService.isMessageWithinDaysLimit(messageTimestamp, historyConfig.historyDaysLimit)) {
-      logger.info(`Filtering message older than ${historyConfig.historyDaysLimit} days: ${msg.key.id}`);
       return false;
     }
 
@@ -74,7 +73,6 @@ export const shouldProcessMessage = async (
     const isOldMessage = messageDate < sessionStartWithMargin;
 
     if (isOldMessage) {
-      logger.info(`Filtering old message: ${msg.key.id} - Message time: ${messageDate.toISOString()}, Session started: ${whatsapp.sessionStartedAt.toISOString()}`);
       return false;
     }
 
@@ -107,16 +105,22 @@ export const isBotMessage = (msg: proto.IWebMessageInfo): boolean => {
       return true;
     }
 
-    // Verificar padrões de mensagens do bot
+    // Antigo formato com números: *[ 1 ]*
     if (body.includes('*[') && body.includes(']*')) {
       return true;
     }
 
-    // Verificar se começa com caracteres especiais do bot
+    // Novo formato: presença de rótulos de navegação com emojis
+    const navLabels = ['Voltar ao menu anterior', '#️⃣ Voltar ao Menu Principal'];
+    if (navLabels.some(label => body.includes(label))) {
+      return true;
+    }
+
     if (body.startsWith('*[') || body.startsWith('‎')) {
       return true;
     }
   }
+
 
   return false;
 };
@@ -175,7 +179,6 @@ export const shouldIgnoreGroupMessage = async (
     // Se a configuração está "enabled", PROCESSAR mensagens de grupos (não ignorar)
     // Se a configuração está "disabled", IGNORAR mensagens de grupos
     if (setting.value === "disabled") {
-      logger.info(`Ignoring group message from ${msg.key.remoteJid} - Group messages disabled for company ${companyId}`);
       return true;
     }
 

@@ -37,7 +37,6 @@ const useStyles = makeStyles(theme => ({
 	root: {
 		width: "100vw",
 		height: "100vh",
-		background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
 		backgroundRepeat: "no-repeat",
 		backgroundSize: "100% 100%",
 		backgroundPosition: "center",
@@ -199,7 +198,7 @@ const Login = () => {
 				</form>
 			</div>
 			<br/>
-			<Box mt={8}>{'©2025 PepeAi - Todos os direitos reservados'}</Box>
+			<Box mt={8}>{'©2025 PepChat - Todos os direitos reservados'}</Box>
 		</Container>
 		</div>
 	);

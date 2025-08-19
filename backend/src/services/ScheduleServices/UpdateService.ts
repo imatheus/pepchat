@@ -63,16 +63,25 @@ const UpdateService = async ({
   // Se a data de envio mudou, validar e reagendar (independente do status atual)
   const shouldReschedule = !!sendAt && new Date(sendAt).getTime() !== schedule.sendAt.getTime();
   
+  let normalizedSendAt: moment.Moment | null = null;
   if (shouldReschedule) {
-    // Validar nova data
-    const sendAtMoment = moment(sendAt);
-    const now = moment();
-    
-    if (!sendAtMoment.isValid()) {
+    // Normalizar nova data (suporta apenas data)
+    normalizedSendAt = moment(sendAt);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(sendAt!)) {
+      const baseDay = moment(sendAt);
+      const now = moment();
+      if (baseDay.isSame(now, 'day')) {
+        normalizedSendAt = now.add(2, 'minutes').seconds(0).milliseconds(0);
+      } else {
+        normalizedSendAt = baseDay.hour(8).minute(0).second(0).millisecond(0);
+      }
+    }
+
+    if (!normalizedSendAt.isValid()) {
       throw new AppError("Data de envio inválida");
     }
     
-    if (sendAtMoment.isBefore(now.subtract(2, 'minutes'))) {
+    if (normalizedSendAt.isBefore(moment().add(1, 'minute'))) {
       throw new AppError("A data de envio deve ser pelo menos 1 minuto no futuro");
     }
 
@@ -96,7 +105,7 @@ const UpdateService = async ({
 
   await schedule.update({
     body,
-    sendAt: sendAt ? new Date(sendAt) : schedule.sendAt,
+    sendAt: shouldReschedule ? normalizedSendAt!.toDate() : schedule.sendAt,
     sentAt: shouldReschedule ? null : (sentAt ? new Date(sentAt) : schedule.sentAt),
     contactId,
     ticketId,

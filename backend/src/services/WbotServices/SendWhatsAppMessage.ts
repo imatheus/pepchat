@@ -42,7 +42,6 @@ const sendMessageWithRetry = async (
       }
 
       // Log para debug em produção
-      logger.info(`Sending message attempt ${attempt}/${maxRetries} to ${jid} (${isGroup ? 'group' : 'individual'})`);
 
       // Enviar mensagem com timeout personalizado
       const sentMessage = await Promise.race([
@@ -52,7 +51,6 @@ const sendMessageWithRetry = async (
         )
       ]);
 
-      logger.info(`Message sent successfully to ${jid} on attempt ${attempt}`);
       return sentMessage;
       
     } catch (error: any) {
@@ -62,7 +60,6 @@ const sendMessageWithRetry = async (
       // Se não é a última tentativa, aguardar antes de tentar novamente
       if (attempt < maxRetries) {
         const waitTime = attempt * 3000; // 3s, 6s, 9s... (aumentado para grupos)
-        logger.info(`Waiting ${waitTime}ms before retry ${attempt + 1}/${maxRetries}`);
         await sleep(waitTime);
       }
     }

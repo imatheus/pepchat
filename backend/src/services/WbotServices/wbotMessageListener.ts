@@ -83,10 +83,10 @@ const selectBestQueueForUser = async (userQueues: Queue[], companyId: number): P
 
     // Ordenar por menor carga de trabalho
     queueWorkloads.sort((a, b) => a.activeTickets - b.activeTickets);
-    
+
     const selectedQueue = queueWorkloads[0];
     logger.info(`Selected queue for user: ${selectedQueue.queueName} (${selectedQueue.activeTickets} active tickets)`);
-    
+
     return selectedQueue.queueId;
   } catch (error) {
     logger.error(error, "Error selecting best queue for user, using first queue");
@@ -154,7 +154,7 @@ export const sleep = (ms: number): Promise<void> => {
 export const validaCpfCnpj = (cpfCnpj: string): boolean => {
   // Remove caracteres especiais
   const cleanCpfCnpj = cpfCnpj.replace(/[^\d]/g, '');
-  
+
   if (cleanCpfCnpj.length === 11) {
     // Validação de CPF
     return validaCpf(cleanCpfCnpj);
@@ -162,7 +162,7 @@ export const validaCpfCnpj = (cpfCnpj: string): boolean => {
     // Validação de CNPJ
     return validaCnpj(cleanCpfCnpj);
   }
-  
+
   return false;
 };
 
@@ -236,18 +236,18 @@ export const sendMessageImage = async (
     // Construir o JID corretamente para grupos e contatos individuais
     const isGroup = ticket.contact.isGroup || ticket.contact.number.includes("-") || ticket.contact.number.endsWith("@g.us");
     let jid: string;
-    
+
     if (ticket.contact.number.includes("@")) {
       jid = ticket.contact.number;
     } else {
       jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
     }
-    
+
     const sentMessage = await wbot.sendMessage(jid, {
       image: { url },
       caption: caption || ""
     });
-    
+
     await verifyMessage(sentMessage, ticket, contact);
   } catch (error) {
     logger.error(error, "Error sending image message");
@@ -265,19 +265,19 @@ export const sendMessageLink = async (
     // Construir o JID corretamente para grupos e contatos individuais
     const isGroup = ticket.contact.isGroup || ticket.contact.number.includes("-") || ticket.contact.number.endsWith("@g.us");
     let jid: string;
-    
+
     if (ticket.contact.number.includes("@")) {
       jid = ticket.contact.number;
     } else {
       jid = `${ticket.contact.number}@${isGroup ? "g.us" : "s.whatsapp.net"}`;
     }
-    
+
     const sentMessage = await wbot.sendMessage(jid, {
       document: { url },
       fileName: filename,
       mimetype: "application/pdf"
     });
-    
+
     await verifyMessage(sentMessage, ticket, contact);
   } catch (error) {
     logger.error(error, "Error sending document message");
@@ -304,7 +304,7 @@ export const verifyRating = (ticketTraking: TicketTraking): boolean => {
     const ratingTime = moment(ticketTraking.ratingAt);
     const now = moment();
     const hoursDiff = now.diff(ratingTime, 'hours');
-    
+
     // Permitir avaliação até 24 horas após o ratingAt ser definido
     if (hoursDiff <= 24) {
       return true;
@@ -377,7 +377,7 @@ const verifyContact = async (msgContact: IMe, wbot: Session, companyId: number):
   }
 
   const isGroup = msgContact.id.endsWith("g.us");
-  
+
   const contactData = {
     name: msgContact?.name || msgContact.id.replace(/\D/g, ""),
     // Para grupos, manter o ID completo; para contatos individuais, remover caracteres não numéricos
@@ -445,10 +445,10 @@ const verifyMediaMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, co
   };
 
   // Atualizar última mensagem do ticket com descrição mais amigável
-  const lastMessageText = body || (mediaType === 'image' ? '📷 Imagem' : 
-                                  mediaType === 'video' ? '🎥 Vídeo' : 
-                                  mediaType === 'audio' ? '🎵 Áudio' : 
-                                  '📄 Documento');
+  const lastMessageText = body || (mediaType === 'image' ? '📷 Imagem' :
+    mediaType === 'video' ? '🎥 Vídeo' :
+      mediaType === 'audio' ? '🎵 Áudio' :
+        '📄 Documento');
   await ticket.update({ lastMessage: lastMessageText });
 
   const newMessage = await CreateMessageService({ messageData, companyId: ticket.companyId });
@@ -517,43 +517,80 @@ const isValidMsg = (msg: proto.IWebMessageInfo): boolean => {
   }
 };
 
+// Emojis customizados para números e comandos
+const glyphFor = (value: string): string => {
+  const map: Record<string, string> = {
+    '0': '0️⃣',
+    '1': '1️⃣',
+    '2': '2️⃣',
+    '3': '3️⃣',
+    '4': '4️⃣',
+    '5': '5️⃣',
+    '6': '6️⃣',
+    '7': '7️⃣',
+    '8': '8️⃣',
+    '9': '9️⃣',
+    '#': '#️⃣'
+
+  };
+  return map[value] || '';
+};
+
+// Helper antigo mantido (não usado mais para menus)
+const toKeycapEmoji = (value: string): string => {
+  if (!/^\d+$/.test(value)) return "";
+  return value.replace(/[0-9]/g, d => `${d}\uFE0F\u20E3`);
+};
+
 // Função simplificada para enviar mensagem de chatbot (sempre texto)
 const sendChatbotMessage = async (
-  ticket: Ticket, 
-  body: string, 
-  options: Array<{option: string, title: string}>
+  ticket: Ticket,
+  body: string,
+  options: Array<{ option: string, title: string }>
 ) => {
   try {
     // Adicionar opções de navegação
     const allOptions = [
       ...options,
       { option: '0', title: 'Voltar ao menu anterior' },
-      { option: '#', title: 'Voltar ao Menu Principal' }
+      { option: '#', title: '#️⃣ Voltar ao Menu Principal' }
     ];
 
     // Sempre usar formato texto (Baileys sempre usa texto)
-    let textOptions = "";
-    allOptions.forEach((option) => {
-      textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
-    });
-    
+    const navOptions = [
+      { option: '0', title: '0️⃣ Voltar ao menu anterior' },
+      { option: '#', title: '#️⃣ Voltar ao Menu Principal' }
+    ];
+
+    const optionsPart = options.map(opt => {
+      const emoji = glyphFor(opt.option || '');
+      const prefix = emoji ? `${emoji} ` : '';
+      return `${prefix}${opt.title}`;
+    }).join('\n');
+
+    const navPart = navOptions.map(n => n.title).join('\n');
+    const textOptions = optionsPart ? `${optionsPart}\n\n${navPart}\n` : "";
+
     const textMessage = formatBody(`${body}\n\n${textOptions}`, ticket.contact);
     await SendWhatsAppMessage({ body: textMessage, ticket });
 
   } catch (error) {
     logger.error(error, "Error sending chatbot message");
     // Fallback para texto em caso de erro
-    let textOptions = "";
-    const allOptions = [
-      ...options,
-      { option: '0', title: 'Voltar ao menu anterior' },
-      { option: '#', title: 'Voltar ao Menu Principal' }
+    const navOptions = [
+      { option: '0', title: '⿠ Voltar ao menu anterior' },
+      { option: '#', title: '⿪ Voltar ao Menu Principal' }
     ];
-    
-    allOptions.forEach((option) => {
-      textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
-    });
-    
+
+    const optionsPart = options.map(opt => {
+      const emoji = glyphFor(opt.option || '');
+      const prefix = emoji ? `${emoji} ` : '';
+      return `${prefix}${opt.title}`;
+    }).join('\n');
+
+    const navPart = navOptions.map(n => n.title).join('\n');
+    const textOptions = optionsPart ? `${optionsPart}\n\n${navPart}\n` : "";
+
     const textMessage = formatBody(`${body}\n\n${textOptions}`, ticket.contact);
     await SendWhatsAppMessage({ body: textMessage, ticket });
   }
@@ -568,27 +605,27 @@ const verifyQueue = async (wbot: Session, msg: proto.IWebMessageInfo, ticket: Ti
   }
 
   const selectedOption = getBodyMessage(msg);
-  
+
   // Verificar se o usuário selecionou uma opção válida
   const optionNumber = parseInt(selectedOption);
   if (selectedOption && !isNaN(optionNumber) && optionNumber >= 1 && optionNumber <= queues.length) {
     // Usuário selecionou um setor válido
-    const choosenQueue = queues[optionNumber - 1];    
+    const choosenQueue = queues[optionNumber - 1];
     // Verificar se o setor tem opções de chatbot
     const queueOptionsCount = await QueueOption.count({
       where: { queueId: choosenQueue.id, parentId: null }
     });
-    
-    const chatbot = queueOptionsCount > 0;    
-    await UpdateTicketService({ 
-      ticketData: { queueId: choosenQueue.id, chatbot }, 
-      ticketId: ticket.id, 
-      companyId: ticket.companyId 
-    });    
+
+    const chatbot = queueOptionsCount > 0;
+    await UpdateTicketService({
+      ticketData: { queueId: choosenQueue.id, chatbot },
+      ticketId: ticket.id,
+      companyId: ticket.companyId
+    });
     // Se tem chatbot, verificar horário de funcionamento antes de mostrar opções
     if (chatbot) {
       const queue = await Queue.findByPk(choosenQueue.id);
-      
+
       // Verificar horário de funcionamento ANTES de mostrar as opções
       const { schedules }: any = queue;
       const now = moment();
@@ -604,8 +641,8 @@ const verifyQueue = async (wbot: Session, msg: proto.IWebMessageInfo, ticket: Ti
         const startTime = moment(schedule.startTime, "HH:mm");
         const endTime = moment(schedule.endTime, "HH:mm");
 
-        if (now.isBefore(startTime) || now.isAfter(endTime)) {          
-          const body = formatBody(`${queue.outOfHoursMessage}\n\n*[ # ]* - Voltar ao Menu Principal`, contact);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+          const body = formatBody(`${queue.outOfHoursMessage}\n\n⿪ Voltar ao Menu Principal`, contact);
           await SendWhatsAppMessage({ body, ticket });
           return;
         }
@@ -616,43 +653,36 @@ const verifyQueue = async (wbot: Session, msg: proto.IWebMessageInfo, ticket: Ti
         where: { queueId: choosenQueue.id, parentId: null },
         order: [["option", "ASC"], ["createdAt", "ASC"]]
       });
-      
-      let options = "";
-      queueOptions.forEach((option) => {
-        options += `*[ ${option.option} ]* - ${option.title}\n`;
-      });
-      options += `\n*[ # ]* - Voltar ao Menu Principal`;
-
-      const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${options}`, contact);      
-      await SendWhatsAppMessage({ body: textMessage, ticket });
+      const opts = queueOptions.map(o => ({ option: o.option, title: o.title }));
+      await sendChatbotMessage(ticket, queue.greetingMessage, opts);
     }
-    
+
     return;
   }
-  
+
   // Se chegou aqui, é primeira mensagem ou opção inválida - mostrar opções de setores
   const queueOptions = queues.map((queue, index) => ({
     option: (index + 1).toString(),
     title: queue.name
   }));
-  
+
   await sendChatbotMessage(ticket, greetingMessage, queueOptions);
 };
 
 const handleChatbot = async (
-  ticket: Ticket, 
-  msg: proto.IWebMessageInfo, 
-  wbot: Session, 
+  ticket: Ticket,
+  msg: proto.IWebMessageInfo,
+  wbot: Session,
   dontReadTheFirstQuestion: boolean = false
-): Promise<void> => {  
+): Promise<void> => {
   const queue = await Queue.findByPk(ticket.queueId);
-  
+
   if (!queue) {
     return;
   }
 
   const messageBody = getBodyMessage(msg);
-  
+
   // Voltar para o menu inicial
   if (messageBody == "#") {
     await ticket.update({ queueOptionId: null, chatbot: false, queueId: null });
@@ -673,7 +703,7 @@ const handleChatbot = async (
       const selectedOption = queueOptions.find((o) => o.option == messageBody);
       if (selectedOption) {
         await ticket.update({ queueOptionId: selectedOption.id });
-        
+
         // Verificar se esta opção tem sub-opções
         const hasSubOptions = await QueueOption.count({
           where: { parentId: selectedOption.id }
@@ -694,7 +724,7 @@ const handleChatbot = async (
           await sendChatbotMessage(ticket, selectedOption.message, subOptionsFormatted);
         } else {
           // Se não tem sub-opções, enviar apenas a mensagem
-          const body = formatBody(`\u200e${selectedOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
+          const body = formatBody(`\u200e${selectedOption.message}`, ticket.contact);
           await SendWhatsAppMessage({ body, ticket });
         }
         return;
@@ -709,15 +739,8 @@ const handleChatbot = async (
       }));
 
       // Para opções principais, não incluir "voltar ao menu anterior"
-      const mainOptions = [...optionsFormatted, { option: '#', title: 'Voltar ao Menu Principal' }];
-      
-      let textOptions = "";
-      mainOptions.forEach((option) => {
-        textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
-      });
-      
-      const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
-      await SendWhatsAppMessage({ body: textMessage, ticket });
+      const finalOptions = [...optionsFormatted];
+      await sendChatbotMessage(ticket, queue.greetingMessage, finalOptions);
     } else {
       await ticket.update({ chatbot: false });
     }
@@ -735,7 +758,7 @@ const handleChatbot = async (
         const currentOption = await QueueOption.findByPk(ticket.queueOptionId);
         if (currentOption && currentOption.parentId) {
           await ticket.update({ queueOptionId: currentOption.parentId });
-          
+
           // Mostrar opções do nível anterior
           const parentOptions = await QueueOption.findAll({
             where: { parentId: currentOption.parentId },
@@ -765,15 +788,8 @@ const handleChatbot = async (
           }));
 
           // Para opções principais, não incluir "voltar ao menu anterior"
-          const finalOptions = [...mainOptionsFormatted, { option: '#', title: 'Voltar ao Menu Principal' }];
-          
-          let textOptions = "";
-          finalOptions.forEach((option) => {
-            textOptions += `*[ ${option.option} ]* - ${option.title}\n`;
-          });
-          
-          const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${textOptions}`, ticket.contact);
-          await SendWhatsAppMessage({ body: textMessage, ticket });
+          const finalOptions = [...mainOptionsFormatted];
+          await sendChatbotMessage(ticket, queue.greetingMessage, finalOptions);
         }
         return;
       }
@@ -782,7 +798,7 @@ const handleChatbot = async (
       const selectedSubOption = subOptions.find((o) => o.option == messageBody);
       if (selectedSubOption) {
         await ticket.update({ queueOptionId: selectedSubOption.id });
-        
+
         // Verificar se esta sub-opção tem filhos
         const hasChildren = await QueueOption.count({
           where: { parentId: selectedSubOption.id }
@@ -803,7 +819,7 @@ const handleChatbot = async (
           await sendChatbotMessage(ticket, selectedSubOption.message, childOptionsFormatted);
         } else {
           // Opção final, sem filhos
-          const body = formatBody(`\u200e${selectedSubOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
+          const body = formatBody(`\u200e${selectedSubOption.message}`, ticket.contact);
           await SendWhatsAppMessage({ body, ticket });
         }
         return;
@@ -823,7 +839,7 @@ const handleChatbot = async (
       // Opção final sem sub-opções
       const currentOption = await QueueOption.findByPk(ticket.queueOptionId);
       if (currentOption) {
-        const body = formatBody(`\u200e${currentOption.message}\n\n*[ 0 ]* - Voltar ao menu anterior\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
+        const body = formatBody(`\u200e${currentOption.message}`, ticket.contact);
         await SendWhatsAppMessage({ body, ticket });
       }
     }
@@ -958,10 +974,10 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
       const user = await User.findByPk(ticket.userId, {
         include: [{ model: Queue, as: "queues" }]
       });
-      
+
       if (user && user.queues && user.queues.length > 0) {
         let selectedQueueId: number;
-        
+
         if (user.queues.length === 1) {
           // Se tem apenas uma fila, usar ela
           selectedQueueId = user.queues[0].id;
@@ -969,13 +985,13 @@ const handleMessage = async (msg: proto.IWebMessageInfo, wbot: Session, companyI
           // Se tem múltiplas filas, escolher a com menor carga de trabalho
           selectedQueueId = await selectBestQueueForUser(user.queues, ticket.companyId);
         }
-        
+
         await UpdateTicketService({
           ticketData: { queueId: selectedQueueId },
           ticketId: ticket.id,
           companyId: ticket.companyId
         });
-        
+
         // Recarregar o ticket com as informações atualizadas
         await ticket.reload({
           include: [{ model: Queue, as: "queue" }, { model: User, as: "user" }, { model: Contact, as: "contact" }]

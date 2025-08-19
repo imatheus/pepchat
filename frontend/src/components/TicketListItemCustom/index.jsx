@@ -317,7 +317,12 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
       history.push(`/tickets/${ticket.uuid}`);
     } catch (err) {
       console.error(`❌ Erro ao aceitar ticket ${id}:`, err);
-      toastError(err);
+      const backendMsg = err?.response?.data?.error || err?.response?.data?.message;
+      if (backendMsg) {
+        toastError({ message: backendMsg });
+      } else {
+        toastError({ message: "Não é possível aceitar um ticket sem fila" });
+      }
     } finally {
       if (isMounted.current) {
         setLoading(false);

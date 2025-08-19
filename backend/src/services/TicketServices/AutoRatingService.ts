@@ -22,7 +22,6 @@ const AutoRatingService = async ({
   companyId
 }: AutoRatingRequest): Promise<boolean> => {
   try {
-    logger.info(`AutoRatingService called for ticket ${ticket.id}, company ${companyId}`);
     
     // CORREÇÃO: Verificar se a avaliação está habilitada usando a configuração userRating
     const userRatingSetting = await Setting.findOne({
@@ -32,21 +31,17 @@ const AutoRatingService = async ({
       }
     });
 
-    logger.info(`UserRating setting for company ${companyId}: ${userRatingSetting?.value || 'NOT_FOUND'}`);
 
     // Se a configuração não existe ou está desabilitada, não enviar avaliação
     if (!userRatingSetting || userRatingSetting.value === "disabled") {
-      logger.info(`User rating disabled for company ${companyId} - not sending auto rating`);
       return false;
     }
 
     // Verificar se já foi enviada uma solicitação de avaliação
     if (ticketTraking.ratingAt !== null) {
-      logger.info(`Rating already sent for ticket ${ticket.id} at ${ticketTraking.ratingAt}`);
       return false;
     }
 
-    logger.info(`Proceeding to send auto rating for ticket ${ticket.id}`);
 
     // Obter mensagens personalizadas do WhatsApp
     const { ratingMessage } = await ShowWhatsAppService(
@@ -77,7 +72,6 @@ Avalie nossa equipe:`;
       try {
         await SendWhatsAppMessage({ body: bodyRatingMessage, ticket });
         messageSent = true;
-        logger.info(`Auto rating message sent via WhatsApp for ticket ${ticket.id}`);
       } catch (whatsappError) {
         logger.error(`Failed to send WhatsApp auto rating for ticket ${ticket.id}: ${whatsappError.message}`);
         // Se falhar no WhatsApp, ainda assim marcar como enviado para não tentar novamente
@@ -94,7 +88,6 @@ Avalie nossa equipe:`;
         rated: false
       });
 
-      logger.info(`Auto rating tracking updated for ticket ${ticket.id}`);
       return true;
     }
 
@@ -123,7 +116,6 @@ export const createAutoRatingSetting = async (companyId: number): Promise<void> 
       }
     });
 
-    logger.info(`User rating setting created for company ${companyId}`);
   } catch (error) {
     logger.error(error, `Error creating user rating setting for company ${companyId}`);
   }

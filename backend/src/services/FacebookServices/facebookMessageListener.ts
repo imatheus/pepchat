@@ -31,6 +31,15 @@ import sendFaceMessage from "../FacebookServices/sendFacebookMessage";
 import fs from "fs";
 import QueueOption from "../../models/QueueOption";
 
+// Helper para converter números em emojis de tecla (1️⃣, 2️⃣, ...)
+const toKeycapEmoji = (value: string): string => {
+  if (!/^\d+$/.test(value)) return "";
+  return value
+    .split("")
+    .map(d => `${d}\uFE0F\u20E3`)
+    .join("");
+};
+
 interface IMe {
   name: string;
   // eslint-disable-next-line camelcase
@@ -236,7 +245,9 @@ const verifyQueue = async (
     let options = "";
 
     queues.forEach((queue, index) => {
-      options += `*[ ${index + 1} ]* - ${queue.name}\n`;
+      const emoji = toKeycapEmoji((index + 1).toString());
+      const prefix = emoji ? `${emoji} ` : '';
+      options += `${prefix}${queue.name}\n`;
     });
 
     const textMessage = formatBody(`\u200e${greetingMessage}\n\n${options}`, contact)
@@ -283,7 +294,7 @@ const verifyQueue = async (
         const endTime = moment(schedule.endTime, "HH:mm");
 
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
-          const body = formatBody(`${queue.outOfHoursMessage}\n\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
+          const body = formatBody(`${queue.outOfHoursMessage}\n\n#️⃣ Voltar ao Menu Principal`, ticket.contact);
 
           const sentMessage = await sendFaceMessage({
             ticket,
@@ -346,7 +357,7 @@ const handleChartbot = async (ticket: Ticket, msg: string, wbot: any, dontReadTh
       const endTime = moment(schedule.endTime, "HH:mm");
 
       if (now.isBefore(startTime) || now.isAfter(endTime)) {
-        const body = formatBody(`${ticket.queue.outOfHoursMessage}\n\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
+        const body = formatBody(`${ticket.queue.outOfHoursMessage}\n\n#️⃣ Voltar ao Menu Principal`, ticket.contact);
 
 
 
@@ -439,9 +450,11 @@ const handleChartbot = async (ticket: Ticket, msg: string, wbot: any, dontReadTh
       let options = "";
 
       queueOptions.forEach((option, i) => {
-        options += `*[ ${option.option} ]* - ${option.title}\n`;
+        const emoji = toKeycapEmoji(option.option);
+        const prefix = emoji ? `${emoji} ` : '';
+        options += `${prefix}${option.title}\n`;
       });
-      options += `\n*[ # ]* - Voltar Menu Inicial`;
+      options += `\n🏠 Voltar Menu Inicial`;
 
       const textMessage = formatBody(`\u200e${queue.greetingMessage}\n\n${options}`, ticket.contact)
 
