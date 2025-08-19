@@ -450,7 +450,7 @@ const handleChartbot = async (ticket: Ticket, msg: string, wbot: any, dontReadTh
       let options = "";
 
       queueOptions.forEach((option, i) => {
-        const emoji = toKeycapEmoji(option.option);
+        const emoji = toKeycapEmoji((i + 1).toString());
         const prefix = emoji ? `${emoji} ` : '';
         options += `${prefix}${option.title}\n`;
       });
@@ -490,7 +490,7 @@ const handleChartbot = async (ticket: Ticket, msg: string, wbot: any, dontReadTh
         let options = "";
 
         queueOptions.forEach((option, i) => {
-          options += `*[ ${option.option} ]* - ${option.title}\n`;
+          options += `*[ ${i + 1} ]* - ${option.title}\n`;
         });
         options += `\n*[ # ]* - Voltar Menu Inicial`;
 

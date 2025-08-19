@@ -562,8 +562,9 @@ const sendChatbotMessage = async (
       { option: '#', title: '#️⃣ Voltar ao Menu Principal' }
     ];
 
-    const optionsPart = options.map(opt => {
-      const emoji = glyphFor(opt.option || '');
+    const optionsPart = options.map((opt, idx) => {
+      const num = (idx + 1).toString();
+      const emoji = glyphFor(num);
       const prefix = emoji ? `${emoji} ` : '';
       return `${prefix}${opt.title}`;
     }).join('\n');
@@ -582,8 +583,9 @@ const sendChatbotMessage = async (
       { option: '#', title: '⿪ Voltar ao Menu Principal' }
     ];
 
-    const optionsPart = options.map(opt => {
-      const emoji = glyphFor(opt.option || '');
+    const optionsPart = options.map((opt, idx) => {
+      const num = (idx + 1).toString();
+      const emoji = glyphFor(num);
       const prefix = emoji ? `${emoji} ` : '';
       return `${prefix}${opt.title}`;
     }).join('\n');
@@ -700,7 +702,14 @@ const handleChatbot = async (
 
     // Se o usuário enviou uma mensagem, verificar se corresponde a uma opção
     if (messageBody && !dontReadTheFirstQuestion) {
-      const selectedOption = queueOptions.find((o) => o.option == messageBody);
+      let selectedOption = queueOptions.find((o) => o.option == messageBody);
+      // Fallback: permitir seleção por índice (1..n)
+      if (!selectedOption && /^\d+$/.test(messageBody)) {
+        const idx = parseInt(messageBody, 10) - 1;
+        if (idx >= 0 && idx < queueOptions.length) {
+          selectedOption = queueOptions[idx];
+        }
+      }
       if (selectedOption) {
         await ticket.update({ queueOptionId: selectedOption.id });
 
@@ -795,7 +804,13 @@ const handleChatbot = async (
       }
 
       // Verificar se selecionou uma sub-opção válida
-      const selectedSubOption = subOptions.find((o) => o.option == messageBody);
+      let selectedSubOption = subOptions.find((o) => o.option == messageBody);
+      if (!selectedSubOption && /^\d+$/.test(messageBody)) {
+        const idx = parseInt(messageBody, 10) - 1;
+        if (idx >= 0 && idx < subOptions.length) {
+          selectedSubOption = subOptions[idx];
+        }
+      }
       if (selectedSubOption) {
         await ticket.update({ queueOptionId: selectedSubOption.id });
 

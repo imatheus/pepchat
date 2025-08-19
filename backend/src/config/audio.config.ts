@@ -58,8 +58,8 @@ export interface AudioConfig {
 
 // Configuração padrão otimizada para iOS
 export const DEFAULT_AUDIO_CONFIG: AudioConfig = {
-  defaultBitrate: '64k', // Aumentado de 16k para evitar arquivos muito pequenos
-  defaultSampleRate: 16000,
+  defaultBitrate: '96k', // Aumentado para melhorar a qualidade
+  defaultSampleRate: 24000,
   defaultChannels: 1,
   
   formats: {
@@ -76,8 +76,8 @@ export const DEFAULT_AUDIO_CONFIG: AudioConfig = {
     },
     mp3: {
       codec: 'libmp3lame',
-      bitrate: process.env.MP3_BITRATE || '64k',
-      sampleRate: parseInt(process.env.MP3_SAMPLE_RATE || '16000'),
+      bitrate: process.env.MP3_BITRATE || '128k',
+      sampleRate: parseInt(process.env.MP3_SAMPLE_RATE || '24000'),
       channels: parseInt(process.env.MP3_CHANNELS || '1'),
       format: 'mp3',
       outputOptions: [
@@ -86,8 +86,8 @@ export const DEFAULT_AUDIO_CONFIG: AudioConfig = {
     },
     ogg: {
       codec: 'libopus',
-      bitrate: process.env.OGG_BITRATE || '64k', // Aumentado de 16k
-      sampleRate: parseInt(process.env.OGG_SAMPLE_RATE || '16000'),
+      bitrate: process.env.OGG_BITRATE || '96k',
+      sampleRate: parseInt(process.env.OGG_SAMPLE_RATE || '24000'),
       channels: parseInt(process.env.OGG_CHANNELS || '1'),
       format: 'ogg',
       outputOptions: [
@@ -108,8 +108,8 @@ export const DEFAULT_AUDIO_CONFIG: AudioConfig = {
     preferredFormats: ['aac', 'mp3', 'ogg'], // AAC primeiro (melhor para iOS)
     enableFallback: true,
     enablePTTForOgg: true,  // OGG como PTT (padrão WhatsApp)
-    enablePTTForAAC: true,  // AAC como PTT (mensagem de voz) - CORRIGIDO
-    enablePTTForMP3: true   // MP3 como PTT (mensagem de voz) - CORRIGIDO
+    enablePTTForAAC: false, // AAC enviar como áudio normal
+    enablePTTForMP3: false  // MP3 enviar como áudio normal
   }
 };
 
