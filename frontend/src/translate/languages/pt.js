@@ -293,7 +293,7 @@ const messages = {
       mainDrawer: {
         listItems: {
           dashboard: "Dashboard",
-          connections: "Minhas Conexões",
+          connections: "Conexões",
           tickets: "Chats",
           quickMessages: "Respostas Rápidas",
           contacts: "Contatos",

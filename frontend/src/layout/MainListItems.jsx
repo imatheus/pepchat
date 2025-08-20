@@ -7,24 +7,29 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import Divider from "@material-ui/core/Divider";
 import { Badge, Collapse, List, Popover, MenuList, MenuItem } from "@material-ui/core";
-import DashboardOutlinedIcon from "@material-ui/icons/DashboardOutlined";
-import ChatOutlinedIcon from "@material-ui/icons/ChatOutlined";
-import SyncAltIcon from "@material-ui/icons/SyncAlt";
-import SettingsOutlinedIcon from "@material-ui/icons/SettingsOutlined";
-import PeopleAltOutlinedIcon from "@material-ui/icons/PeopleAltOutlined";
-import ContactPhoneOutlinedIcon from "@material-ui/icons/ContactPhoneOutlined";
-// AccountTreeOutlinedIcon removido - não utilizado
-import OfflineBoltOutlinedIcon from "@material-ui/icons/OfflineBoltOutlined";
-import AndroidIcon from "@material-ui/icons/Android";
-import AccountBalanceOutlinedIcon from "@material-ui/icons/AccountBalanceOutlined";
-import PowerOutlinedIcon from "@material-ui/icons/PowerOutlined";
-import LocalOfferOutlinedIcon from "@material-ui/icons/LocalOfferOutlined";
-import WhatshotIconIcon from "@material-ui/icons/Whatshot";
-import ExpandLessIcon from "@material-ui/icons/ExpandLess";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import PeopleIcon from "@material-ui/icons/People";
-import ListIcon from "@material-ui/icons/ListAlt";
-import AccessTimeOutlinedIcon from "@material-ui/icons/AccessTimeOutlined";
+import {
+  IoSpeedometerOutline,
+  IoChatbubblesOutline,
+  IoSyncOutline,
+  IoSettingsOutline,
+  IoPersonOutline,
+  IoCallOutline,
+  IoFlashOutline,
+  IoLayersOutline,
+  IoWalletOutline,
+
+  IoPricetagOutline,
+  IoFlameOutline,
+  IoChevronUpOutline,
+  IoChevronDownOutline,
+  IoPeopleOutline,
+  IoListOutline,
+  IoTimeOutline
+} from "react-icons/io5";
+
+import { RiBardLine } from "react-icons/ri";
+import { IoIosLink } from "react-icons/io";
+
 
 import { i18n } from "../translate/i18n";
 import { WhatsAppsContext } from "../context/WhatsApp/WhatsAppsContext";
@@ -35,6 +40,9 @@ import { Can } from "../components/Can";
 import useCompanyStatus from "../hooks/useCompanyStatus";
 import TutorialTooltip from "../components/TutorialTooltip";
 import TutorialOverlay from "../components/TutorialOverlay";
+
+const ICON_SIZE = 23;
+const ICON_SIZE_EXPAND = 24;
 
 function ListItemLink(props) {
   const { icon, primary, to, className, drawerCollapsed, disabled = false } = props;
@@ -55,13 +63,13 @@ function ListItemLink(props) {
 
   return (
     <li>
-      <ListItem 
-        button 
-        component={disabled ? "div" : renderLink} 
+      <ListItem
+        button
+        component={disabled ? "div" : renderLink}
         className={className}
         title={drawerCollapsed ? (disabled ? `${primary} (Bloqueado)` : primary) : ""}
         onClick={handleClick}
-        style={{ 
+        style={{
           justifyContent: drawerCollapsed ? 'center' : 'flex-start',
           paddingLeft: drawerCollapsed ? 16 : 16,
           paddingRight: drawerCollapsed ? 16 : 16,
@@ -70,7 +78,7 @@ function ListItemLink(props) {
         }}
       >
         {icon ? (
-          <ListItemIcon style={{ 
+          <ListItemIcon style={{
             minWidth: drawerCollapsed ? 'auto' : '40px',
             opacity: disabled ? 0.5 : 1,
             position: 'relative'
@@ -78,8 +86,8 @@ function ListItemLink(props) {
             {icon}
           </ListItemIcon>
         ) : null}
-        {!drawerCollapsed && <ListItemText 
-          primary={disabled ? `${primary}` : primary} 
+        {!drawerCollapsed && <ListItemText
+          primary={disabled ? `${primary}` : primary}
           style={{ opacity: disabled ? 0.5 : 1 }}
         />}
       </ListItem>
@@ -102,7 +110,7 @@ const MainListItems = (props) => {
   const { isCompanyBlocked } = useCompanyStatus();
   const queuesMenuRef = useRef(null);
 
-  
+
   useEffect(() => {
     // Verificar se o plano do usuário tem campanhas habilitadas
     if (user && user.company && user.company.plan && user.company.plan.useCampaigns) {
@@ -145,24 +153,10 @@ const MainListItems = (props) => {
 
   return (
     <div onClick={drawerClose}>
-      <Can
-        role={user.profile}
-        perform="dashboard:view"
-        yes={() => (
-          <ListItemLink
-            to="/"
-            primary="Dashboard"
-            icon={<DashboardOutlinedIcon />}
-            drawerCollapsed={drawerCollapsed}
-            disabled={isCompanyBlocked}
-          />
-        )}
-      />
-
       <ListItemLink
         to="/tickets"
         primary={i18n.t("mainDrawer.listItems.tickets")}
-        icon={<ChatOutlinedIcon />}
+        icon={<IoChatbubblesOutline size={ICON_SIZE} />}
         drawerCollapsed={drawerCollapsed}
         disabled={isCompanyBlocked}
       />
@@ -170,7 +164,7 @@ const MainListItems = (props) => {
       <ListItemLink
         to="/quick-messages"
         primary={i18n.t("mainDrawer.listItems.quickMessages")}
-        icon={<OfflineBoltOutlinedIcon />}
+        icon={<IoFlashOutline size={ICON_SIZE} />}
         drawerCollapsed={drawerCollapsed}
         disabled={isCompanyBlocked}
       />
@@ -178,7 +172,7 @@ const MainListItems = (props) => {
       <ListItemLink
         to="/contacts"
         primary={i18n.t("mainDrawer.listItems.contacts")}
-        icon={<ContactPhoneOutlinedIcon />}
+        icon={<IoCallOutline size={ICON_SIZE} />}
         drawerCollapsed={drawerCollapsed}
         disabled={isCompanyBlocked}
       />
@@ -186,7 +180,7 @@ const MainListItems = (props) => {
       <ListItemLink
         to="/tags"
         primary={i18n.t("mainDrawer.listItems.tags")}
-        icon={<LocalOfferOutlinedIcon />}
+        icon={<IoPricetagOutline size={ICON_SIZE} />}
         drawerCollapsed={drawerCollapsed}
         disabled={isCompanyBlocked}
       />
@@ -210,23 +204,18 @@ const MainListItems = (props) => {
             </span>
           </span>
         }
-        icon={<AccessTimeOutlinedIcon />}
+        icon={<IoTimeOutline size={ICON_SIZE} />}
         drawerCollapsed={drawerCollapsed}
         disabled={isCompanyBlocked}
       />
 
-      
+
       <Can
         role={user.profile}
         perform="drawer-admin-items:view"
         yes={() => (
           <>
             {!drawerCollapsed && <Divider />}
-            {!drawerCollapsed && (
-              <ListSubheader inset>
-                {i18n.t("mainDrawer.listItems.administration")}
-              </ListSubheader>
-            )}
             {showCampaigns && !drawerCollapsed && (
               <>
                 <ListItem
@@ -237,11 +226,11 @@ const MainListItems = (props) => {
                     cursor: isCompanyBlocked ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  <ListItemIcon style={{ 
+                  <ListItemIcon style={{
                     opacity: isCompanyBlocked ? 0.5 : 1,
                     position: 'relative'
                   }}>
-                    <WhatshotIconIcon />
+                    <IoFlameOutline size={ICON_SIZE} />
 
                   </ListItemIcon>
                   <ListItemText
@@ -249,9 +238,9 @@ const MainListItems = (props) => {
                     style={{ opacity: isCompanyBlocked ? 0.5 : 1 }}
                   />
                   {!isCompanyBlocked && (openCampaignSubmenu ? (
-                    <ExpandLessIcon />
+                    <IoChevronUpOutline size={ICON_SIZE_EXPAND} />
                   ) : (
-                    <ExpandMoreIcon />
+                    <IoChevronDownOutline size={ICON_SIZE_EXPAND} />
                   ))}
                 </ListItem>
                 <Collapse
@@ -261,8 +250,8 @@ const MainListItems = (props) => {
                   unmountOnExit
                 >
                   <List component="div" disablePadding>
-                    <ListItem 
-                      onClick={() => !isCompanyBlocked && history.push("/campaigns")} 
+                    <ListItem
+                      onClick={() => !isCompanyBlocked && history.push("/campaigns")}
                       button
                       style={{
                         opacity: isCompanyBlocked ? 0.5 : 1,
@@ -270,9 +259,9 @@ const MainListItems = (props) => {
                       }}
                     >
                       <ListItemIcon style={{ opacity: isCompanyBlocked ? 0.5 : 1 }}>
-                        <ListIcon />
+                        <IoListOutline size={ICON_SIZE} />
                       </ListItemIcon>
-                      <ListItemText 
+                      <ListItemText
                         primary={isCompanyBlocked ? " Listagem" : "Listagem"}
                         style={{ opacity: isCompanyBlocked ? 0.5 : 1 }}
                       />
@@ -286,9 +275,9 @@ const MainListItems = (props) => {
                       }}
                     >
                       <ListItemIcon style={{ opacity: isCompanyBlocked ? 0.5 : 1 }}>
-                        <PeopleIcon />
+                        <IoPeopleOutline size={ICON_SIZE} />
                       </ListItemIcon>
-                      <ListItemText 
+                      <ListItemText
                         primary={isCompanyBlocked ? " Listas de Contatos" : "Listas de Contatos"}
                         style={{ opacity: isCompanyBlocked ? 0.5 : 1 }}
                       />
@@ -302,9 +291,9 @@ const MainListItems = (props) => {
                       }}
                     >
                       <ListItemIcon style={{ opacity: isCompanyBlocked ? 0.5 : 1 }}>
-                        <SettingsOutlinedIcon />
+                        <IoSettingsOutline size={ICON_SIZE} />
                       </ListItemIcon>
-                      <ListItemText 
+                      <ListItemText
                         primary={isCompanyBlocked ? " Configurações" : "Configurações"}
                         style={{ opacity: isCompanyBlocked ? 0.5 : 1 }}
                       />
@@ -319,7 +308,7 @@ const MainListItems = (props) => {
                   button
                   onClick={(event) => !isCompanyBlocked && setCampaignPopoverAnchor(event.currentTarget)}
                   title={isCompanyBlocked ? `${i18n.t("mainDrawer.listItems.campaigns")} (Bloqueado)` : i18n.t("mainDrawer.listItems.campaigns")}
-                  style={{ 
+                  style={{
                     justifyContent: 'center',
                     paddingLeft: 16,
                     paddingRight: 16,
@@ -327,12 +316,12 @@ const MainListItems = (props) => {
                     cursor: isCompanyBlocked ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  <ListItemIcon style={{ 
+                  <ListItemIcon style={{
                     minWidth: 'auto',
                     opacity: isCompanyBlocked ? 0.5 : 1,
                     position: 'relative'
                   }}>
-                    <WhatshotIconIcon />
+                    <IoFlameOutline size={ICON_SIZE} />
                   </ListItemIcon>
                 </ListItem>
                 <Popover
@@ -361,7 +350,7 @@ const MainListItems = (props) => {
                       }
                     }}>
                       <ListItemIcon>
-                        <ListIcon />
+                        <IoListOutline size={ICON_SIZE} />
                       </ListItemIcon>
                       <ListItemText primary="Listagem" />
                     </MenuItem>
@@ -372,7 +361,7 @@ const MainListItems = (props) => {
                       }
                     }}>
                       <ListItemIcon>
-                        <PeopleIcon />
+                        <IoPeopleOutline size={ICON_SIZE} />
                       </ListItemIcon>
                       <ListItemText primary="Listas de Contatos" />
                     </MenuItem>
@@ -383,7 +372,7 @@ const MainListItems = (props) => {
                       }
                     }}>
                       <ListItemIcon>
-                        <SettingsOutlinedIcon />
+                        <IoSettingsOutline size={ICON_SIZE} />
                       </ListItemIcon>
                       <ListItemText primary="Configurações" />
                     </MenuItem>
@@ -391,29 +380,43 @@ const MainListItems = (props) => {
                 </Popover>
               </>
             )}
+            <Can
+              role={user.profile}
+              perform="dashboard:view"
+              yes={() => (
+                <ListItemLink
+                  to="/"
+                  primary="Dashboard"
+                  icon={<IoSpeedometerOutline size={ICON_SIZE} />}
+                  drawerCollapsed={drawerCollapsed}
+                  disabled={isCompanyBlocked}
+                />
+              )}
+            />
+
             <ListItemLink
               to="/connections"
               primary={i18n.t("mainDrawer.listItems.connections")}
               icon={
                 <Badge badgeContent={connectionWarning ? "!" : 0} color="error">
-                  <PowerOutlinedIcon />
+                  <IoIosLink size={ICON_SIZE} />
                 </Badge>
               }
               drawerCollapsed={drawerCollapsed}
               disabled={isCompanyBlocked}
             />
-            <div 
+            <div
               ref={queuesMenuRef}
               className={showQueuesTutorial ? 'tutorial-highlight' : ''}
               style={{
                 position: 'relative',
                 borderRadius: showQueuesTutorial ? '12px' : '0px',
-                background: showQueuesTutorial 
-                  ? `linear-gradient(135deg, ${colors.primary}20, ${colors.primary}10)` 
+                background: showQueuesTutorial
+                  ? `linear-gradient(135deg, ${colors.primary}20, ${colors.primary}10)`
                   : 'transparent',
                 border: showQueuesTutorial ? `3px solid ${colors.primary}` : 'none',
-                boxShadow: showQueuesTutorial 
-                  ? `0 0 20px ${colors.primary}40, 0 0 40px ${colors.primary}20` 
+                boxShadow: showQueuesTutorial
+                  ? `0 0 20px ${colors.primary}40, 0 0 40px ${colors.primary}20`
                   : 'none',
                 transform: showQueuesTutorial ? 'scale(1.05)' : 'scale(1)',
                 zIndex: showQueuesTutorial ? 1302 : 'auto',
@@ -424,7 +427,7 @@ const MainListItems = (props) => {
               <ListItemLink
                 to="/queues"
                 primary={i18n.t("mainDrawer.listItems.queues")}
-                icon={<AndroidIcon />}
+                icon={<RiBardLine size={ICON_SIZE} />}
                 drawerCollapsed={drawerCollapsed}
                 disabled={isCompanyBlocked}
               />
@@ -432,42 +435,44 @@ const MainListItems = (props) => {
             <ListItemLink
               to="/users"
               primary={i18n.t("mainDrawer.listItems.users")}
-              icon={<PeopleAltOutlinedIcon />}
+              icon={<IoPersonOutline size={ICON_SIZE} />}
+
               drawerCollapsed={drawerCollapsed}
               disabled={isCompanyBlocked}
             />
             <ListItemLink
               to="/integrations"
               primary={i18n.t("mainDrawer.listItems.integrations")}
-              icon={<SyncAltIcon />}
+              icon={<IoSyncOutline size={ICON_SIZE} />}
+
               drawerCollapsed={drawerCollapsed}
               disabled={isCompanyBlocked}
             />
-             <ListItemLink
-                to="/financial"
-                primary={i18n.t("mainDrawer.listItems.financeiro")}
-                icon={<AccountBalanceOutlinedIcon />}
-                drawerCollapsed={drawerCollapsed}
-                disabled={false}
-              />
+            <ListItemLink
+              to="/financial"
+              primary={i18n.t("mainDrawer.listItems.financeiro")}
+              icon={<IoWalletOutline size={ICON_SIZE} />}
+              drawerCollapsed={drawerCollapsed}
+              disabled={false}
+            />
 
             <ListItemLink
               to="/settings"
               primary={i18n.t("mainDrawer.listItems.settings")}
-              icon={<SettingsOutlinedIcon />}
+              icon={<IoSettingsOutline size={ICON_SIZE} />}
               drawerCollapsed={drawerCollapsed}
               disabled={isCompanyBlocked}
             />
           </>
         )}
       />
-      
+
       {/* Overlay para diminuir opacidade do background - Setores */}
-      <TutorialOverlay 
+      <TutorialOverlay
         show={showQueuesTutorial}
         targetElement={queuesMenuRef.current}
       />
-      
+
       {/* Tutorial Tooltip para Setores */}
       <TutorialTooltip
         open={showQueuesTutorial}
@@ -479,7 +484,7 @@ const MainListItems = (props) => {
         placement="right"
       />
 
-          </div>
+    </div>
   );
 };
 
