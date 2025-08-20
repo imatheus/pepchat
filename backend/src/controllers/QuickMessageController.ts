@@ -171,8 +171,6 @@ const processAudioForNativeCompatibility = async (filePath: string): Promise<{
   format: string;
   sendAsPTT: boolean;
 }> => {
-  console.log("🎵 Processando áudio para compatibilidade nativa:", path.basename(filePath));
-  
   let finalAudioBuffer: Buffer;
   let finalMimetype: string;
   let audioFormat: string = 'unknown';
@@ -181,8 +179,6 @@ const processAudioForNativeCompatibility = async (filePath: string): Promise<{
   
   try {
     if (AudioConverter.isFFmpegAvailable()) {
-      console.log("🔄 Iniciando conversão de áudio com estratégia iOS-compatível...");
-      
       // Usar conversão com múltiplos formatos
       const tempBasePath = filePath.replace(path.extname(filePath), '_converted');
       const conversionResult = await AudioConverter.convertToPTTNew(filePath, tempBasePath);
@@ -193,13 +189,10 @@ const processAudioForNativeCompatibility = async (filePath: string): Promise<{
       
       // Verificar se a conversão foi bem-sucedida
       if (fs.existsSync(convertedAudioPath) && fs.statSync(convertedAudioPath).size > 0) {
-        console.log(`✅ Conversão ${audioFormat.toUpperCase()} concluída com sucesso`);
         finalAudioBuffer = fs.readFileSync(convertedAudioPath);
         
         // Determinar se deve enviar como PTT baseado na configuração
         sendAsPTT = shouldSendAsPTT(audioFormat);
-        console.log(`📱 Formato ${audioFormat.toUpperCase()}: ${sendAsPTT ? 'PTT (mensagem de voz)' : 'áudio normal'} baseado na configuração`);
-        
         // Limpar arquivo temporário
         setTimeout(() => {
           AudioConverter.cleanupTempFile(convertedAudioPath!);
@@ -208,15 +201,13 @@ const processAudioForNativeCompatibility = async (filePath: string): Promise<{
         throw new Error('Conversão falhou - arquivo de saída inválido');
       }
     } else {
-      console.warn("⚠️ FFmpeg não disponível - usando arquivo original");
-      
       // Usar arquivo original como fallback
       finalAudioBuffer = fs.readFileSync(filePath);
       finalMimetype = AudioConverter.getBestMimetype(filePath);
       audioFormat = 'original';
     }
   } catch (conversionError) {
-    console.warn("⚠️ Conversão de áudio falhou, usando formato original:", conversionError);
+    console.log('Falha ao enviar audio');
     
     // Fallback: usar o arquivo original
     finalAudioBuffer = fs.readFileSync(filePath);
@@ -227,19 +218,6 @@ const processAudioForNativeCompatibility = async (filePath: string): Promise<{
   // Validação do buffer de áudio
   if (!finalAudioBuffer || finalAudioBuffer.length === 0) {
     throw new Error("Buffer de áudio está vazio ou inválido");
-  }
-  
-  const audioSizeKB = (finalAudioBuffer.length / 1024).toFixed(1);
-  console.log("📊 Áudio processado para mensagem rápida:", {
-    tamanho: `${audioSizeKB}KB`,
-    formato: audioFormat,
-    mimetype: finalMimetype,
-    enviarComoPTT: sendAsPTT
-  });
-  
-  // Verificar se o arquivo não está muito pequeno
-  if (parseFloat(audioSizeKB) < 2) {
-    console.warn(`⚠️ Arquivo muito pequeno (${audioSizeKB}KB) - pode causar problemas no iOS`);
   }
   
   return {
@@ -489,8 +467,6 @@ export const sendQuickMessage = async (
             
             // PROCESSAMENTO ESPECIAL PARA ÁUDIO - Compatibilidade nativa
             if (mimetype.startsWith('audio/')) {
-              console.log("🎵 Arquivo de áudio detectado em mensagem rápida:", filename);
-              
               try {
                 // Processar áudio para compatibilidade nativa
                 const audioResult = await processAudioForNativeCompatibility(filePath);
@@ -506,7 +482,7 @@ export const sendQuickMessage = async (
                     mimetype: finalMimetype,
                     ptt: true
                   });
-                  console.log("🎤 Áudio enviado como PTT (mensagem de voz)");
+                  console.log('Audio Enviado');
                 } else {
                   // Enviar como áudio normal
                   sentMessage = await wbot.sendMessage(jid, {
@@ -514,10 +490,10 @@ export const sendQuickMessage = async (
                     mimetype: finalMimetype,
                     ptt: false
                   });
-                  console.log("🎵 Áudio enviado como áudio normal");
+                  console.log('Audio Enviado');
                 }
               } catch (audioError) {
-                console.error("Erro no processamento de áudio:", audioError);
+                console.log('Falha ao enviar audio');
                 // Fallback: enviar como documento
                 fileBuffer = fs.readFileSync(filePath);
                 sentMessage = await wbot.sendMessage(jid, {
@@ -525,7 +501,6 @@ export const sendQuickMessage = async (
                   fileName: filename,
                   mimetype: mimetype
                 });
-                console.log("📄 Áudio enviado como documento (fallback)");
               }
             } else {
               // Processamento normal para outros tipos de arquivo

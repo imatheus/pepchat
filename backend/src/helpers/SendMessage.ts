@@ -104,17 +104,6 @@ const getMessageOptions = async (body: string, mediaPath: string) => {
           // Ler áudio convertido como Buffer (OBRIGATÓRIO para PTT funcionar)
           const convertedAudioBuffer = fs.readFileSync(convertedPath);
           
-          // 🔍 DIAGNÓSTICO: Verificar buffer convertido
-          console.log('🔍 DIAGNÓSTICO SendMessage CONVERTIDO:', {
-            convertedPath,
-            fileExists: fs.existsSync(convertedPath),
-            bufferLength: convertedAudioBuffer.length,
-            bufferType: typeof convertedAudioBuffer,
-            isBuffer: Buffer.isBuffer(convertedAudioBuffer),
-            first10Bytes: convertedAudioBuffer.slice(0, 10).toString('hex'),
-            mimetype: finalMimetype
-          });
-          
           if (convertedAudioBuffer.length === 0) {
             throw new Error('❌ SendMessage: Buffer convertido está vazio!');
           }
@@ -137,17 +126,6 @@ const getMessageOptions = async (body: string, mediaPath: string) => {
       
       // Ler áudio como Buffer (OBRIGATÓRIO para PTT funcionar)
       const audioBuffer = fs.readFileSync(mediaPath);
-      
-      // 🔍 DIAGNÓSTICO: Verificar buffer no SendMessage
-      console.log('🔍 DIAGNÓSTICO SendMessage BUFFER:', {
-        mediaPath,
-        fileExists: fs.existsSync(mediaPath),
-        bufferLength: audioBuffer.length,
-        bufferType: typeof audioBuffer,
-        isBuffer: Buffer.isBuffer(audioBuffer),
-        first10Bytes: audioBuffer.slice(0, 10).toString('hex'),
-        mimetype: finalMimetype
-      });
       
       if (audioBuffer.length === 0) {
         throw new Error('❌ SendMessage: Buffer de áudio está vazio!');
@@ -197,6 +175,9 @@ export const SendMessage = async (
       );
       if (options) {
         message = await sendMessageWithRetry(wbot, chatId, options);
+        if ((options as any).audio) {
+          console.log('Audio Enviado');
+        }
       }
     } else {
       const body = `\u200e${messageData.body}`;
@@ -205,7 +186,9 @@ export const SendMessage = async (
 
     return message;
   } catch (err: any) {
-    logger.error(`❌ Erro ao enviar mensagem:`, err);
+    if (messageData.mediaPath && (require('mime-types').lookup(messageData.mediaPath) || '').toString().startsWith('audio/')) {
+      console.log('Falha ao enviar audio');
+    }
     
     // Verificar tipo específico de erro para mensagem mais clara
     if (err.message?.includes("Timed Out") || err.message?.includes("timeout")) {

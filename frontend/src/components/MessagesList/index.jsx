@@ -603,15 +603,6 @@ useEffect(() => {
                 errorDiv.style.display = 'flex';
               }
             }}
-            onLoadStart={() => {
-              console.log('Iniciando carregamento do vídeo:', videoUrl);
-            }}
-            onCanPlay={() => {
-              console.log('Vídeo pronto para reprodução:', videoUrl);
-            }}
-            onLoadedMetadata={() => {
-              console.log('Metadados do vídeo carregados:', videoUrl);
-            }}
           >
             Seu navegador não suporta a reprodução de vídeo.
           </video>

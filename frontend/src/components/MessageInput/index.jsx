@@ -184,7 +184,7 @@ const MessageInput = ({ ticketStatus }) => {
 	);
 	const { user } = useContext(AuthContext);
 
-	const [signMessage, setSignMessage] = useLocalStorage("signOption", true);
+	// signOption agora é global nas Configurações (/settings)
 	
 	// Typing indicator state
 	const [isTyping, setIsTyping] = useState(false);
@@ -299,7 +299,7 @@ const MessageInput = ({ ticketStatus }) => {
 			read: 1,
 			fromMe: true,
 			mediaUrl: "",
-			body: signMessage
+			body: (localStorage.getItem("signOption") === "true")
 				? `*${user?.name}:*\n${inputMessage.trim()}`
 				: inputMessage.trim(),
 			quotedMsg: replyingMessage,
@@ -567,16 +567,7 @@ const MessageInput = ({ ticketStatus }) => {
 							<AttachFileIcon className={classes.sendMessageIcons} />
 						</IconButton>
 					</label>
-					<ToggleSwitch
-						name="signMessage"
-						label={i18n.t("messagesInput.signMessage")}
-						labelPlacement="start"
-						checked={signMessage}
-						onChange={e => {
-							setSignMessage(e.target.checked);
-						}}
-					
-					/>
+					{/* Assinatura agora é global nas Configurações; toggle removido daqui */}
 					<div className={classes.messageInputWrapper}>
 						<InputBase
 							inputRef={input => {

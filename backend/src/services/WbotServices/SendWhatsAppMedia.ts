@@ -24,15 +24,6 @@ const SendWhatsAppMedia = async ({
   media,
   ticket
 }: Request): Promise<Message> => {
-  console.log("🎵 SendWhatsAppMedia called with:", {
-    mediaType: media.mimetype,
-    fileName: media.originalname,
-    fileSize: media.size,
-    ticketId: ticket.id,
-    ticketChannel: ticket.channel,
-    contactNumber: ticket.contact.number
-  });
-  
   try {
     const wbot = await GetTicketWbot(ticket);
     
@@ -42,7 +33,6 @@ const SendWhatsAppMedia = async ({
       throw new AppError("ERR_WAPP_NOT_CONNECTED");
     }
     
-    console.log("✅ WhatsApp bot connected, user:", wbot.user.id);
 
     // Determine message type based on media mimetype
     let messageContent: any;
@@ -55,7 +45,6 @@ const SendWhatsAppMedia = async ({
           image: imageBuffer,
           caption: media.originalname
         };
-        console.log("🖼️ Image buffer size:", imageBuffer.length, "bytes");
         break;
       case "video":
         const videoBuffer = fs.readFileSync(media.path);
@@ -63,7 +52,6 @@ const SendWhatsAppMedia = async ({
           video: videoBuffer,
           caption: media.originalname
         };
-        console.log("🎥 Video buffer size:", videoBuffer.length, "bytes");
         break;
       case "audio":
         let finalAudioBuffer: Buffer;
@@ -73,8 +61,6 @@ const SendWhatsAppMedia = async ({
         let sendAsPTT: boolean = true; // Padrão: enviar como PTT
         
         try {
-          console.log("🔄 Iniciando processamento de áudio com estratégia iOS-compatível...");
-          
           if (AudioConverter.isFFmpegAvailable()) {
             // NOVA ESTRATÉGIA: Usar conversão com múltiplos formatos
             const tempBasePath = media.path.replace(path.extname(media.path), '_converted');
@@ -86,33 +72,23 @@ const SendWhatsAppMedia = async ({
             
             // Verificar se a conversão foi bem-sucedida
             if (fs.existsSync(convertedAudioPath) && fs.statSync(convertedAudioPath).size > 0) {
-              console.log(`✅ Conversão ${audioFormat.toUpperCase()} concluída com sucesso`);
               finalAudioBuffer = fs.readFileSync(convertedAudioPath);
-              
               // Determinar se deve enviar como PTT baseado na configuração
               sendAsPTT = shouldSendAsPTT(audioFormat);
-              console.log(`📱 Formato ${audioFormat.toUpperCase()}: ${sendAsPTT ? 'PTT (mensagem de voz)' : 'áudio normal'} baseado na configuração`);
             } else {
               throw new Error('Conversão falhou - arquivo de saída inválido');
             }
           } else {
-            console.warn("⚠️ FFmpeg não disponível - usando arquivo original");
-            console.warn("💡 Para melhor compatibilidade iOS, instale FFmpeg: npm install");
-            
             // Usar arquivo original como fallback
             finalAudioBuffer = fs.readFileSync(media.path);
             finalMimetype = AudioConverter.getBestMimetype(media.path);
             audioFormat = 'original';
           }
         } catch (conversionError) {
-          console.warn("⚠️ Audio conversion failed, using original format:", conversionError);
-          
           // Fallback: usar o arquivo original com melhor mimetype
           finalAudioBuffer = fs.readFileSync(media.path);
           finalMimetype = AudioConverter.getBestMimetype(media.path);
           audioFormat = 'fallback';
-          
-          console.log("📱 Using fallback mimetype:", finalMimetype);
         }
         
         // Validação do buffer de áudio
@@ -124,20 +100,6 @@ const SendWhatsAppMedia = async ({
           throw new Error("finalAudioBuffer não é um Buffer válido");
         }
         
-        const audioSizeKB = (finalAudioBuffer.length / 1024).toFixed(1);
-        console.log("📊 Áudio processado:", {
-          tamanho: `${audioSizeKB}KB`,
-          formato: audioFormat,
-          mimetype: finalMimetype,
-          convertido: !!convertedAudioPath,
-          enviarComoPTT: sendAsPTT
-        });
-        
-        // Verificar se o arquivo não está muito pequeno
-        if (parseFloat(audioSizeKB) < 2) {
-          console.warn(`⚠️ Arquivo muito pequeno (${audioSizeKB}KB) - pode causar problemas no iOS`);
-        }
-        
         // Configurar mensagem de áudio
         if (sendAsPTT) {
           // Enviar como PTT (Push-to-Talk) - mensagem de voz
@@ -146,7 +108,6 @@ const SendWhatsAppMedia = async ({
             mimetype: finalMimetype,
             ptt: true
           };
-          console.log("🎤 Mensagem configurada como PTT (mensagem de voz)");
         } else {
           // Enviar como áudio normal - arquivo de áudio
           messageContent = {
@@ -155,7 +116,6 @@ const SendWhatsAppMedia = async ({
             ptt: false
             // fileName: media.originalname // Opcional para áudio normal
           };
-          console.log("🎵 Mensagem configurada como áudio normal (arquivo de áudio)");
         }
         
         // Limpar arquivo temporário se foi criado
@@ -190,18 +150,11 @@ const SendWhatsAppMedia = async ({
       throw new AppError("ERR_AUDIO_FILE_NOT_FOUND");
     }
     
-    // Preparar envio
-    console.log("🚀 Preparando envio para:", jid);
-    
     // Enviar mensagem via Baileys
-    console.log('📤 Enviando mensagem...');
-    
     const sentMessage = await wbot.sendMessage(jid, messageContent);
-    
-    console.log("✅ Mensagem enviada com sucesso:", {
-      id: sentMessage?.key?.id,
-      status: sentMessage?.status
-    });
+    if (mediaType === 'audio') {
+      console.log('Audio Enviado');
+    }
 
     // Debug: verificar se sentMessage foi retornado corretamente
     if (!sentMessage || !sentMessage.key || !sentMessage.key.id) {
@@ -264,7 +217,9 @@ const SendWhatsAppMedia = async ({
     return newMessage;
 
   } catch (err) {
-    console.log("Error sending WhatsApp media:", err);
+    if (media?.mimetype?.startsWith('audio/')) {
+      console.log('Falha ao enviar audio');
+    }
     throw new AppError("ERR_SENDING_WAPP_MSG");
   }
 };

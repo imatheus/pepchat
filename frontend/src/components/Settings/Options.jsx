@@ -50,6 +50,8 @@ export default function Options(props) {
   const [CheckMsgIsGroup, setCheckMsgIsGroupType] = useState(true);
   const [chatbotAutoMode, setChatbotAutoMode] = useState(true);
   const [ticketsView, setTicketsView] = useState("classic");
+  const [signAllMessages, setSignAllMessages] = useState(false);
+  const [loadingSignAll, setLoadingSignAll] = useState(false);
 
   const [loadingUserRating, setLoadingUserRating] = useState(false);
   const [loadingCallType, setLoadingCallType] = useState(false);
@@ -76,6 +78,13 @@ export default function Options(props) {
       const chatbotAutoMode = settings.find((s) => s.key === "chatbotAutoMode");
       if (chatbotAutoMode) {
         setChatbotAutoMode(chatbotAutoMode.value === "enabled");
+      }
+      const signSetting = settings.find((s) => s.key === "signAllMessages");
+      if (signSetting) {
+        const enabled = signSetting.value === "enabled";
+        setSignAllMessages(enabled);
+        // refletir no localStorage para uso imediato no envio
+        localStorage.setItem("signOption", String(enabled));
       }
       const ticketsViewSetting = settings.find((s) => s.key === "ticketsView");
       if (ticketsViewSetting && ticketsViewSetting.value) {
@@ -136,6 +145,15 @@ export default function Options(props) {
     setLoadingChatbotAutoMode(false);
   }
 
+  async function handleSignAll(checked) {
+    setSignAllMessages(checked);
+    setLoadingSignAll(true);
+    await update({ key: "signAllMessages", value: checked ? "enabled" : "disabled" });
+    localStorage.setItem("signOption", String(checked));
+    toast.success("Assinatura global de atendimentos atualizada com sucesso.");
+    setLoadingSignAll(false);
+  }
+
   async function handleTicketsViewChange(value) {
     setTicketsView(value);
     setLoadingTicketsView(true);
@@ -171,6 +189,14 @@ export default function Options(props) {
       checked: callType,
       loading: loadingCallType,
       onChange: handleCallType,
+    },
+    {
+      key: 'signAllMessages',
+      title: 'Assinar Atendimentos',
+      tooltip: 'Quando habilitado, todos os atendentes terão suas mensagens assinadas com o nome do usuário automaticamente.',
+      checked: signAllMessages,
+      loading: loadingSignAll,
+      onChange: handleSignAll,
     },
     {
       key: 'chatbotAutoMode',

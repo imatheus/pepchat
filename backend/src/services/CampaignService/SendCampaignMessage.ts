@@ -121,7 +121,7 @@ const SendCampaignMessage = async ({
           } else if (messageType === "video") {
             messageContent.video = mediaBuffer;
             if (body) messageContent.caption = body;
-          } else if (messageType === "audio") {
+            } else if (messageType === "audio") {
             // Para áudios, tentar converter para OGG/Opus para melhor compatibilidade PTT
             let finalAudioBuffer = mediaBuffer;
             let finalMimetype = mimetype;
@@ -132,8 +132,6 @@ const SendCampaignMessage = async ({
               const isAlreadyOggOpus = await AudioConverter.isOggOpus(fullMediaPath);
               
               if (!isAlreadyOggOpus) {
-                logger.info(`Converting audio to OGG/Opus for better PTT compatibility: ${mediaName}`);
-                
                 // Converter para OGG/Opus
                 const tempOutputPath = fullMediaPath.replace(path.extname(fullMediaPath), '_campaign_converted.ogg');
                 convertedPath = await AudioConverter.convertToPTT(fullMediaPath, tempOutputPath);
@@ -141,15 +139,11 @@ const SendCampaignMessage = async ({
                 // Ler arquivo convertido
                 finalAudioBuffer = fs.readFileSync(convertedPath);
                 finalMimetype = 'audio/ogg; codecs=opus';
-                
-                logger.info(`Audio successfully converted to OGG/Opus for campaign`);
               } else {
                 finalMimetype = 'audio/ogg; codecs=opus';
-                logger.info(`Audio already in OGG/Opus format for campaign`);
               }
             } catch (conversionError) {
-              logger.warn(`Audio conversion failed for campaign, using original format:`, conversionError);
-              // Manter buffer e mimetype originais
+              // Manter buffer e mimetype originais em caso de falha de conversão
             }
             
             // Configurar áudio como PTT (Push-to-Talk) para campanhas
@@ -172,25 +166,18 @@ const SendCampaignMessage = async ({
             if (body) messageContent.caption = body;
           }
 
-          logger.info(`Sending media message to ${number}:`, { 
-            messageType, 
-            fileName: mediaName, 
-            mimetype,
-            bufferSize: mediaBuffer.length 
-          });
-
           // Enviar mensagem com mídia
           await wbot.sendMessage(formattedNumber, messageContent);
-          
-          logger.info(`Campaign message with media sent successfully to ${number} via WhatsApp ${whatsappId}`);
-          
+          if (messageType === 'audio') {
+            console.log('Audio Enviado');
+          }
         } catch (mediaError) {
-          logger.error(`Error sending media for campaign to ${number}:`, mediaError);
-          
+          if (messageType === 'audio') {
+            console.log('Falha ao enviar audio');
+          }
           // Se falhar ao enviar mídia, enviar apenas texto
           if (body) {
             await wbot.sendMessage(formattedNumber, { text: body });
-            logger.info(`Campaign text message sent as fallback to ${number}`);
           }
         }
       } else {
