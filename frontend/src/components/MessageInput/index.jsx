@@ -185,6 +185,25 @@ const MessageInput = ({ ticketStatus }) => {
 	const { user } = useContext(AuthContext);
 
 	// signOption agora é global nas Configurações (/settings)
+	// Sincronizar com backend via socket para impactar todos os usuários da empresa
+	useEffect(() => {
+		const companyId = localStorage.getItem("companyId");
+		if (!companyId) return;
+		try {
+			const socket = socketConnection({ companyId });
+			if (socket && socket.on) {
+				const channel = `company-${companyId}-settings`;
+				const handler = (payload) => {
+					if (payload?.action === 'update' && payload?.setting?.key === 'signAllMessages') {
+						const enabled = payload.setting.value === 'enabled';
+						localStorage.setItem('signOption', String(enabled));
+					}
+				};
+				socket.on(channel, handler);
+				return () => { try { socket.off(channel, handler); } catch {} };
+			}
+		} catch {}
+	}, []);
 	
 	// Typing indicator state
 	const [isTyping, setIsTyping] = useState(false);

@@ -25,6 +25,8 @@ import { AuthContext } from "../../context/Auth/AuthContext";
 import toastError from "../../errors/toastError";
 
 import useQuickMessages from "../../hooks/useQuickMessages";
+import useSettings from "../../hooks/useSettings";
+import { socketConnection } from "../../services/socket";
 
 import Compressor from 'compressorjs';
 import LinearWithValueLabel from "./ProgressBarCustom";
@@ -604,6 +606,7 @@ const MessageInputCustom = (props) => {
 
   // signMessage hook removed; reading signOption from localStorage instead
   const { list: listQuickMessages } = useQuickMessages();
+  const { getAll: getAllSettings } = useSettings();
 
   useEffect(() => {
     if (replyingMessage && inputRef.current) {
@@ -640,20 +643,17 @@ const MessageInputCustom = (props) => {
         const companyId = localStorage.getItem("companyId");
         const messages = await listQuickMessages({ companyId, userId: user.id });
         
-        // Ensure messages is an array
         const messagesArray = Array.isArray(messages) ? messages : [];
-        
         const formattedMessages = messagesArray.map((m) => ({
           id: m.id,
           shortcode: m.shortcode,
           message: m.message,
           value: m.message,
         }));
-        
         setQuickMessages(formattedMessages);
       } catch (error) {
         console.error("Erro ao carregar mensagens rápidas:", error);
-        setQuickMessages([]); // Set empty array on error
+        setQuickMessages([]);
       }
     };
 
@@ -661,6 +661,41 @@ const MessageInputCustom = (props) => {
       loadQuickMessages();
     }
   }, [user.id, listQuickMessages]);
+
+  // Sincronizar configuração global de assinatura para TODOS os usuários da empresa
+  useEffect(() => {
+    const companyId = localStorage.getItem("companyId");
+    if (!companyId) return;
+
+    // 1) Carregar valor atual do backend
+    (async () => {
+      try {
+        const settings = await getAllSettings({ companyId });
+        const signSetting = Array.isArray(settings) && settings.find(s => s.key === 'signAllMessages');
+        const enabled = !!(signSetting && signSetting.value === 'enabled');
+        localStorage.setItem('signOption', String(enabled));
+      } catch (e) {
+        // Em erro, não altera o localStorage
+      }
+    })();
+
+    // 2) Assinar socket de settings para refletir alterações em tempo real
+    const socket = socketConnection({ companyId });
+    if (socket && socket.on) {
+      const channel = `company-${companyId}-settings`;
+      const handler = (payload) => {
+        if (payload?.action === 'update' && payload?.setting?.key === 'signAllMessages') {
+          const enabled = payload.setting.value === 'enabled';
+          localStorage.setItem('signOption', String(enabled));
+        }
+      };
+      socket.on(channel, handler);
+
+      return () => {
+        try { socket.off(channel, handler); } catch {}
+      };
+    }
+  }, []);
 
   // Cleanup on component unmount to ensure microphone is released
   useEffect(() => {

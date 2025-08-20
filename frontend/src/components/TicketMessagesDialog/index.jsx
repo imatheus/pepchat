@@ -79,7 +79,8 @@ export default function TicketMessagesDialog({ open, handleClose, ticketId }) {
             const { queues, profile } = user;
 
             const queueAllowed = queues.find((q) => q.id === queueId);
-            if (queueAllowed === undefined && profile !== "admin") {
+            const isTicketMember = (data?.user?.id === user.id) || (Array.isArray(data?.users) && data.users.some(u => u.id === user.id));
+            if (!queueAllowed && profile !== "admin" && !isTicketMember && data.status !== "pending") {
               toast.error("Acesso não permitido");
               history.push("/tickets");
               return;

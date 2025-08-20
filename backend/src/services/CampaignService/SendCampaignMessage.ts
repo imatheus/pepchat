@@ -57,12 +57,12 @@ const SendCampaignMessage = async ({
       if (fs.existsSync(fullMediaPath)) {
         const stats = fs.statSync(fullMediaPath);
         logger.info(`Media file found - Size: ${stats.size} bytes, Modified: ${stats.mtime}`);
+        // Determinar tipo de mídia e mimetype baseado na extensão (escopo fora do try/catch para uso no catch)
+        const extension = path.extname(mediaName).toLowerCase();
+        let messageType: "image" | "video" | "audio" | "document" = "document";
+        let mimetype = "application/octet-stream";
+        
         try {
-          // Determinar tipo de mídia e mimetype baseado na extensão
-          const extension = path.extname(mediaName).toLowerCase();
-          let messageType = "document";
-          let mimetype = "application/octet-stream";
-          
           if (['.jpg', '.jpeg'].includes(extension)) {
             messageType = "image";
             mimetype = "image/jpeg";

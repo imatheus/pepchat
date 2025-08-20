@@ -83,9 +83,13 @@ const Ticket = () => {
           const { queues, profile } = user;
 
           const queueAllowed = queues.find((q) => q.id === queueId);
-          // Permitir visualizar tickets pending mesmo sem acesso à fila
-          // mas bloquear envio de mensagens até aceitar o ticket
-          if (queueAllowed === undefined && profile !== "admin" && data.status !== "pending") {
+          const isTicketMember = (data?.user?.id === user.id) || (Array.isArray(data?.users) && data.users.some(u => u.id === user.id));
+          // Permitir visualizar quando:
+          // - admin, ou
+          // - usuário pertence ao ticket (owner ou TicketUsers), ou
+          // - ticket pending, ou
+          // - usuário tem acesso à fila
+          if (!queueAllowed && profile !== "admin" && !isTicketMember && data.status !== "pending") {
             toast.error("Acesso não permitido");
             history.push("/tickets");
             return;
