@@ -71,8 +71,8 @@ function ListItemLink(props) {
         onClick={handleClick}
         style={{
           justifyContent: drawerCollapsed ? 'center' : 'flex-start',
-          paddingLeft: drawerCollapsed ? 16 : 16,
-          paddingRight: drawerCollapsed ? 16 : 16,
+          paddingLeft: drawerCollapsed ? 10 : 10,
+          paddingRight: drawerCollapsed ? 10 : 10,
           opacity: disabled ? 0.5 : 1,
           cursor: disabled ? 'not-allowed' : 'pointer'
         }}

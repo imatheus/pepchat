@@ -12,17 +12,18 @@ import { i18n } from "../../translate/i18n";
 const useStyles = makeStyles(theme => ({
 	chatContainer: {
 		flex: 1,
-		padding: "5px",
-		height: `calc(100% - 48px)`,
+		padding: "5px 5px 0 5px",
+		height: `calc(100% - 5px)`,
 		overflowY: "hidden",
+		boxSizing: "border-box",
 		marginTop: "5px",
 		backgroundColor: theme.palette.background.default,
 		[theme.breakpoints.between("sm", "md")]: {
-			padding: "3px",
+			padding: "3px 3px 0 3px",
 			marginTop: "5px",
 		},
 		[theme.breakpoints.down("sm")]: {
-			padding: "2px",
+			padding: "2px 2px 0 2px",
 			marginTop: "5px",
 		},
 	},
@@ -74,7 +75,7 @@ const TicketsCustom = (props) => {
 	return (
 		<div className={classes.chatContainer}>
 			<div className={classes.chatPapper}>
-				<Grid container spacing={0}>
+				<Grid container spacing={0} style={{ height: "100%" }}>
 					<Grid item xs={12} md={4} className={classes.contactsWrapper}>
 						<TicketsManager mergeOpenPending={props?.mergeOpenPending} />
 					</Grid>

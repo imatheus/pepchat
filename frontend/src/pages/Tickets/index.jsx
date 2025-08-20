@@ -13,16 +13,17 @@ const useStyles = makeStyles(theme => ({
 	chatContainer: {
 		flex: 1,
 		height: "calc(100% - 5px)",
-		padding: "10px",
+		padding: "5px 5px 0 5px",
 		overflowY: "hidden",
+		boxSizing: "border-box",
 		marginTop: "5px",
 		backgroundColor: theme.palette.background.default,
 		[theme.breakpoints.between("sm", "md")]: {
-			padding: "6px",
+			padding: "4px 4px 0 4px",
 			marginTop: "5px",
 		},
 		[theme.breakpoints.down("sm")]: {
-			padding: "4px",
+			padding: "3px 3px 0 3px",
 			marginTop: "5px",
 		},
 	},
@@ -74,7 +75,7 @@ const Chat = () => {
 	return (
 		<div className={classes.chatContainer}>
 			<div className={classes.chatPapper}>
-				<Grid container spacing={0}>
+				<Grid container spacing={0} style={{ height: "100%" }}>
 					<Grid item xs={12} md={4} className={classes.contactsWrapper}>
 						<TicketsManager />
 					</Grid>
