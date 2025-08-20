@@ -40,7 +40,8 @@ const UpdateUserService = async ({
 
   const requestUser = await User.findByPk(requestUserId);
 
-  if (requestUser.super === false && userData.companyId !== companyId) {
+  // Verifica a empresa do usuário alvo em vez de confiar no corpo da requisição (que não deve conter companyId)
+  if (requestUser?.super === false && user.companyId !== companyId) {
     throw new AppError("O usuário não pertence à esta empresa");
   }
 
