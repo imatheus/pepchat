@@ -37,8 +37,8 @@ const useStyles = makeStyles((theme) => {
     position: "relative",
     width: "100%",
     maxWidth: "99%",
-    height: 98,
-    padding: "0 80px 0 16px", // Combined padding
+    height: 100,
+    padding: "0px 8px 0 16px", // Combined padding
     margin: "8px 0",
     boxSizing: "border-box",
     borderRadius: "12px",
@@ -228,8 +228,39 @@ const useStyles = makeStyles((theme) => {
     width: 18,
     height: 18,
     fontSize: 10,
-    marginRight: 5,
+    marginRight: -2,
     border: '1px solid rgba(0,0,0,0.1)'
+  },
+  ownerAvatarFallback: {
+    backgroundColor: grey[500],
+    color: '#fff',
+  },
+  // Container dos avatares vinculados
+  linkedAvatars: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    marginLeft: 4,
+  },
+  linkedAvatar: {
+    width: 18,
+    height: 18,
+    fontSize: 10,
+    border: '1px solid rgba(0,0,0,0.1)',
+    marginLeft: -6,
+    backgroundColor: theme.palette.background.default,
+  },
+  linkedAvatarFallback: {
+    backgroundColor: grey[500],
+    color: '#fff',
+  },
+  linkedAvatarMore: {
+    width: 18,
+    height: 18,
+    fontSize: 10,
+    border: '1px solid rgba(0,0,0,0.1)',
+    marginLeft: -6,
+    backgroundColor: grey[500],
+    color: '#fff',
   },
   });
 });
@@ -376,6 +407,34 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
     return ticket.queue?.color || "#7C7C7C";
   };
 
+  const renderLinkedUsers = () => {
+    const allUsers = Array.isArray(ticket.users) ? ticket.users : [];
+    const filtered = allUsers.filter(u => u.id !== ticket.user?.id);
+    if (filtered.length === 0) return null;
+    const maxToShow = 3;
+    const toShow = filtered.slice(0, maxToShow);
+    const extraCount = filtered.length - toShow.length;
+
+    return (
+      <span className={classes.linkedAvatars}>
+        {toShow.map(u => (
+          <Tooltip title={u.name} key={u.id}>
+            <Avatar
+              src={u.profileImage || undefined}
+              className={clsx(classes.linkedAvatar, !u.profileImage && classes.linkedAvatarFallback)}
+              imgProps={{ referrerPolicy: 'no-referrer' }}
+            >
+              {!u.profileImage && ((u.name?.[0] || '').toUpperCase())}
+            </Avatar>
+          </Tooltip>
+        ))}
+        {extraCount > 0 && (
+          <Avatar className={classes.linkedAvatarMore}>+{extraCount}</Avatar>
+        )}
+      </span>
+    );
+  };
+
   const renderTicketInfo = () => {
     if (ticketUser) {
       return (
@@ -384,12 +443,13 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
             <Tooltip title={ticketUser}>
               <Avatar
                 src={ownerImage || undefined}
-                className={classes.ownerAvatar}
+                className={clsx(classes.ownerAvatar, !ownerImage && classes.ownerAvatarFallback)}
                 imgProps={{ referrerPolicy: 'no-referrer' }}
               >
-                {!ownerImage && (ticketUser?.[0] || '')}
+                {!ownerImage && ((ticketUser?.[0] || '').toUpperCase())}
               </Avatar>
             </Tooltip>
+            {renderLinkedUsers()}
 
             {ticket.whatsappId && (
               <Badge
@@ -403,7 +463,8 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                   borderRadius: "50px",
                   color: "white",
                   top: -6,
-                  marginRight: 3
+                  marginRight: 3,
+                  marginLeft: 7
                 }}
               />
             )}
@@ -449,7 +510,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               />
             </Tooltip>
           )}
-                    {ticket.chatbot && (
+          {ticket.chatbot && (
             <Tooltip title="Chatbot">
               <AdbIcon
                 fontSize="small"
@@ -463,6 +524,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
     } else {
       return (
         <>
+          {renderLinkedUsers()}
 
           {ticket.whatsappId && (
             <Badge
