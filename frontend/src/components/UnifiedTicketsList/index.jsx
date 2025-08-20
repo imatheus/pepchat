@@ -80,6 +80,16 @@ const reducer = (state, action) => {
       }
       return sortTickets(next);
     }
+    case "UPDATE_TICKET_CONTACT": {
+      const contact = action.payload;
+      const idx = state.findIndex((t) => t.contactId === contact.id);
+      if (idx !== -1) {
+        const next = [...state];
+        next[idx] = { ...next[idx], contact };
+        return next;
+      }
+      return state;
+    }
     case "DELETE_TICKET": {
       const ticketId = action.payload;
       const idx = state.findIndex((t) => parseInt(t.id) === parseInt(ticketId));
@@ -123,6 +133,7 @@ const UnifiedTicketsList = ({
     tags: JSON.stringify(tags),
     users: JSON.stringify(users),
     queueIds: JSON.stringify(selectedQueueIds),
+    updatedAt: refreshTickets,
   });
   const pendingQuery = useTickets({
     pageNumber,
@@ -132,6 +143,7 @@ const UnifiedTicketsList = ({
     tags: JSON.stringify(tags),
     users: JSON.stringify(users),
     queueIds: JSON.stringify(selectedQueueIds),
+    updatedAt: refreshTickets,
   });
 
   const loading = openQuery.loading || pendingQuery.loading;
@@ -195,7 +207,7 @@ const UnifiedTicketsList = ({
 
     socket.on(`company-${companyId}-contact`, (data) => {
       if (data.action === "update") {
-        dispatch({ type: "UPDATE_TICKET", payload: { ...data.contact, id: undefined } });
+        dispatch({ type: "UPDATE_TICKET_CONTACT", payload: data.contact });
       }
     });
 
@@ -213,6 +225,18 @@ const UnifiedTicketsList = ({
       loadMore();
     }
   };
+
+  // Remoção otimista ao fechar/resolver
+  useEffect(() => {
+    const onTicketClosed = (e) => {
+      const { ticketId } = (e && e.detail) || {};
+      if (!ticketId) return;
+      // A lista unificada mostra open + pending; ao fechar deve remover
+      dispatch({ type: "DELETE_TICKET", payload: ticketId });
+    };
+    window.addEventListener('ticket-closed', onTicketClosed);
+    return () => window.removeEventListener('ticket-closed', onTicketClosed);
+  }, []);
 
   return (
     <Paper className={classes.ticketsListWrapper}>

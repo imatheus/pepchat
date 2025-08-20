@@ -36,7 +36,7 @@ const useTickets = ({
               users,
               status,
               date,
-              updatedAt,
+              // Não enviar updatedAt para o backend; usamos apenas para reexecutar o hook
               showAll,
               queueIds,
               withUnreadMessages,

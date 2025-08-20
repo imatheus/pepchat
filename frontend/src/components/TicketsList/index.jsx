@@ -12,6 +12,7 @@ import { i18n } from "../../translate/i18n";
 import { ListSubheader } from "@material-ui/core";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { socketConnection } from "../../services/socket";
+import { TicketsContext } from "../../context/Tickets/TicketsContext";
 
 const useStyles = makeStyles((theme) => ({
   ticketsListWrapper: {
@@ -173,11 +174,12 @@ const TicketsList = ({
   const [pageNumber, setPageNumber] = useState(1);
   const [ticketsList, dispatch] = useReducer(reducer, []);
   const { user } = useContext(AuthContext);
+  const { refreshTickets, triggerRefresh } = useContext(TicketsContext);
 
   useEffect(() => {
     dispatch({ type: "RESET" });
     setPageNumber(1);
-  }, [status, searchParam, dispatch, showAll, selectedQueueIds]);
+  }, [status, searchParam, dispatch, showAll, selectedQueueIds, refreshTickets]);
 
   const { tickets, hasMore, loading } = useTickets({
     pageNumber,
@@ -186,6 +188,7 @@ const TicketsList = ({
     status,
     showAll,
     queueIds: JSON.stringify(selectedQueueIds),
+    updatedAt: refreshTickets,
   });
 
   useEffect(() => {
@@ -291,6 +294,18 @@ const TicketsList = ({
       loadMore();
     }
   };
+
+  useEffect(() => {
+    const onTicketClosed = (e) => {
+      const { ticketId } = (e && e.detail) || {};
+      if (!ticketId) return;
+      if (status === "open") {
+        dispatch({ type: "DELETE_TICKET", payload: ticketId });
+      }
+    };
+    window.addEventListener('ticket-closed', onTicketClosed);
+    return () => window.removeEventListener('ticket-closed', onTicketClosed);
+  }, [status]);
 
   return (
     <div className={classes.ticketsListWrapper}>

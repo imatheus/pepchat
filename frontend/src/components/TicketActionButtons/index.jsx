@@ -52,6 +52,12 @@ const TicketActionButtons = ({ ticket }) => {
 			setLoading(false);
 			if (status === "open") {
 				history.push(`/tickets/${ticket.id}`);
+			} else if (status === "closed") {
+				// Remoção otimista imediata nas listas de "Abertos"
+				try {
+					window.dispatchEvent(new CustomEvent('ticket-closed', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+				} catch {}
+				history.push("/tickets");
 			} else {
 				history.push("/tickets");
 			}

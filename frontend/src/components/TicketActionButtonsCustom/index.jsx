@@ -90,13 +90,22 @@ const TicketActionButtonsCustom = ({ ticket, onTicketUpdate }) => {
 			setLoading(false);
 			if (status === "open") {
 				setCurrentTicket({ ...ticket, code: "#open" });
+				// remoção otimista da lista "Aguardando" já tratada em 'ticket-accepted'
+			} else if (status === "closed") {
+				// remoção otimista imediata do ticket das listas de "Abertos"
+				try {
+					window.dispatchEvent(new CustomEvent('ticket-closed', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+				} catch {}
+				// Forçar atualização das listas (skeleton + refetch)
+				try { triggerRefresh(); } catch {}
+				setCurrentTicket({ id: null, code: null })
+				history.push("/tickets");
 			} else {
 				setCurrentTicket({ id: null, code: null })
 				history.push("/tickets");
 			}
 			
-			// Não forçar atualização global; o socket cuidará da inclusão/remoção pontual do ticket
-			// Removido triggerRefresh() para evitar limpar a lista inteira temporariamente
+			// Mantemos sockets e eventos para atualizações granulares
 			
 		} catch (err) {
 			setLoading(false);

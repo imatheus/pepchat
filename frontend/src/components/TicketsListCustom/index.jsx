@@ -242,6 +242,7 @@ const TicketsListCustom = (props) => {
     tags: JSON.stringify(tags),
     users: JSON.stringify(users),
     queueIds: JSON.stringify(selectedQueueIds),
+    updatedAt: refreshTickets,
   });
 
   useEffect(() => {
@@ -403,7 +404,7 @@ const TicketsListCustom = (props) => {
     }
   }, [ticketsList, updateCount]);
 
-  // Remoção otimista do ticket da lista "Aguardando" assim que for aceito
+  // Remoção otimista do ticket da lista quando aceito/fechado
   useEffect(() => {
     const onTicketAccepted = (e) => {
       const { ticketId } = (e && e.detail) || {};
@@ -412,8 +413,19 @@ const TicketsListCustom = (props) => {
         dispatch({ type: "DELETE_TICKET", payload: ticketId });
       }
     };
+    const onTicketClosed = (e) => {
+      const { ticketId } = (e && e.detail) || {};
+      if (!ticketId) return;
+      if (status === "open") {
+        dispatch({ type: "DELETE_TICKET", payload: ticketId });
+      }
+    };
     window.addEventListener('ticket-accepted', onTicketAccepted);
-    return () => window.removeEventListener('ticket-accepted', onTicketAccepted);
+    window.addEventListener('ticket-closed', onTicketClosed);
+    return () => {
+      window.removeEventListener('ticket-accepted', onTicketAccepted);
+      window.removeEventListener('ticket-closed', onTicketClosed);
+    };
   }, [status]);
 
   const loadMore = () => {

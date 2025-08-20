@@ -340,6 +340,12 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
         userId: user?.id,
       });
 
+      // Remoção otimista imediata do card nas listas
+      try {
+        window.dispatchEvent(new CustomEvent('ticket-closed', { detail: { ticketId: id, ticketUuid: ticket.uuid } }));
+      } catch {}
+      try { triggerRefresh(); } catch {}
+
       // Navegar para a lista de tickets após fechar
       history.push(`/tickets/`);
     } catch (err) {
@@ -725,7 +731,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                   variant="body"
                   color="textPrimary"
                 >
-                  {ticket.contact.name}
+                  {(ticket?.contact?.name || ticket?.contact?.number || "Contato")}
                 </Typography>
 
               </span>
@@ -739,7 +745,13 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                 component="span"
                 variant="body2"
                 color="textSecondary"
-              > {ticket.lastMessage.includes('data:image/png;base64') ? <MarkdownWrapper> Localização</MarkdownWrapper> : <MarkdownWrapper>{ticket.lastMessage}</MarkdownWrapper>}
+              > {(
+                (typeof ticket?.lastMessage === 'string' ? ticket.lastMessage : '')
+              ).includes('data:image/png;base64') ? (
+                <MarkdownWrapper> Localização</MarkdownWrapper>
+              ) : (
+                <MarkdownWrapper>{typeof ticket?.lastMessage === 'string' ? ticket.lastMessage : ''}</MarkdownWrapper>
+              )}
                 {/* {ticket.lastMessage === "" ? <br /> : <MarkdownWrapper>{ticket.lastMessage}</MarkdownWrapper>} */}
               </Typography>
               <ListItemSecondaryAction style={{ left: 16 }}>
@@ -777,11 +789,13 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                 variant="body2"
                 color="textSecondary"
               >
-                {isSameDay(parseISO(ticket.updatedAt), new Date()) ? (
-                  <>{format(parseISO(ticket.updatedAt), "HH:mm")}</>
-                ) : (
-                  <>{format(parseISO(ticket.updatedAt), "dd/MM/yyyy")}</>
-                )}
+                {ticket?.updatedAt ? (
+                  isSameDay(parseISO(ticket.updatedAt), new Date()) ? (
+                    <>{format(parseISO(ticket.updatedAt), "HH:mm")}</>
+                  ) : (
+                    <>{format(parseISO(ticket.updatedAt), "dd/MM/yyyy")}</>
+                  )
+                ) : null}
               </Typography>
 
               <Badge
