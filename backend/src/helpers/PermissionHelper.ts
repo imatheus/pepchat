@@ -2,7 +2,7 @@ import AppError from "../errors/AppError";
 import User from "../models/User";
 
 export interface UserContext {
-  id: string;
+  id: string | number;
   profile: string;
   companyId: number;
 }
@@ -46,17 +46,17 @@ export class PermissionHelper {
    */
   static async requireUserPermission(
     requestUser: UserContext, 
-    targetUserId: string
+    targetUserId: string | number
   ): Promise<void> {
     // Super usuários podem modificar qualquer usuário
-    const user = await User.findByPk(requestUser.id);
+    const user = await User.findByPk(String(requestUser.id));
     if (user?.super) {
       return;
     }
 
     // Admins podem modificar usuários da mesma empresa
     if (requestUser.profile === "admin") {
-      const targetUser = await User.findByPk(targetUserId);
+      const targetUser = await User.findByPk(String(targetUserId));
       if (!targetUser) {
         throw new AppError("Usuário não encontrado", 404);
       }
@@ -66,7 +66,9 @@ export class PermissionHelper {
     }
 
     // Usuários comuns só podem modificar a si mesmos
-    if (requestUser.id !== targetUserId) {
+    const reqId = String(requestUser.id);
+    const tgtId = String(targetUserId);
+    if (reqId !== tgtId) {
       throw new AppError("Acesso negado. Você só pode modificar seu próprio perfil.", 403);
     }
   }
@@ -146,14 +148,14 @@ export class PermissionHelper {
   /**
    * Verifica se o usuário pode acessar dados de outros usuários
    */
-  static requireUserDataAccess(requestUser: UserContext, targetUserId?: string): void {
+  static requireUserDataAccess(requestUser: UserContext, targetUserId?: string | number): void {
     // Super usuários podem acessar dados de qualquer usuário
     if (requestUser.profile === "admin") {
       return;
     }
 
     // Usuários comuns só podem acessar seus próprios dados
-    if (targetUserId && requestUser.id !== targetUserId) {
+    if (targetUserId && String(requestUser.id) !== String(targetUserId)) {
       throw new AppError("Acesso negado. Você só pode acessar seus próprios dados.", 403);
     }
   }

@@ -9,10 +9,8 @@ import ListSettingsService from "../services/SettingServices/ListSettingsService
 export const index = async (req: Request, res: Response): Promise<void> => {
   const { companyId } = req.user;
 
-  if (req.user.profile !== "admin") {
-    throw new AppError("ERR_NO_PERMISSION", 403);
-  }
-
+  // Qualquer usuário autenticado da empresa pode ler as configurações.
+  // A atualização (PUT) permanece restrita a admin no método update.
   const settings = await ListSettingsService({ companyId });
 
   res.status(200).json(settings);
