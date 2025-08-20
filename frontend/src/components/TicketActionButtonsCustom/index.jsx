@@ -80,10 +80,13 @@ const TicketActionButtonsCustom = ({ ticket, onTicketUpdate }) => {
 				onTicketUpdate(updatedTicket);
 			}
 
-			// Disparar evento para remoção otimista do card na lista "Aguardando"
+			// Disparar eventos para remoção otimista do card em listas específicas
 			if (status === "open") {
 				try {
+					// Remover de "Aguardando" quando aceito
 					window.dispatchEvent(new CustomEvent('ticket-accepted', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+					// Remover de "Arquivados" quando reaberto
+					window.dispatchEvent(new CustomEvent('ticket-reopened', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
 				} catch (e) { /* noop */ }
 			}
 

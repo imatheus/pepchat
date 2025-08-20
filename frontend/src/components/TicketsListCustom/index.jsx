@@ -420,13 +420,23 @@ const TicketsListCustom = (props) => {
         dispatch({ type: "DELETE_TICKET", payload: ticketId });
       }
     };
+    const onTicketReopened = (e) => {
+      const { ticketId } = (e && e.detail) || {};
+      if (!ticketId) return;
+      if (status === "closed") {
+        dispatch({ type: "DELETE_TICKET", payload: ticketId });
+      }
+    };
     window.addEventListener('ticket-accepted', onTicketAccepted);
     window.addEventListener('ticket-closed', onTicketClosed);
+    window.addEventListener('ticket-reopened', onTicketReopened);
     return () => {
       window.removeEventListener('ticket-accepted', onTicketAccepted);
       window.removeEventListener('ticket-closed', onTicketClosed);
+      window.removeEventListener('ticket-reopened', onTicketReopened);
     };
   }, [status]);
+
 
   const loadMore = () => {
     setPageNumber((prevState) => prevState + 1);

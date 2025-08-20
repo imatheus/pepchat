@@ -226,7 +226,7 @@ const UnifiedTicketsList = ({
     }
   };
 
-  // Remoção otimista ao fechar/resolver
+  // Remoção otimista ao fechar/resolver e ao reabrir
   useEffect(() => {
     const onTicketClosed = (e) => {
       const { ticketId } = (e && e.detail) || {};
@@ -234,8 +234,18 @@ const UnifiedTicketsList = ({
       // A lista unificada mostra open + pending; ao fechar deve remover
       dispatch({ type: "DELETE_TICKET", payload: ticketId });
     };
+    const onTicketReopened = (e) => {
+      const { ticketId } = (e && e.detail) || {};
+      if (!ticketId) return;
+      // Quando reabre, deve remover dos arquivados; na unificada não há "closed",
+      // então não é necessário aqui. Este listener é no caso de reaproveitamento futuro.
+    };
     window.addEventListener('ticket-closed', onTicketClosed);
-    return () => window.removeEventListener('ticket-closed', onTicketClosed);
+    window.addEventListener('ticket-reopened', onTicketReopened);
+    return () => {
+      window.removeEventListener('ticket-closed', onTicketClosed);
+      window.removeEventListener('ticket-reopened', onTicketReopened);
+    };
   }, []);
 
   return (

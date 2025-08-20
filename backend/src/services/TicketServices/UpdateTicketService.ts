@@ -118,10 +118,8 @@ const UpdateTicketService = async ({
     
     const isAutoModeEnabled = chatbotAutoModeEnabled?.value === 'enabled';
 
-    // Validação: Impedir aceitar ticket sem setor selecionado (apenas se modo automático estiver habilitado)
-    if (status === "open" && !ticket.queueId && isAutoModeEnabled) {
-      throw new AppError("Não é possível aceitar um ticket sem fila", 400);
-    }
+    // Permitir reabrir/aceitar mesmo sem fila: tentar auto-atribuir, e se não houver filas do usuário, seguir sem bloquear
+    // (Mantido comportamento de auto-atribuição mais abaixo)
 
     // Quando um usuário aceita um ticket sem fila, atribuir automaticamente a fila do usuário
     if (status === "open" && !ticket.queueId && userId) {
@@ -253,9 +251,10 @@ const UpdateTicketService = async ({
         whatsappId: ticket.whatsappId,
         userId: ticket.userId
       });
+      // Ao reabrir sem fila, apenas atualiza; não emitir removeFromList aqui
       io.emit(`company-${companyId}-ticket`, {
-        action: "removeFromList",
-        ticketId: ticket?.id
+        action: "update",
+        ticket
       });
     }
 

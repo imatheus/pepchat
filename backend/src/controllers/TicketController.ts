@@ -147,21 +147,22 @@ export const update = async (
     res.status(200).json(ticket);
   } catch (error) {
     console.error("Error updating ticket:", error);
-    
+
     // Handle AppError instances with their specific status code and message
     if (error instanceof AppError) {
-      res.status(error.statusCode).json({ 
+      return res.status(error.statusCode).json({ 
         error: error.message
       });
     }
     
     // Handle other errors as internal server errors
-    res.status(500).json({ 
+    return res.status(500).json({ 
       error: "Internal server error", 
-      message: error.message || "Failed to update ticket"
+      message: (error as any).message || "Failed to update ticket"
     });
   }
 };
+
 
 export const remove = async (
   req: Request,
