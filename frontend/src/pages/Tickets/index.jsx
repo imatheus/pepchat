@@ -12,18 +12,18 @@ import { i18n } from "../../translate/i18n";
 const useStyles = makeStyles(theme => ({
 	chatContainer: {
 		flex: 1,
-		height: "calc(100% - 48px)",
+		height: "calc(100% - 5px)",
 		padding: "10px",
 		overflowY: "hidden",
-		marginTop: "25px",
+		marginTop: "5px",
 		backgroundColor: theme.palette.background.default,
 		[theme.breakpoints.between("sm", "md")]: {
 			padding: "6px",
-			marginTop: "15px",
+			marginTop: "5px",
 		},
 		[theme.breakpoints.down("sm")]: {
 			padding: "4px",
-			marginTop: "10px",
+			marginTop: "5px",
 		},
 	},
 

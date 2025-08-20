@@ -17,11 +17,13 @@ import {
   Avatar,
 } from "@material-ui/core";
 
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import MenuIcon from "@material-ui/icons/Menu";
-import Brightness4Icon from "@material-ui/icons/Brightness4";
-import Brightness7Icon from "@material-ui/icons/Brightness7";
+import { 
+  IoMenuOutline,
+  IoChevronBackOutline,
+  IoChevronForwardOutline,
+  IoSunnyOutline,
+  IoMoonOutline
+} from "react-icons/io5";
 
 import MainListItems from "./MainListItems";
 import NotificationsPopOver from "../components/NotificationsPopOver";
@@ -529,7 +531,7 @@ const LoggedInLayout = ({ children }) => {
             onClick={handleDrawerToggle}
             className={classes.menuButton}
           >
-            <MenuIcon />
+            <IoMenuOutline size={22} />
           </IconButton>
           
           <div className={classes.logoContainer}>
@@ -567,7 +569,7 @@ const LoggedInLayout = ({ children }) => {
               onClick={toggleDarkMode}
               aria-label="toggle dark mode"
             >
-              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+              {darkMode ? <IoSunnyOutline size={22} /> : <IoMoonOutline size={22} />}
             </IconButton>
             
             {user.profileImage ? (
@@ -646,7 +648,7 @@ const LoggedInLayout = ({ children }) => {
             onClick={toggleDrawerCollapse}
             className={classes.expandButton}
           >
-            {drawerCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            {drawerCollapsed ? <IoChevronForwardOutline size={20} /> : <IoChevronBackOutline size={20} />}
           </IconButton>
         </div>
         <Divider />

@@ -15,15 +15,15 @@ const useStyles = makeStyles(theme => ({
 		padding: "5px",
 		height: `calc(100% - 48px)`,
 		overflowY: "hidden",
-		marginTop: "25px",
+		marginTop: "5px",
 		backgroundColor: theme.palette.background.default,
 		[theme.breakpoints.between("sm", "md")]: {
 			padding: "3px",
-			marginTop: "15px",
+			marginTop: "5px",
 		},
 		[theme.breakpoints.down("sm")]: {
 			padding: "2px",
-			marginTop: "10px",
+			marginTop: "5px",
 		},
 	},
 
