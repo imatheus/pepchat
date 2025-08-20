@@ -20,6 +20,7 @@ import MarkdownWrapper from "../MarkdownWrapper";
 import { Tooltip } from "@material-ui/core";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { TicketsContext } from "../../context/Tickets/TicketsContext";
+import { WhatsAppsContext } from "../../context/WhatsApp/WhatsAppsContext";
 import toastError from "../../errors/toastError";
 import { v4 as uuidv4 } from "uuid";
 import WhatsAppIcon from "@material-ui/icons/WhatsApp";
@@ -282,6 +283,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   const { ticketId } = useParams();
   const isMounted = useRef(true);
   const { setCurrentTicket, triggerRefresh } = useContext(TicketsContext);
+  const { whatsApps } = useContext(WhatsAppsContext);
   const { user } = useContext(AuthContext);
   const { profile } = user;
 
@@ -315,16 +317,20 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
       setOwnerImage(null);
     }
 
-    if (ticket.whatsappId && ticket.whatsapp) {
+    // Resolver nome da conexão WhatsApp de forma robusta (socket pode não enviar relação populada)
+    if (ticket.whatsapp && ticket.whatsapp.name) {
       setWhatsAppName(ticket.whatsapp.name);
+    } else if (ticket.whatsappId && Array.isArray(whatsApps)) {
+      const found = whatsApps.find(w => parseInt(w.id) === parseInt(ticket.whatsappId));
+      setWhatsAppName(found?.name || "");
     } else {
-      setWhatsAppName(null);
+      setWhatsAppName("");
     }
 
     return () => {
       isMounted.current = false;
     };
-  }, [ticket.userId, ticket.user, ticket.whatsappId, ticket.whatsapp]);
+  }, [ticket.userId, ticket.user, ticket.whatsappId, ticket.whatsapp, whatsApps]);
 
   const handleCloseTicket = async (id) => {
     setLoading(true);
@@ -459,7 +465,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
             {ticket.whatsappId && (
               <Badge
                 className={classes.Radiusdot}
-                badgeContent={`${whatsAppName}`}
+                badgeContent={(whatsAppName || (ticket.whatsapp && ticket.whatsapp.name) || (Array.isArray(whatsApps) ? (whatsApps.find(w => parseInt(w.id) === parseInt(ticket.whatsappId))?.name || "") : ""))}
                 style={{
                   backgroundColor: "#21ba59ff",
                   height: 18,
@@ -534,7 +540,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
           {ticket.whatsappId && (
             <Badge
               className={classes.Radiusdot}
-              badgeContent={`${whatsAppName}`}
+              badgeContent={(whatsAppName || (ticket.whatsapp && ticket.whatsapp.name) || (Array.isArray(whatsApps) ? (whatsApps.find(w => parseInt(w.id) === parseInt(ticket.whatsappId))?.name || "") : ""))}
               style={{
                 backgroundColor: "#21ba59ff",
                 height: 18,

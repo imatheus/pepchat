@@ -622,27 +622,16 @@ Avalie nossa equipe:`;
                         </span>
                         <div>
                           {!uploadingGreeting && newFilesCount > 0 && (
-                            <>
-                              <Tooltip title="Arquivos serão enviados automaticamente ao salvar">
-                                <IconButton
-                                  size="small"
-                                  onClick={handleUploadGreetingMedia}
-                                  color="primary"
-                                  disabled={!whatsAppId}
-                                >
-                                  <AttachFileIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Remover arquivos selecionados">
-                                <IconButton
-                                  size="small"
-                                  onClick={removeAllGreetingMedia}
-                                  color="secondary"
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </>
+                            <Tooltip title="Arquivos serão enviados automaticamente ao salvar">
+                              <IconButton
+                                size="small"
+                                onClick={handleUploadGreetingMedia}
+                                color="primary"
+                                disabled={!whatsAppId}
+                              >
+                                <AttachFileIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
                           )}
                           {uploadingGreeting && (
                             <CircularProgress size={20} />
@@ -655,9 +644,7 @@ Avalie nossa equipe:`;
                         <div key={mediaObj.id} className={classes.mediaItem}>
                           <div className={classes.mediaHeader}>
                             <div className={classes.fileName}>
-                              {mediaObj.isExisting && "📎 "}
                               {mediaObj.file.name}
-                              {mediaObj.isExisting && " (salvo)"}
                             </div>
                             <Tooltip title="Remover arquivo">
                               <IconButton
@@ -672,37 +659,6 @@ Avalie nossa equipe:`;
                           
                           <div className={classes.mediaPreviewContent}>
                             {renderFilePreview(mediaObj)}
-                            
-                            <div className={classes.fileInfo}>
-                              <div className={classes.fileSize}>
-                                {formatFileSize(mediaObj.file.size)}
-                              </div>
-                              <div className={classes.fileType}>
-                                {mediaObj.file.type || 'Tipo desconhecido'}
-                              </div>
-                              {mediaObj.file.type.startsWith('image/') && (
-                                <div style={{ fontSize: '0.75em', color: 'gray' }}>
-                                  Imagem • Pré-visualização disponível
-                                </div>
-                              )}
-                              {mediaObj.file.type.startsWith('video/') && (
-                                <div style={{ fontSize: '0.75em', color: 'gray' }}>
-                                  Vídeo • Player disponível
-                                </div>
-                              )}
-                              {mediaObj.file.type.startsWith('audio/') && (
-                                <div style={{ fontSize: '0.75em', color: 'gray' }}>
-                                  Áudio • {getFileIcon(mediaObj.file.type)}
-                                </div>
-                              )}
-                              {!mediaObj.file.type.startsWith('image/') && 
-                               !mediaObj.file.type.startsWith('video/') && 
-                               !mediaObj.file.type.startsWith('audio/') && (
-                                <div style={{ fontSize: '0.75em', color: 'gray' }}>
-                                  Documento • {getFileIcon(mediaObj.file.type)}
-                                </div>
-                              )}
-                            </div>
                           </div>
                         </div>
                       ))}

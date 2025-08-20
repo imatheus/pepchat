@@ -43,14 +43,16 @@ const SendWhatsAppMedia = async ({
         const imageBuffer = fs.readFileSync(media.path);
         messageContent = {
           image: imageBuffer,
-          caption: media.originalname
+          // Regra: para imagens, não enviar descrição/caption
+          caption: ""
         };
         break;
       case "video":
         const videoBuffer = fs.readFileSync(media.path);
         messageContent = {
           video: videoBuffer,
-          caption: media.originalname
+          // Regra: para vídeos, não enviar descrição/caption
+          caption: ""
         };
         break;
       case "audio":

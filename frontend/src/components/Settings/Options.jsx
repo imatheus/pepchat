@@ -231,8 +231,8 @@ export default function Options(props) {
                   onChange={(e) => handleTicketsViewChange(e.target.value)}
                   disabled={loadingTicketsView}
                 >
-                  <MenuItem value="classic">Clássica (padrão atual)</MenuItem>
-                  <MenuItem value="new">Nova</MenuItem>
+                  <MenuItem value="classic">Clássica</MenuItem>
+                  <MenuItem value="new">Compacta</MenuItem>
                 </Select>
               </FormControl>
             </Box>

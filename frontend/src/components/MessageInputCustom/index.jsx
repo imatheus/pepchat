@@ -805,7 +805,13 @@ const MessageInputCustom = (props) => {
     // Add all processed medias to FormData
     processedMedias.forEach(media => {
       formData.append("medias", media);
-      formData.append("body", media.name || 'file');
+      const typeGroup = (media.type || '').split('/')[0];
+      // Regra: para imagens e vídeos, não enviar a descrição do arquivo (evita 'blob')
+      if (typeGroup === 'image' || typeGroup === 'video') {
+        formData.append("body", "");
+      } else {
+        formData.append("body", media.name || 'file');
+      }
     });
 
     try {

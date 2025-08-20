@@ -309,6 +309,7 @@ const TicketsListCustom = (props) => {
       } else {
         socket.emit("joinNotification");
       }
+      // Solicitar sincronização imediata (comentário explicativo, backend ignora se não usar)
     });
 
     socket.on(`company-${companyId}-ticket`, (data) => {

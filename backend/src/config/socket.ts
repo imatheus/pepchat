@@ -7,17 +7,17 @@ const isProduction = process.env.NODE_ENV === 'production';
 const forcePolling = process.env.SOCKET_FORCE_POLLING === 'true';
 
 export const socketConfig: Partial<ServerOptions & EngineOptions> = {
-  transports: forcePolling ? ["polling"] : ["polling", "websocket"],
+  transports: forcePolling ? ["polling"] : ["websocket", "polling"],
   pingTimeout: 60000,
   pingInterval: 25000,
-  connectTimeout: 45000,
+  connectTimeout: 30000,
   allowEIO3: true,
   // Desabilitar upgrade quando forçar polling para evitar erros de probe no navegador
   allowUpgrades: !forcePolling,
-  upgradeTimeout: 10000,
+  upgradeTimeout: 8000,
   // Aumentar limite de payload do Socket.IO para evitar queda em tickets com mensagens grandes
   maxHttpBufferSize: 10 * 1024 * 1024, // 10MB
-  perMessageDeflate: { threshold: 32 * 1024 }, // comprimir somente mensagens >32KB
+  perMessageDeflate: { threshold: 16 * 1024 }, // comprimir somente mensagens >16KB
   cors: {
     origin: process.env.FRONTEND_URL ? 
       (Array.isArray(process.env.FRONTEND_URL) ? 

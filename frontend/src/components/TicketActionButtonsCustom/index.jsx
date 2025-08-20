@@ -95,10 +95,8 @@ const TicketActionButtonsCustom = ({ ticket, onTicketUpdate }) => {
 				history.push("/tickets");
 			}
 			
-			// Não forçar atualização global ao aceitar; o socket cuidará da inclusão/remoção
-			if (status !== "open") {
-				triggerRefresh();
-			}
+			// Não forçar atualização global; o socket cuidará da inclusão/remoção pontual do ticket
+			// Removido triggerRefresh() para evitar limpar a lista inteira temporariamente
 			
 		} catch (err) {
 			setLoading(false);

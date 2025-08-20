@@ -21,6 +21,10 @@ const useTickets = ({
 
   useEffect(() => {
     setLoading(true);
+
+    // Reduzir latência: debounce menor quando não há digitação de busca
+    const debounceMs = searchParam ? 300 : 180;
+
     const delayDebounceFn = setTimeout(() => {
       const fetchTickets = async () => {
         try {
@@ -47,7 +51,8 @@ const useTickets = ({
         }
       };
       fetchTickets();
-    }, 500);
+    }, debounceMs);
+
     return () => clearTimeout(delayDebounceFn);
   }, [
     searchParam,

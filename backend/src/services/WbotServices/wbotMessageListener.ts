@@ -357,8 +357,14 @@ const downloadMedia = async (msg: proto.IWebMessageInfo) => {
   let stream: any;
   try {
     stream = await downloadContentFromMessage(mineType as any, messageType);
-  } catch (error) {
-    logger.error(error, "Error downloading media");
+  } catch (error: any) {
+    // Alguns conteúdos podem falhar a descriptografia (ERR_OSSL_BAD_DECRYPT) – ignorar com aviso suave
+    const msg = (error && (error.message || error.toString())) || "";
+    if (msg.includes("bad decrypt") || error?.code === 'ERR_OSSL_BAD_DECRYPT') {
+      logger.warn("Skipping media decryption failure (bad decrypt) for incoming message");
+    } else {
+      logger.error(error, "Error downloading media");
+    }
     return null;
   }
 
@@ -415,7 +421,25 @@ const verifyMediaMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, co
   const media = await downloadMedia(msg);
 
   if (!media) {
-    throw new Error("ERR_WAPP_DOWNLOAD_MEDIA");
+    // Fallback: registrar apenas mensagem de texto/caption para evitar quebra de fluxo
+    const body = getBodyMessage(msg) || "";
+    const messageData = {
+      id: msg.key.id,
+      ticketId: ticket.id,
+      contactId: msg.key.fromMe ? undefined : contact.id,
+      body,
+      fromMe: msg.key.fromMe,
+      read: msg.key.fromMe,
+      mediaUrl: undefined,
+      mediaType: undefined,
+      quotedMsgId: (await verifyQuotedMessage(msg))?.id,
+      ack: msg.status,
+      dataJson: JSON.stringify(msg),
+    } as any;
+
+    await ticket.update({ lastMessage: body || ticket.lastMessage || '' });
+    await CreateMessageService({ messageData, companyId: ticket.companyId });
+    return message as any; // encerra sem erro
   }
 
   // Organizar arquivo por empresa e categoria

@@ -154,9 +154,11 @@ export const send = async (req: Request, res: Response): Promise<void> => {
         // Enviar mídia diretamente
         await Promise.all(
           medias.map(async (media: Express.Multer.File) => {
+            // Regra: para imagens e vídeos, NÃO enviar caption (evita "blob")
+            const isImageOrVideo = media.mimetype?.startsWith('image/') || media.mimetype?.startsWith('video/');
             await SendMessage(whatsapp, {
               number,
-              body: media.originalname,
+              body: isImageOrVideo ? "" : (media.originalname || ""),
               mediaPath: media.path
             });
           })

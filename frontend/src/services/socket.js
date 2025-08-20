@@ -45,62 +45,86 @@ export function socketConnection(params) {
 
   // Construir URL correta para WebSocket (remover /api se existir)
   // APIs HTTP usam /api, mas WebSocket conecta diretamente no domínio base
-  const backendUrl = import.meta.env.VITE_BACKEND_URL.replace('/api', '');
-  
+  const baseUrl = (import.meta.env.VITE_BACKEND_URL || '').replace('/api', '');
+  const backendUrl = baseUrl || window.location.origin;
+
   // Detectar se está em produção
   const isProduction = import.meta.env.PROD;
-  
-  // Configurações diferentes para desenvolvimento e produção
-  const socketConfig = {
-    // Usar polling primeiro e depois upgrade para websocket
-    transports: ["polling", "websocket"],
-    pingTimeout: 60000,
-    pingInterval: 25000,
-    timeout: 45000,
-    forceNew: false,
-    reconnection: true,
-    reconnectionAttempts: 3,
-    reconnectionDelay: 2000,
-    reconnectionDelayMax: 10000,
-    upgrade: true,
-    rememberUpgrade: false, // Sempre tentar upgrade
-    query: { companyId, userId },
-    withCredentials: true,
-    autoConnect: true,
-    // Configurações específicas para produção
-    ...(isProduction && {
-      forceBase64: false,
-      enablesXDR: false,
-    })
+
+  // Flag de tentativa de fallback para polling (evitar loop)
+  let triedPollingFallback = false;
+
+  const createSocket = (forcePolling = false) => {
+    const transports = forcePolling
+      ? ["polling"]
+      : (isProduction ? ["polling", "websocket"] : ["websocket", "polling"]);
+
+    const socketConfig = {
+      transports,
+      path: "/socket.io",
+      pingTimeout: 60000,
+      pingInterval: 25000,
+      timeout: 30000,
+      forceNew: false,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      upgrade: !forcePolling,
+      rememberUpgrade: !forcePolling, // lembrar upgrade apenas quando não estiver forçando polling
+      query: { companyId, userId },
+      withCredentials: true,
+      autoConnect: true,
+      ...(isProduction && { forceBase64: false, enablesXDR: false })
+    };
+
+    const sock = io(backendUrl, socketConfig);
+
+    // Controle de erro mais robusto
+    sock.on('connect_error', (error) => {
+      // Se for erro 400, desabilitar Socket.IO completamente
+      if (error?.description === 400) {
+        disableSocketIO();
+        sock.disconnect();
+        socketCache = null;
+        currentCompanyId = null;
+        return;
+      }
+
+      // Se falhar websocket em produção, tentar fallback para polling uma única vez
+      const msg = (error && (error.message || error.toString())) || '';
+      const wsLikelyBlocked = msg.includes('websocket error') || msg.includes('transport error');
+      if (!forcePolling && !triedPollingFallback && wsLikelyBlocked) {
+        triedPollingFallback = true;
+        try {
+          sock.disconnect();
+        } catch {}
+        // Recriar conexão com polling-only
+        const pollingSocket = createSocket(true);
+        socketCache = pollingSocket;
+        currentCompanyId = companyId;
+        return;
+      }
+
+      // Limpar cache em caso de erro
+      if (socketCache === sock) {
+        socketCache = null;
+        currentCompanyId = null;
+      }
+    });
+
+    sock.on('disconnect', (reason) => {
+      // Limpar cache apenas se foi desconexão intencional
+      if (reason === 'io client disconnect') {
+        socketCache = null;
+        currentCompanyId = null;
+      }
+    });
+
+    return sock;
   };
 
-  const socket = io(backendUrl, socketConfig);
-
-  // Controle de erro mais robusto
-  socket.on('connect_error', (error) => {
-    // Se for erro 400, desabilitar Socket.IO completamente
-    if (error.description === 400) {
-      disableSocketIO();
-      socket.disconnect();
-      socketCache = null;
-      currentCompanyId = null;
-      return;
-    }
-    
-    // Limpar cache em caso de erro
-    if (socketCache === socket) {
-      socketCache = null;
-      currentCompanyId = null;
-    }
-  });
-
-  socket.on('disconnect', (reason) => {
-    // Limpar cache apenas se foi desconexão intencional
-    if (reason === 'io client disconnect') {
-      socketCache = null;
-      currentCompanyId = null;
-    }
-  });
+  const socket = createSocket(false);
 
   // Atualizar cache
   socketCache = socket;

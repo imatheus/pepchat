@@ -304,16 +304,37 @@ export const uploadGreetingMedia = async (
     ensureDirectoryExists(connectionsDir);
     ensureDirectoryExists(connectionDir);
 
-    const uploadedFiles = [];
+    const uploadedFiles: Array<{ filename: string; originalName: string; size: number; mimetype: string; path: string; }> = [];
+
+    // Helpers para preservar o nome original de forma segura e única
+    const sanitizeFileName = (name: string): string => {
+      const base = path.basename(name);
+      // Permitir letras e números UNICODE, espaço, _, -, ., (, )
+      const cleaned = base
+        .replace(/[\\/:*?\"<>|]/g, '_') // caracteres inválidos no Windows
+        .replace(/[^\p{L}\p{N}.\- ()]/gu, '_')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return cleaned || `arquivo_${Date.now()}`;
+    };
+
+    const getUniqueFilePath = (dir: string, filename: string): { fullPath: string; finalName: string } => {
+      const parsed = path.parse(filename);
+      let candidate = filename;
+      let counter = 1;
+      while (fs.existsSync(path.join(dir, candidate))) {
+        candidate = `${parsed.name} (${counter})${parsed.ext}`;
+        counter++;
+      }
+      return { fullPath: path.join(dir, candidate), finalName: candidate };
+    };
 
     for (const file of files) {
       console.log(`Processing file: ${file.originalname}, size: ${file.size}, mimetype: ${file.mimetype}`);
       
-      // Gerar nome único para o arquivo
-      const timestamp = Date.now();
-      const extension = path.extname(file.originalname);
-      const filename = `${timestamp}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      const filePath = path.join(connectionDir, filename);
+      // Preservar nome original (sanitizado) e garantir unicidade
+      const safeOriginalName = sanitizeFileName(file.originalname);
+      const { fullPath, finalName } = getUniqueFilePath(connectionDir, safeOriginalName);
 
       try {
         // Verificar se o arquivo temporário existe
@@ -323,15 +344,15 @@ export const uploadGreetingMedia = async (
         }
 
         // Mover arquivo do temp para o diretório final
-        fs.renameSync(file.path, filePath);
-        console.log(`File moved successfully: ${filename}`);
+        fs.renameSync(file.path, fullPath);
+        console.log(`File moved successfully: ${finalName}`);
 
         uploadedFiles.push({
-          filename,
+          filename: finalName,
           originalName: file.originalname,
           size: file.size,
           mimetype: file.mimetype,
-          path: `/uploads/${companyId}/connections/${whatsappId}/${filename}`
+          path: `/uploads/${companyId}/connections/${whatsappId}/${finalName}`
         });
       } catch (fileError) {
         console.error(`Error processing file ${file.originalname}:`, fileError);

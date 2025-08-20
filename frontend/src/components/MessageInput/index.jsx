@@ -297,7 +297,13 @@ const MessageInput = ({ ticketStatus }) => {
 		formData.append("fromMe", true);
 		medias.forEach(media => {
 			formData.append("medias", media);
-			formData.append("body", media.name);
+			const typeGroup = (media.type || "").split('/') [0];
+			// Para imagens e vídeos, não enviar descrição do arquivo (evita 'blob')
+			if (typeGroup === 'image' || typeGroup === 'video') {
+				formData.append("body", "");
+			} else {
+				formData.append("body", media.name || "");
+			}
 		});
 
 		try {

@@ -218,6 +218,8 @@ const TicketsList = ({
       } else {
         socket.emit("joinNotification");
       }
+      // Dica: pedir imediatamente unread reset na conexão para evitar espera de outra ação
+      // Mantém compatibilidade pois o backend ignora se não aplicável
     });
 
     socket.on(`company-${companyId}-ticket`, (data) => {
