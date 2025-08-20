@@ -32,236 +32,241 @@ import { getThemeColors, hexToRgba } from "../../styles/colors";
 const useStyles = makeStyles((theme) => {
   const themeColors = getThemeColors(theme.palette.type === 'dark');
   return ({
-  // Base ticket styles
-  ticket: {
-    position: "relative",
-    width: "100%",
-    maxWidth: "99%",
-    height: 108,
-    padding: "0px 8px 5px 16px", // Combined padding
-    margin: "8px 0",
-    boxSizing: "border-box",
-    borderRadius: "10px",
-    border: "1px solid #d6d6d65f !important",
-    backgroundColor: theme.palette.type === 'dark' ? '#333333' : theme.palette.background.paper,
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-    transition: "all 0.2s ease-in-out",
-    "&:hover": {
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-      transform: "translateY(-1px)",
+    // Base ticket styles
+    ticket: {
+      position: "relative",
+      width: "100%",
+      maxWidth: "99%",
+      height: 108,
+      padding: "0px 8px 5px 16px", // Combined padding
+      margin: "8px 0",
+      boxSizing: "border-box",
+      borderRadius: "10px",
+      border: "1px solid #d6d6d65f !important",
+      backgroundColor: theme.palette.type === 'dark' ? '#333333' : theme.palette.background.paper,
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+      transition: "all 0.2s ease-in-out",
+      "&:hover": {
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+        transform: "translateY(-1px)",
+      },
+      // Mostrar ícones de ação somente no hover do card
+      "&:hover $iconOnHover": {
+        opacity: 1,
+        pointerEvents: "auto",
+      },
     },
-    // Mostrar ícones de ação somente no hover do card
-    "&:hover $iconOnHover": {
-      opacity: 1,
-      pointerEvents: "auto",
+
+    // Variant styles
+    pendingTicket: {
+      cursor: "pointer",
+      width: "100%",
+      maxWidth: "100%",
+      padding: "0 8px 0 16px",
+      margin: "5px 0",
+      boxSizing: "border-box",
+      borderRadius: "12px",
+      border: "1px solid #8c8c8c5f !important",
+      backgroundColor: hexToRgba(themeColors.primary.main, 0.18),
+      boxShadow: `0 0 0 2px ${hexToRgba(themeColors.primary.main, 0.2)} inset`,
+      "&:hover": {
+        boxShadow: `0 0 0 2px ${hexToRgba(themeColors.primary.main, 0.28)} inset`,
+        transform: "translateY(-1px)",
+      },
     },
-  },
 
-  // Variant styles
-  pendingTicket: {
-    cursor: "pointer",
-    width: "100%",
-    maxWidth: "100%",
-    padding: "0 8px 0 16px",
-    margin: "5px 0",
-    boxSizing: "border-box",
-    borderRadius: "12px",
-    border: "1px solid #8c8c8c5f !important",
-    backgroundColor: hexToRgba(themeColors.primary.main, 0.18),
-    boxShadow: `0 0 0 2px ${hexToRgba(themeColors.primary.main, 0.2)} inset`,
-    "&:hover": {
-      boxShadow: `0 0 0 2px ${hexToRgba(themeColors.primary.main, 0.28)} inset`,
-      transform: "translateY(-1px)",
+    // Highlight for unread/new tickets
+    unreadHighlight: {
+      backgroundColor: hexToRgba(themeColors.primary.main, 0.18),
+      borderColor: themeColors.primary.main,
+      boxShadow: `0 0 0 2px ${hexToRgba(themeColors.primary.main, 0.22)} inset`,
+      outline: `2px solid ${hexToRgba(themeColors.primary.main, 0.25)}`,
     },
-  },
 
-  // Highlight for unread/new tickets
-  unreadHighlight: {
-    backgroundColor: hexToRgba(themeColors.primary.main, 0.18),
-    borderColor: themeColors.primary.main,
-    boxShadow: `0 0 0 2px ${hexToRgba(themeColors.primary.main, 0.22)} inset`,
-    outline: `2px solid ${hexToRgba(themeColors.primary.main, 0.25)}`,
-  },
-
-  // Empty state styles
-  noTicketsDiv: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100px",
-    margin: 40,
-  },
-
-  noTicketsTitle: {
-    textAlign: "center",
-    fontSize: "16px",
-    fontWeight: 600,
-    margin: 0,
-  },
-
-  noTicketsText: {
-    textAlign: "center",
-    color: "rgb(104, 121, 146)",
-    fontSize: "14px",
-    lineHeight: 1.4,
-  },
-
-  // Ticket content styles
-  ticketQueueColor: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "8px",
-    height: "100%",
-
-    flex: "none",
-    borderTopLeftRadius: "12px",
-    borderBottomLeftRadius: "12px",
-  },
-
-  contactNameWrapper: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-
-  ticketNameRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-  },
-
-  ticketNumber: {
-    marginLeft: -3,
-    color: grey[600],
-    fontWeight: 600,
-    fontSize: 12,
-    backgroundColor:"#e9e9e9",
-    padding: "0px 10px",
-    borderRadius:"100px"
-  },
-
-  contactLastMessage: {
-    paddingRight: 80, // Space for buttons
-  },
-
-  lastMessageTime: {
-    position: "relative",
-    top: -35,
-    fontSize: 12,
-    textAlign: "right",
-  },
-
-  ticketInfo: {
-    position: "absolute",
-    top: 10,
-  },
-
-  ticketInfo1: {
-
-    position: "relative",
-    top: 40,
-    right: 0,
-    paddingLeft:50
-  },
-
-  // Badge styles
-  closedBadge: {
-    alignSelf: "center",
-    marginLeft: "auto",
-    marginRight: 32,
-  },
-
-  newMessagesCount: {
-    alignSelf: "center",
-    marginLeft: "auto",
-    marginRight: 0,
-    top: -10,
-    right: 10,
-  },
-
-  badgeStyle: {
-    color: "white",
-    backgroundColor: green[500],
-    right: 0,
-    top: 10,
-  },
-
-  Radiusdot: {
-    "& .MuiBadge-badge": {
-      borderRadius: "50px",
-      position: "inherit",
-      height: 16,
-      margin: 2,
-      padding: 3,
-      fontSize: 10,
+    // Empty state styles
+    noTicketsDiv: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "100px",
+      margin: 40,
     },
-    "& .MuiBadge-anchorOriginTopRightRectangle": {
-      transform: "scale(1) translate(0%, -40%)",
+
+    noTicketsTitle: {
+      textAlign: "center",
+      fontSize: "16px",
+      fontWeight: 600,
+      margin: 0,
     },
-  },
 
-  // Button styles
-  acceptButton: {
-    position: "absolute",
-    right: 108,
-  },
+    noTicketsText: {
+      textAlign: "center",
+      color: "rgb(104, 121, 146)",
+      fontSize: "14px",
+      lineHeight: 1.4,
+    },
 
-  // Ícones de ação exibidos somente no hover do card
-  iconOnHover: {
-    opacity: 0,
-    transition: "opacity 0.2s ease",
-    pointerEvents: "none",
-  },
+    // Ticket content styles
+    ticketQueueColor: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "8px",
+      height: "100%",
+      flex: "none",
+      borderTopLeftRadius: "12px",
+      borderBottomLeftRadius: "12px",
+    },
 
-  groupAvatar: {
-    "& .MuiAvatar-colorDefault": {
+    contactNameWrapper: {
+      display: "flex",
+      justifyContent: "space-between",
+
+
+
+    },
+
+    ticketNameRow: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      fontWeight: 600
+
+    },
+
+    ticketNumber: {
+      marginLeft: -2,
+      top: -55,
+      right: -58,
+      color: grey[600],
+      fontWeight: 600,
+      fontSize: 13,
+      position: 'inherit',
+    },
+
+    contactLastMessage: {
+      paddingRight: 80, // Space for buttons
+    },
+
+    lastMessageTime: {
+      position: "relative",
+      top: -35,
+      fontSize: 12,
+      textAlign: "right",
+    },
+
+    ticketInfo: {
+      position: "absolute",
+      top: 10,
+    },
+
+    ticketInfo1: {
+
+      position: "relative",
+      top: 40,
+      right: 0,
+      paddingLeft: 50
+    },
+
+    // Badge styles
+    closedBadge: {
+      alignSelf: "center",
+      marginLeft: "auto",
+      marginRight: 32,
+    },
+
+    newMessagesCount: {
+      alignSelf: "center",
+      marginLeft: "auto",
+      marginRight: 0,
+      top: -10,
+      right: 10,
+    },
+
+    badgeStyle: {
+      color: "white",
+      backgroundColor: green[500],
+      right: 0,
+      top: 10,
+    },
+
+    Radiusdot: {
+      "& .MuiBadge-badge": {
+        borderRadius: "50px",
+        position: "inherit",
+        height: 16,
+        margin: 2,
+        padding: 3,
+        fontSize: 10,
+      },
+      "& .MuiBadge-anchorOriginTopRightRectangle": {
+        transform: "scale(1) translate(0%, -40%)",
+      },
+    },
+
+    // Button styles
+    acceptButton: {
+      position: "absolute",
+      right: 108,
+    },
+
+    // Ícones de ação exibidos somente no hover do card
+    iconOnHover: {
+      opacity: 0,
+      transition: "opacity 0.2s ease",
+      pointerEvents: "none",
+    },
+
+    groupAvatar: {
+      "& .MuiAvatar-colorDefault": {
+        color: "#7c7c7c !important",
+        backgroundColor: "#e4e4e4 !important",
+      },
       color: "#7c7c7c !important",
       backgroundColor: "#e4e4e4 !important",
     },
-    color: "#7c7c7c !important",
-    backgroundColor: "#e4e4e4 !important",
-  },
 
-  // Pequeno avatar do atendente (dono do ticket)
-  ownerAvatar: {
-    width: 18,
-    height: 18,
-    fontSize: 10,
-    marginRight: -2,
-    border: '1px solid rgba(0,0,0,0.1)'
-  },
-  ownerAvatarFallback: {
-    backgroundColor: grey[500],
-    color: '#fff',
-  },
-  // Container dos avatares vinculados
-  linkedAvatars: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    marginLeft: 4,
-  },
-  linkedAvatar: {
-    width: 18,
-    height: 18,
-    fontSize: 10,
-    border: '1px solid rgba(0,0,0,0.1)',
-    marginLeft: -6,
-    backgroundColor: theme.palette.background.default,
-  },
-  linkedAvatarFallback: {
-    backgroundColor: grey[500],
-    color: '#fff',
-  },
-  linkedAvatarMore: {
-    width: 18,
-    height: 18,
-    fontSize: 10,
-    border: '1px solid rgba(0,0,0,0.1)',
-    marginLeft: -6,
-    backgroundColor: grey[500],
-    color: '#fff',
-  },
+    // Pequeno avatar do atendente (dono do ticket)
+    ownerAvatar: {
+      width: 18,
+      height: 18,
+      fontSize: 10,
+      marginRight: -2,
+      border: '1px solid rgba(0,0,0,0.1)'
+    },
+    ownerAvatarFallback: {
+      backgroundColor: grey[500],
+      color: '#fff',
+
+    },
+    // Container dos avatares vinculados
+    linkedAvatars: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      marginLeft: 4,
+    },
+    linkedAvatar: {
+      width: 18,
+      height: 18,
+      fontSize: 10,
+      border: '1px solid rgba(0,0,0,0.1)',
+      marginLeft: -6,
+      backgroundColor: theme.palette.background.default,
+    },
+    linkedAvatarFallback: {
+      backgroundColor: grey[500],
+      color: '#fff',
+    },
+    linkedAvatarMore: {
+      width: 18,
+      height: 18,
+      fontSize: 10,
+      border: '1px solid rgba(0,0,0,0.1)',
+      marginLeft: -6,
+      backgroundColor: grey[500],
+      color: '#fff',
+    },
   });
 });
 
@@ -274,7 +279,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   const [whatsAppName, setWhatsAppName] = useState(null);
   const [currentTicketTags, setCurrentTicketTags] = useState(ticket.tags || []);
 
-    const { ticketId } = useParams();
+  const { ticketId } = useParams();
   const isMounted = useRef(true);
   const { setCurrentTicket, triggerRefresh } = useContext(TicketsContext);
   const { user } = useContext(AuthContext);
@@ -328,7 +333,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
         status: "closed",
         userId: user?.id,
       });
-      
+
       // Navegar para a lista de tickets após fechar
       history.push(`/tickets/`);
     } catch (err) {
@@ -389,7 +394,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
       const tagColors = currentTicketTags
         .filter(tag => tag.color)
         .map(tag => tag.color);
-      
+
       if (tagColors.length > 1) {
         const percentage = 100 / tagColors.length;
         const colorStops = tagColors.map((color, index) => {
@@ -397,7 +402,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
           const end = (index + 1) * percentage;
           return `${color} ${start}%, ${color} ${end}%`;
         }).join(', ');
-        
+
         return `linear-gradient(to bottom, ${colorStops})`;
       } else if (tagColors.length === 1) {
         return tagColors[0];
@@ -636,7 +641,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
             </Tooltip>
           )}
 
-          
+
         </>
       );
     }
@@ -660,27 +665,31 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
           arrow
           placement="right"
           title={
-            currentTicketTags && currentTicketTags.length > 0 
-              ? `Tags: ${currentTicketTags.map(tag => tag.name).join(', ')}` 
+            currentTicketTags && currentTicketTags.length > 0
+              ? `Tags: ${currentTicketTags.map(tag => tag.name).join(', ')}`
               : ticket.queue?.name || "Sem fila"
           }
         >
           <span
-            style={{ 
+            style={{
               background: getTicketSidebarColor(),
               backgroundColor: getTicketSidebarColor().includes('gradient') ? 'transparent' : getTicketSidebarColor()
             }}
             className={classes.ticketQueueColor}
           ></span>
         </Tooltip>
+
         <ListItemAvatar style={{ position: 'relative' }}>
-          <Avatar 
+
+          <Avatar
             src={ticket?.contact?.profilePicUrl}
             className={ticket?.contact?.isGroup ? classes.groupAvatar : ""}
           />
           {ticket.channel === "whatsapp" && (
-            <WhatsAppIcon 
-              style={{ 
+
+            <WhatsAppIcon
+
+              style={{
                 position: 'inherit',
                 top: -49,
                 right: -54,
@@ -689,10 +698,17 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                 backgroundColor: 'transparent',
                 borderRadius: '50%',
                 padding: 2,
-              }} 
+              }}
             />
+
           )}
+
+
+          <Typography component="span" className={classes.ticketNumber}>
+            #{ticket.id}
+          </Typography>
         </ListItemAvatar>
+
         <ListItemText
           disableTypography
           primary={
@@ -700,15 +716,12 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               <span className={classes.ticketNameRow}>
                 <Typography
                   noWrap
-                  component="span"
-                  variant="body2"
+                  variant="body"
                   color="textPrimary"
                 >
                   {ticket.contact.name}
                 </Typography>
-                <Typography component="span" className={classes.ticketNumber}>
-                  #{ticket.id}
-                </Typography>
+
               </span>
             </span>
           }
