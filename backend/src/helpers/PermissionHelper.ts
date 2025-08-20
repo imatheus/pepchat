@@ -100,7 +100,7 @@ export class PermissionHelper {
     }
 
     // Usuários comuns só podem acessar tickets atribuídos a eles
-    if (ticketUserId && parseInt(user.id) !== ticketUserId) {
+    if (ticketUserId && parseInt(String(user.id), 10) !== ticketUserId) {
       throw new AppError("Acesso negado. Você só pode acessar tickets atribuídos a você.", 403);
     }
   }
