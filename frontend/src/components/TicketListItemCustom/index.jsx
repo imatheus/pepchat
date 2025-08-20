@@ -37,12 +37,12 @@ const useStyles = makeStyles((theme) => {
     position: "relative",
     width: "100%",
     maxWidth: "99%",
-    height: 100,
-    padding: "0px 8px 0 16px", // Combined padding
+    height: 108,
+    padding: "0px 8px 5px 16px", // Combined padding
     margin: "8px 0",
     boxSizing: "border-box",
-    borderRadius: "12px",
-    border: "1px solid #8c8c8c5f !important",
+    borderRadius: "10px",
+    border: "1px solid #d6d6d65f !important",
     backgroundColor: theme.palette.type === 'dark' ? '#333333' : theme.palette.background.paper,
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
     transition: "all 0.2s ease-in-out",
@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme) => {
     cursor: "pointer",
     width: "100%",
     maxWidth: "100%",
-    padding: "0 80px 0 16px",
+    padding: "0 8px 0 16px",
     margin: "5px 0",
     boxSizing: "border-box",
     borderRadius: "12px",
@@ -456,9 +456,9 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                 className={classes.Radiusdot}
                 badgeContent={`${whatsAppName}`}
                 style={{
-                  backgroundColor: "#7d79f2",
+                  backgroundColor: "#21ba59ff",
                   height: 18,
-                  padding: 5,
+                  padding: 6,
                   position: "inherit",
                   borderRadius: "50px",
                   color: "white",
@@ -531,14 +531,15 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               className={classes.Radiusdot}
               badgeContent={`${whatsAppName}`}
               style={{
-                backgroundColor: "#7d79f2",
+                backgroundColor: "#21ba59ff",
                 height: 18,
                 padding: 5,
                 position: "inherit",
                 borderRadius: "50px",
                 color: "white",
                 top: -6,
-                marginRight: 3
+                marginRight: 3,
+                marginLeft: 7
               }}
             />
           )}
@@ -735,14 +736,14 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
               badgeContent={"FECHADO"}
               //color="primary"
               style={{
-                backgroundColor: ticket.queue?.color || "#ff0000",
+                backgroundColor: ticket.queue?.color || "#b80000ff",
                 height: 18,
-                padding: 5,
+                padding: "6px 6px 13px",
                 paddingHorizontal: 12,
                 borderRadius: "50px",
                 color: "white",
-                top: -28,
-                marginRight: 5
+                top: -35,
+                marginRight: 10
 
               }}
             />

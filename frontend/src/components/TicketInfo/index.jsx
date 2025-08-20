@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import { Avatar, CardHeader, Badge, makeStyles } from "@material-ui/core";
+import { Avatar, CardHeader, Badge, makeStyles, Chip, Tooltip } from "@material-ui/core";
 
 import { i18n } from "../../translate/i18n";
 import { socketConnection } from "../../services/socket";
@@ -45,12 +45,30 @@ const useStyles = makeStyles((theme) => ({
     color: "#7c7c7c !important",
     backgroundColor: "#e4e4e4 !important",
   },
+  chipsContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop:5
+  },
+  assignedLabel: {
+    color: theme.palette.text.secondary,
+    fontSize: 14,
+    marginRight: 6,
+  },
+  chip: {
+    height: 24,
+  },
+  chipAvatarFallback: {
+    backgroundColor: '#9e9e9e',
+    color: '#fff'
+  }
 }));
 
 const TicketInfo = ({ contact, ticket, onClick }) => {
 	const classes = useStyles();
 	const { user } = ticket
-	const [userName, setUserName] = useState('')
 	const [contactName, setContactName] = useState('')
 	const [isOnline, setIsOnline] = useState(false)
 	const [isTyping, setIsTyping] = useState(false)
@@ -65,16 +83,7 @@ const TicketInfo = ({ contact, ticket, onClick }) => {
 				}
 			}
 		}
-
-		if (user && contact) {
-			setUserName(`${i18n.t("messagesList.header.assignedTo")} ${user.name}`);
-
-			if(document.body.offsetWidth < 600) {
-				setUserName(`${user.name}`);
-			}
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [])
+	}, [contact])
 
 	// Real online status from socket events
 	useEffect(() => {
@@ -108,15 +117,40 @@ const TicketInfo = ({ contact, ticket, onClick }) => {
 		};
 	}, [ticket.id, contact.id]);
 
-	const getSubheaderText = () => {
-		if (isTyping) {
-			return i18n.t("chat.typing");
-		}
-		if (ticket.user) {
-			return userName;
-		}
-		return "";
-	};
+  const renderUserChip = (u) => {
+    if (!u) return null;
+    const initial = (u.name?.[0] || '').toUpperCase();
+    return (
+      <Tooltip title={u.name} key={u.id}>
+        <Chip
+          size="small"
+          className={classes.chip}
+          label={u.name}
+          avatar={
+            <Avatar className={!u.profileImage ? classes.chipAvatarFallback : undefined} src={u.profileImage || undefined}>
+              {!u.profileImage && initial}
+            </Avatar>
+          }
+        />
+      </Tooltip>
+    );
+  };
+
+  const renderSubheader = () => {
+    if (isTyping) return i18n.t("chat.typing");
+    const owner = ticket.user;
+    const others = Array.isArray(ticket.users) ? ticket.users.filter(u => !owner || u.id !== owner.id) : [];
+    const hasAssignees = !!owner || others.length > 0;
+    return (
+      <div className={classes.chipsContainer}>
+        {hasAssignees && (
+          <span className={classes.assignedLabel}>{i18n.t("messagesList.header.assignedTo")}</span>
+        )}
+        {owner && renderUserChip(owner)}
+        {others.map(u => renderUserChip(u))}
+      </div>
+    );
+  };
 
 	return (
 		<CardHeader
@@ -151,7 +185,7 @@ const TicketInfo = ({ contact, ticket, onClick }) => {
 				</Badge>
 			}
 			title={`${contactName} #${ticket.id}`}
-			subheader={getSubheaderText()}
+			subheader={renderSubheader()}
 		/>
 	);
 };
