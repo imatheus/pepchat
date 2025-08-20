@@ -12,6 +12,7 @@ import TicketTag from "../../models/TicketTag";
 import { intersection } from "lodash";
 import Whatsapp from "../../models/Whatsapp";
 import Setting from "../../models/Setting";
+import TicketUser from "../../models/TicketUser";
 
 interface Request {
   searchParam?: string;
@@ -72,6 +73,10 @@ const ListTicketsService = async ({
   // Buscar informações do usuário para verificar suas filas
   const user = await ShowUserService(userId);
   const userQueueIds = user.queues?.map(queue => queue.id) || [];
+
+  // Buscar tickets vinculados ao usuário (TicketUsers)
+  const linkedTicketUserRows = await TicketUser.findAll({ where: { userId: Number(userId) } });
+  const linkedTicketIds = linkedTicketUserRows.map(row => row.ticketId);
   
   // Verificar se o chatbot está desabilitado
   const chatbotAutoModeSetting = await Setting.findOne({
@@ -99,6 +104,11 @@ const ListTicketsService = async ({
     
     // 1. SEMPRE incluir tickets do usuário
     orConditions.push({ userId });
+
+    // 1.1 Incluir tickets vinculados ao usuário (via TicketUsers)
+    if (linkedTicketIds.length > 0) {
+      orConditions.push({ id: { [Op.in]: linkedTicketIds } });
+    }
     
     if (isChatbotDisabled) {
       // 2. SEMPRE incluir tickets pendentes sem fila quando chatbot desabilitado
@@ -247,7 +257,13 @@ const ListTicketsService = async ({
     {
       model: User,
       as: "user",
-      attributes: ["id", "name"]
+      attributes: ["id", "name", "profileImage"]
+    },
+    {
+      model: User,
+      as: "users",
+      attributes: ["id", "name", "profileImage"],
+      through: { attributes: [] }
     },
     {
       model: Tag,

@@ -11,11 +11,14 @@ import toastError from "../../errors/toastError";
 import { Can } from "../Can";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
-const TicketOptionsMenu = ({ ticket, menuOpen, handleClose, anchorEl }) => {
+const TicketOptionsMenu = ({ ticket = {}, menuOpen, handleClose, anchorEl }) => {
 	const [confirmationOpen, setConfirmationOpen] = useState(false);
 	const [transferTicketModalOpen, setTransferTicketModalOpen] = useState(false);
 	const isMounted = useRef(true);
 	const { user } = useContext(AuthContext);
+
+	// Evitar erros quando ticket ainda não está carregado
+	if (!ticket) return null;
 
 	useEffect(() => {
 		return () => {
@@ -47,6 +50,8 @@ const TicketOptionsMenu = ({ ticket, menuOpen, handleClose, anchorEl }) => {
 		}
 	};
 
+	const contactName = ticket?.contact?.name || "";
+
 	return (
 		<>
 			<Menu
@@ -65,6 +70,17 @@ const TicketOptionsMenu = ({ ticket, menuOpen, handleClose, anchorEl }) => {
 				open={menuOpen}
 				onClose={handleClose}
 			>
+				<MenuItem onClick={() => {
+					// Remover foco do botão atual para evitar warning de aria-hidden
+					try { if (document && document.activeElement) document.activeElement.blur(); } catch (e) {}
+					handleClose();
+					// Dispatch após fechar o menu para evitar conflito de foco/aria
+					setTimeout(() => {
+						window.dispatchEvent(new CustomEvent('open-add-ticket-user', { detail: { ticket } }));
+					}, 0);
+				}}>
+					Vincular
+				</MenuItem>
 				<MenuItem onClick={handleOpenTransferModal}>
 					{i18n.t("ticketOptionsMenu.transfer")}
 				</MenuItem>
@@ -80,10 +96,8 @@ const TicketOptionsMenu = ({ ticket, menuOpen, handleClose, anchorEl }) => {
 			</Menu>
 			<ConfirmationModal
 				title={`${i18n.t("ticketOptionsMenu.confirmationModal.title")}${
-					ticket.id
-				} ${i18n.t("ticketOptionsMenu.confirmationModal.titleFrom")} ${
-					ticket.contact.name
-				}?`}
+					ticket?.id ?? ""
+				} ${i18n.t("ticketOptionsMenu.confirmationModal.titleFrom")} ${contactName}?`}
 				open={confirmationOpen}
 				onClose={setConfirmationOpen}
 				onConfirm={handleDeleteTicket}

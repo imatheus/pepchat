@@ -225,7 +225,12 @@ const UpdateTicketService = async ({
       queueOptionId
     });
 
-    await ticket.reload();
+    await ticket.reload({
+      include: [
+        { model: User, as: "user", attributes: ["id", "name", "profileImage"] },
+        { model: User, as: "users", attributes: ["id", "name", "profileImage"], through: { attributes: [] } },
+      ]
+    });
 
     if (status !== undefined && ["pending"].indexOf(status) > -1) {
       ticketTraking.update({

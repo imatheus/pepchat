@@ -271,9 +271,10 @@ const TicketsListCustom = (props) => {
 
     const shouldUpdateTicket = (ticket) => {
       // Para tickets pending, todos os usuários devem ver novos tickets (sem userId)
+      const linkedToUser = Array.isArray(ticket.users) && ticket.users.some(u => u.id === user?.id);
       const userCheck = status === "pending" ? 
         true : 
-        (!ticket.userId || ticket.userId === user?.id || showAll);
+        (!ticket.userId || ticket.userId === user?.id || linkedToUser || showAll);
       
       // Verificar se o ticket deve ser mostrado baseado na seleção de filas
       let queueCheck;

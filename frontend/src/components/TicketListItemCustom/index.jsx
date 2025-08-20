@@ -222,6 +222,15 @@ const useStyles = makeStyles((theme) => {
     color: "#7c7c7c !important",
     backgroundColor: "#e4e4e4 !important",
   },
+
+  // Pequeno avatar do atendente (dono do ticket)
+  ownerAvatar: {
+    width: 18,
+    height: 18,
+    fontSize: 10,
+    marginRight: 5,
+    border: '1px solid rgba(0,0,0,0.1)'
+  },
   });
 });
 
@@ -230,6 +239,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   const history = useHistory();
   const [, setLoading] = useState(false);
   const [ticketUser, setTicketUser] = useState(null);
+  const [ownerImage, setOwnerImage] = useState(null);
   const [whatsAppName, setWhatsAppName] = useState(null);
   const [currentTicketTags, setCurrentTicketTags] = useState(ticket.tags || []);
 
@@ -263,17 +273,22 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   useEffect(() => {
     if (ticket.userId && ticket.user) {
       setTicketUser(ticket.user.name);
+      setOwnerImage(ticket.user.profileImage || null);
+    } else {
+      setTicketUser(null);
+      setOwnerImage(null);
     }
 
     if (ticket.whatsappId && ticket.whatsapp) {
       setWhatsAppName(ticket.whatsapp.name);
+    } else {
+      setWhatsAppName(null);
     }
 
     return () => {
       isMounted.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ticket.userId, ticket.user, ticket.whatsappId, ticket.whatsapp]);
 
   const handleCloseTicket = async (id) => {
     setLoading(true);
@@ -365,56 +380,52 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
     if (ticketUser) {
       return (
         <>
-          <Badge
-            className={classes.Radiusdot}
-            badgeContent={`${ticketUser}`}
-            //color="primary"
-            style={{
-              backgroundColor: "#3498db",
-              height: 18,
-              padding: 5,
-              position: "inherit",
-              borderRadius: "50px",
-              color: '#fff',
-              top: -6,
-              marginRight: 3,
-            }}
-          />
+          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <Tooltip title={ticketUser}>
+              <Avatar
+                src={ownerImage || undefined}
+                className={classes.ownerAvatar}
+                imgProps={{ referrerPolicy: 'no-referrer' }}
+              >
+                {!ownerImage && (ticketUser?.[0] || '')}
+              </Avatar>
+            </Tooltip>
 
-          {ticket.whatsappId && (
-            <Badge
-              className={classes.Radiusdot}
-              badgeContent={`${whatsAppName}`}
-              style={{
-                backgroundColor: "#7d79f2",
-                height: 18,
-                padding: 5,
-                position: "inherit",
-                borderRadius: "50px",
-                color: "white",
-                top: -6,
-                marginRight: 3
-              }}
-            />
-          )}
+            {ticket.whatsappId && (
+              <Badge
+                className={classes.Radiusdot}
+                badgeContent={`${whatsAppName}`}
+                style={{
+                  backgroundColor: "#7d79f2",
+                  height: 18,
+                  padding: 5,
+                  position: "inherit",
+                  borderRadius: "50px",
+                  color: "white",
+                  top: -6,
+                  marginRight: 3
+                }}
+              />
+            )}
 
-          {ticket.queue?.name !== null && (
-            <Badge
-              className={classes.Radiusdot}
-              style={{
-                backgroundColor: ticket.queue?.color || "#7C7C7C",
-                height: 18,
-                padding: 5,
-                position: "inherit",
-                borderRadius: "50px",
-                color: "white",
-                top: -6,
-                marginRight: 3
-              }}
-              badgeContent={ticket.queue?.name || "Sem fila"}
-            //color="primary"
-            />
-          )}
+            {ticket.queue?.name !== null && (
+              <Badge
+                className={classes.Radiusdot}
+                style={{
+                  backgroundColor: ticket.queue?.color || "#7C7C7C",
+                  height: 18,
+                  padding: 5,
+                  position: "inherit",
+                  borderRadius: "50px",
+                  color: "white",
+                  top: -6,
+                  marginRight: 3
+                }}
+                badgeContent={ticket.queue?.name || "Sem fila"}
+              //color="primary"
+              />
+            )}
+          </span>
           {ticket.status === "open" && (
             <Tooltip title="Fechar Conversa">
               <ClearOutlinedIcon

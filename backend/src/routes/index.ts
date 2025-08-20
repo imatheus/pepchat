@@ -33,6 +33,7 @@ import autoRatingRoutes from "./autoRatingRoutes";
 import securityRoutes from "./securityRoutes";
 import systemStatsRoutes from "./systemStatsRoutes";
 import healthRoutes from "./healthRoutes";
+import ticketUserRoutes from "./ticketUserRoutes";
 
 const routes = Router();
 
@@ -41,6 +42,7 @@ routes.use("/auth", authRoutes);
 routes.use(settingRoutes);
 routes.use(contactRoutes);
 routes.use(ticketRoutes);
+routes.use(ticketUserRoutes);
 routes.use(whatsappRoutes);
 routes.use(messageRoutes);
 routes.use(messageRoutes);

@@ -33,6 +33,7 @@ import Invoices from "../models/Invoices";
 import Subscriptions from "../models/Subscriptions";
 import CompanyPlan from "../models/CompanyPlan";
 import AsaasConfig from "../models/AsaasConfig";
+import TicketUser from "../models/TicketUser";
 
 // eslint-disable-next-line
 const dbConfig = require("../config/database");
@@ -74,7 +75,8 @@ const models = [
   Invoices,
   Subscriptions,
   CompanyPlan,
-  AsaasConfig
+  AsaasConfig,
+  TicketUser
 ];
 
 sequelize.addModels(models);

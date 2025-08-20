@@ -371,19 +371,13 @@ const TicketsManagerTabs = ({ mergeOpenPending = false }) => {
           />
           <Tab
             value={"newTicket"}
-            icon={
-              <IconButton
-                className={classes.newTicketButtonInTabs}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setNewTicketModalOpen(true);
-                }}
-                title={i18n.t("ticketsManager.buttons.newTicket")}
-              >
-                <AddIcon />
-              </IconButton>
-            }
+            icon={<AddIcon />}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setNewTicketModalOpen(true);
+            }}
+            aria-label={i18n.t("ticketsManager.buttons.newTicket")}
             label=""
             classes={{ root: classes.newTicketTab }}
           />

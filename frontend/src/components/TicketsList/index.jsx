@@ -201,7 +201,12 @@ const TicketsList = ({
     const socket = socketConnection({ companyId });
 
     const shouldUpdateTicket = (ticket) =>
-      (!ticket.userId || ticket.userId === user?.id || showAll) &&
+      (
+        !ticket.userId || 
+        ticket.userId === user?.id || 
+        (Array.isArray(ticket.users) && ticket.users.some(u => u.id === user?.id)) || 
+        showAll
+      ) &&
       (!ticket.queueId || selectedQueueIds.indexOf(ticket.queueId) > -1);
 
     const notBelongsToUserQueues = (ticket) =>

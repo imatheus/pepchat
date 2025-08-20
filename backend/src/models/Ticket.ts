@@ -24,6 +24,7 @@ import Company from "./Company";
 import QueueOption from "./QueueOption";
 import Tag from "./Tag";
 import TicketTag from "./TicketTag";
+import TicketUser from "./TicketUser";
 
 @Table
 class Ticket extends Model<Ticket> {
@@ -101,6 +102,9 @@ class Ticket extends Model<Ticket> {
 
   @BelongsToMany(() => Tag, () => TicketTag)
   tags: Tag[];
+
+  @BelongsToMany(() => User, () => TicketUser)
+  users: User[];
 
   @ForeignKey(() => Company)
   @Column

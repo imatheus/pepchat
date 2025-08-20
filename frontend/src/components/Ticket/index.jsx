@@ -11,6 +11,7 @@ import MessageInput from "../MessageInputCustom/";
 import TicketHeader from "../TicketHeader";
 import TicketInfo from "../TicketInfo";
 import TicketActionButtons from "../TicketActionButtonsCustom";
+import AddTicketUserModal from "../AddTicketUserModal";
 import MessagesList from "../MessagesList";
 import api from "../../services/api";
 import { ReplyMessageProvider } from "../../context/ReplyingMessage/ReplyingMessageContext";
@@ -69,6 +70,7 @@ const Ticket = () => {
   const [loading, setLoading] = useState(true);
   const [contact, setContact] = useState({});
   const [ticket, setTicket] = useState({});
+  const [addUserModalOpen, setAddUserModalOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -106,6 +108,11 @@ const Ticket = () => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
 
+    const openAddUserListener = (e) => {
+      setAddUserModalOpen(true);
+    };
+    window.addEventListener('open-add-ticket-user', openAddUserListener);
+
     socket.on("connect", () => {
       socket.emit("joinChatBox", `${ticket.id}`);
     });
@@ -133,6 +140,7 @@ const Ticket = () => {
     });
 
     return () => {
+      window.removeEventListener('open-add-ticket-user', openAddUserListener);
       socket.disconnect();
     };
   }, [ticketId, ticket, history]);
@@ -206,6 +214,7 @@ const Ticket = () => {
         loading={loading}
         ticket={ticket}
       />
+      <AddTicketUserModal open={addUserModalOpen} onClose={() => setAddUserModalOpen(false)} ticket={ticket} />
     </div>
   );
 };
