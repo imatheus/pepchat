@@ -55,77 +55,87 @@ const TicketActionButtonsCustom = ({ ticket, onTicketUpdate }) => {
 		setAnchorEl(null);
 	};
 
-	const handleUpdateTicketStatus = async (e, status, userId) => {
-		setLoading(true);
-		try {
-			const updateData = {
-				status: status,
-				userId: userId || null,
-			};
-			
-			// Não adicionar justClose para permitir o envio da pesquisa de avaliação
-			// justClose deve ser usado apenas em casos específicos onde não queremos a pesquisa
+		const handleUpdateTicketStatus = async (e, status, userId) => {
+			setLoading(true);
+			try {
+				// CORREÇÃO: Remoção otimista ANTES da chamada da API
+				// Disparar eventos para remoção otimista do card em listas específicas
+				if (status === "open") {
+					try {
+						// Remover de "Aguardando" quando aceito
+						window.dispatchEvent(new CustomEvent('ticket-accepted', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+						// Remover de "Arquivados" quando reaberto
+						window.dispatchEvent(new CustomEvent('ticket-reopened', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+					} catch (e) { /* noop */ }
+				} else if (status === "closed") {
+					// CORREÇÃO: Remoção otimista imediata do ticket das listas de "Abertos" ANTES da API
+					try {
+						window.dispatchEvent(new CustomEvent('ticket-closed', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+					} catch {}
+				}
 
-			const response = await api.put(`/tickets/${ticket.id}`, updateData);
-
-			// Atualizar o estado local imediatamente com os dados retornados
-			if (onTicketUpdate && response.data) {
-				// Garantir que o ticket seja atualizado com todos os dados necessários
-				const updatedTicket = {
-					...ticket,
-					...response.data,
-					status: status, // Garantir que o status seja atualizado
-					userId: userId || null
+				const updateData = {
+					status: status,
+					userId: userId || null,
 				};
-				onTicketUpdate(updatedTicket);
-			}
+				
+				// Não adicionar justClose para permitir o envio da pesquisa de avaliação
+				// justClose deve ser usado apenas em casos específicos onde não queremos a pesquisa
 
-			// Disparar eventos para remoção otimista do card em listas específicas
-			if (status === "open") {
-				try {
-					// Remover de "Aguardando" quando aceito
-					window.dispatchEvent(new CustomEvent('ticket-accepted', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
-					// Remover de "Arquivados" quando reaberto
-					window.dispatchEvent(new CustomEvent('ticket-reopened', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
-				} catch (e) { /* noop */ }
-			}
+				const response = await api.put(`/tickets/${ticket.id}`, updateData);
 
-			setLoading(false);
-			if (status === "open") {
-				setCurrentTicket({ ...ticket, code: "#open" });
-				// remoção otimista da lista "Aguardando" já tratada em 'ticket-accepted'
-			} else if (status === "closed") {
-				// remoção otimista imediata do ticket das listas de "Abertos"
-				try {
-					window.dispatchEvent(new CustomEvent('ticket-closed', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
-				} catch {}
-				// Forçar atualização das listas (skeleton + refetch)
-				try { triggerRefresh(); } catch {}
-				setCurrentTicket({ id: null, code: null })
-				history.push("/tickets");
-			} else {
-				setCurrentTicket({ id: null, code: null })
-				history.push("/tickets");
+				// Atualizar o estado local imediatamente com os dados retornados
+				if (onTicketUpdate && response.data) {
+					// Garantir que o ticket seja atualizado com todos os dados necessários
+					const updatedTicket = {
+						...ticket,
+						...response.data,
+						status: status, // Garantir que o status seja atualizado
+						userId: userId || null
+					};
+					onTicketUpdate(updatedTicket);
+				}
+
+				setLoading(false);
+				if (status === "open") {
+					setCurrentTicket({ ...ticket, code: "#open" });
+					// remoção otimista da lista "Aguardando" já tratada em 'ticket-accepted'
+				} else if (status === "closed") {
+					// CORREÇÃO: NÃO chamar triggerRefresh() - isso traz o ticket de volta!
+					// A remoção otimista + socket já cuidam da atualização
+					setCurrentTicket({ id: null, code: null })
+					history.push("/tickets");
+				} else {
+					setCurrentTicket({ id: null, code: null })
+					history.push("/tickets");
+				}
+				
+				// Mantemos sockets e eventos para atualizações granulares
+				
+			} catch (err) {
+				setLoading(false);
+				// CORREÇÃO: Em caso de erro, reverter a remoção otimista
+				if (status === "closed") {
+					try {
+						// Forçar refresh para restaurar o ticket na lista
+						triggerRefresh();
+					} catch {}
+				}
+				
+				// Tentar extrair mensagem do backend e exibir no toast
+				const backendMsg = err?.response?.data?.error || err?.response?.data?.message;
+				if (backendMsg) {
+					toastError({ message: backendMsg });
+					return;
+				}
+				// Caso específico: aceitar ticket sem fila pode gerar 400/500 dependendo do backend
+				if (status === "open") {
+					toastError({ message: "Não é possível aceitar um ticket sem fila" });
+					return;
+				}
+				toastError(err);
 			}
-			
-			// Mantemos sockets e eventos para atualizações granulares
-			
-		} catch (err) {
-			setLoading(false);
-			// Tentar extrair mensagem do backend e exibir no toast
-			const backendMsg = err?.response?.data?.error || err?.response?.data?.message;
-			if (backendMsg) {
-				toastError({ message: backendMsg });
-				return;
-			}
-			// Caso específico: aceitar ticket sem fila pode gerar 400/500 dependendo do backend
-			if (status === "open") {
-				toastError({ message: "Não é possível aceitar um ticket sem fila" });
-				return;
-			}
-			toastError(err);
-		}
-	};
+		};
 
 	return (
 		<div className={classes.actionButtons}>

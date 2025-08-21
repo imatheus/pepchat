@@ -77,9 +77,15 @@ const useStyles = makeStyles((theme) => ({
 const reducer = (state, action) => {
   if (action.type === "LOAD_TICKETS") {
     const incoming = action.payload || [];
+    const listStatus = action.listStatus;
     const newState = [...state];
 
     incoming.forEach((ticket) => {
+      // CORREÇÃO: Não adicionar tickets que não pertencem ao status da lista
+      if (listStatus && ticket.status !== listStatus) {
+        return; // Pular este ticket
+      }
+      
       const idx = newState.findIndex(
         (t) => parseInt(t.id) === parseInt(ticket.id)
       );
@@ -112,12 +118,24 @@ const reducer = (state, action) => {
   if (action.type === "UPDATE_TICKET") {
     const ticket = action.payload;
 
+    // CORREÇÃO: Verificar se o ticket ainda pertence a esta lista baseado no status
+    if (action.listStatus && ticket.status !== action.listStatus) {
+      const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
+      if (ticketIndex !== -1) {
+        state.splice(ticketIndex, 1);
+      }
+      return [...state];
+    }
+
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
     if (ticketIndex !== -1) {
       state[ticketIndex] = ticket;
     } else {
-      const exists = state.some((t) => String(t.uuid) === String(ticket.uuid));
-      if (!exists) state.unshift(ticket);
+      // Só adicionar se o status corresponder à lista ou se não foi especificado
+      if (!action.listStatus || ticket.status === action.listStatus) {
+        const exists = state.some((t) => String(t.uuid) === String(ticket.uuid));
+        if (!exists) state.unshift(ticket);
+      }
     }
 
     return [...state];
@@ -196,6 +214,7 @@ const TicketsList = ({
     dispatch({
       type: "LOAD_TICKETS",
       payload: tickets,
+      listStatus: status,
     });
   }, [tickets, status, searchParam]);
 
@@ -234,11 +253,18 @@ const TicketsList = ({
       }
 
       if (data.action === "update") {
+        // CORREÇÃO: Verificar se o ticket foi fechado e estamos numa lista de tickets abertos
+        if (data.ticket.status === "closed" && (status === "open" || status === "pending")) {
+          dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });
+          return;
+        }
+        
         if (shouldUpdateTicket(data.ticket)) {
           if (data.ticket.status === status) {
             dispatch({
               type: "UPDATE_TICKET",
               payload: data.ticket,
+              listStatus: status, // CORREÇÃO: Passar o status da lista atual
             });
           } else {
             dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });

@@ -78,9 +78,15 @@ const useStyles = makeStyles((theme) => ({
 const reducer = (state, action) => {
   if (action.type === "LOAD_TICKETS") {
     const newTickets = action.payload;
+    const listStatus = action.listStatus; // Status da lista atual
     let newState = [...state];
 
     newTickets.forEach((ticket) => {
+      // CORREÇÃO: Não adicionar tickets que não pertencem ao status da lista
+      if (listStatus && ticket.status !== listStatus) {
+        return; // Pular este ticket
+      }
+      
       const ticketIndex = newState.findIndex(
         (t) => parseInt(t.id) === parseInt(ticket.id)
       );
@@ -145,6 +151,17 @@ const reducer = (state, action) => {
     const ticket = action.payload;
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
     
+    // CORREÇÃO: Verificar se o ticket ainda pertence a esta lista baseado no status
+    // Se o status do ticket não corresponde ao status da lista, remover o ticket
+    if (action.listStatus && ticket.status !== action.listStatus) {
+      if (ticketIndex !== -1) {
+        const newState = [...state];
+        newState.splice(ticketIndex, 1);
+        return newState;
+      }
+      return state; // Ticket não existe na lista e não pertence a ela
+    }
+    
     if (ticketIndex !== -1) {
       const newState = [...state];
       newState[ticketIndex] = ticket;
@@ -155,8 +172,11 @@ const reducer = (state, action) => {
       }
       return newState;
     } else {
-      // Novo ticket sempre vai para o topo da lista
-      return [ticket, ...state];
+      // Só adicionar novo ticket se o status corresponder à lista
+      if (!action.listStatus || ticket.status === action.listStatus) {
+        return [ticket, ...state];
+      }
+      return state;
     }
   }
 
@@ -263,7 +283,7 @@ const TicketsListCustom = (props) => {
       });
     }
 
-    dispatch({ type: "LOAD_TICKETS", payload: filteredTickets });
+    dispatch({ type: "LOAD_TICKETS", payload: filteredTickets, listStatus: status });
   }, [tickets, status, searchParam, queues, profile, selectedQueueIds]);
 
   useEffect(() => {
@@ -322,6 +342,13 @@ const TicketsListCustom = (props) => {
       }
 
       if (data.action === "update") {
+        // CORREÇÃO: Verificar se o ticket foi fechado e estamos numa lista de tickets abertos
+        if (data.ticket.status === "closed" && (status === "open" || status === "pending")) {
+          // Ticket foi fechado, remover imediatamente da lista de abertos/pendentes
+          dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });
+          return;
+        }
+        
         // Evitar duplicidade entre listas: sempre manter apenas na lista do status correspondente
         if (data.ticket.status !== status) {
           // Se o ticket foi aceito (pending -> open) e estamos na lista "open", adicionar o ticket
@@ -342,6 +369,7 @@ const TicketsListCustom = (props) => {
           dispatch({
             type: "UPDATE_TICKET",
             payload: data.ticket,
+            listStatus: status, // CORREÇÃO: Passar o status da lista atual
           });
         } else {
           // Se não pertence mais ao usuário/fila, remove da lista

@@ -335,20 +335,26 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   const handleCloseTicket = async (id) => {
     setLoading(true);
     try {
+      // CORREÇÃO: Remoção otimista ANTES da chamada da API
+      try {
+        window.dispatchEvent(new CustomEvent('ticket-closed', { detail: { ticketId: id, ticketUuid: ticket.uuid } }));
+      } catch {}
+
       await api.put(`/tickets/${id}`, {
         status: "closed",
         userId: user?.id,
       });
 
-      // Remoção otimista imediata do card nas listas
-      try {
-        window.dispatchEvent(new CustomEvent('ticket-closed', { detail: { ticketId: id, ticketUuid: ticket.uuid } }));
-      } catch {}
-      try { triggerRefresh(); } catch {}
+      // CORREÇÃO: NÃO chamar triggerRefresh() - isso traz o ticket de volta!
+      // A remoção otimista + socket já cuidam da atualização
 
       // Navegar para a lista de tickets após fechar
       history.push(`/tickets/`);
     } catch (err) {
+      // CORREÇÃO: Em caso de erro, reverter a remoção otimista
+      try {
+        triggerRefresh();
+      } catch {}
       toastError(err);
     } finally {
       if (isMounted.current) {

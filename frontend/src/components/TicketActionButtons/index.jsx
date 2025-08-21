@@ -44,6 +44,21 @@ const TicketActionButtons = ({ ticket }) => {
 	const handleUpdateTicketStatus = async (e, status, userId) => {
 		setLoading(true);
 		try {
+			// CORREÇÃO: Remoção otimista ANTES da chamada da API
+			if (status === "open") {
+				try {
+					// Remover de "Aguardando" quando aceito
+					window.dispatchEvent(new CustomEvent('ticket-accepted', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+					// Remover de "Arquivados" quando reaberto
+					window.dispatchEvent(new CustomEvent('ticket-reopened', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+				} catch (e) { /* noop */ }
+			} else if (status === "closed") {
+				// CORREÇÃO: Remoção otimista imediata do ticket das listas de "Abertos" ANTES da API
+				try {
+					window.dispatchEvent(new CustomEvent('ticket-closed', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+				} catch {}
+			}
+
 			await api.put(`/tickets/${ticket.id}`, {
 				status: status,
 				userId: userId || null,
@@ -53,10 +68,6 @@ const TicketActionButtons = ({ ticket }) => {
 			if (status === "open") {
 				history.push(`/tickets/${ticket.id}`);
 			} else if (status === "closed") {
-				// Remoção otimista imediata nas listas de "Abertos"
-				try {
-					window.dispatchEvent(new CustomEvent('ticket-closed', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
-				} catch {}
 				history.push("/tickets");
 			} else {
 				history.push("/tickets");

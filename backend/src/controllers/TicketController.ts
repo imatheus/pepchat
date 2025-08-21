@@ -144,6 +144,33 @@ export const update = async (
     }
 
     const { ticket } = result;
+
+    const io = getIO();
+    // Emissão extra defensiva para garantir remoção imediata na UI quando status muda
+    io.to(`status:${result.oldStatus}`)
+      .to(`company-${companyId}-${result.oldStatus}`)
+      .to(`company-${companyId}`)
+      .emit(`company-${companyId}-ticket`, {
+        action: "removeFromList",
+        ticketId: ticket.id
+      });
+    // Compatibilidade: também emitir delete
+    io.to(`status:${result.oldStatus}`)
+      .to(`company-${companyId}-${result.oldStatus}`)
+      .to(`company-${companyId}`)
+      .emit(`company-${companyId}-ticket`, {
+        action: "delete",
+        ticketId: ticket.id
+      });
+
+    io.to(`status:${ticket.status}`)
+      .to(`company-${companyId}-${ticket.status}`)
+      .to(`company-${companyId}`)
+      .emit(`company-${companyId}-ticket`, {
+        action: "update",
+        ticket
+      });
+
     res.status(200).json(ticket);
   } catch (error) {
     console.error("Error updating ticket:", error);

@@ -45,6 +45,7 @@ import { debounce } from "../../helpers/Debounce";
 import { provider } from "./providers";
 import { shouldIgnoreMessage } from "./MessageFilterService";
 import SendGreetingMessageService from "./SendGreetingMessageService";
+import SerializeWbotMsgId from "../../helpers/SerializeWbotMsgId";
 
 // Função para verificar se o modo automático do chatbot está habilitado
 const isChatbotAutoModeEnabled = async (companyId: number): Promise<boolean> => {
@@ -1097,7 +1098,19 @@ const wbotMessageListener = async (wbot: Session, companyId: number): Promise<vo
 
       for (const message of messages) {
         try {
-          const messageExists = await Message.count({ where: { id: message.key.id!, companyId } });
+          // Usar ID serializado para evitar colisão entre sessões (fromMe true/false)
+          const serializedId = SerializeWbotMsgId(
+            await (async () => {
+              // Obter ticket de forma rápida para serialização – precisamos do número e se é grupo
+              // Como não temos o ticket aqui, serializamos com base no remoteJid da mensagem
+              const contactNumber = message.key.remoteJid || "";
+              const fakeTicket = { contact: { number: contactNumber }, isGroup: contactNumber.endsWith("@g.us"), } as any;
+              return fakeTicket as Ticket;
+            })(),
+            { id: message.key.id!, fromMe: !!message.key.fromMe } as any
+          );
+
+          const messageExists = await Message.count({ where: { id: serializedId, companyId } });
           if (!messageExists) {
             await handleMessage(message, wbot, companyId);
           }

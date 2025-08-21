@@ -12,6 +12,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import AudioConverter from "../../utils/AudioConverter";
 import { shouldSendAsPTT, getMimetypeForFormat } from "../../config/audio.config";
+import SerializeWbotMsgId from "../../helpers/SerializeWbotMsgId";
 
 const execAsync = promisify(exec);
 
@@ -190,8 +191,9 @@ const SendWhatsAppMedia = async ({
     }
 
     // Create message record in database
+    const uniqueId = SerializeWbotMsgId(ticket, { id: sentMessage.key.id, fromMe: true } as any);
     const messageData = {
-      id: sentMessage.key.id,
+      id: uniqueId,
       ticketId: ticket.id,
       contactId: undefined, // fromMe messages don't have contactId
       body: "", // Deixar vazio para não mostrar o nome do arquivo no chat
@@ -200,8 +202,11 @@ const SendWhatsAppMedia = async ({
       mediaType: mediaType,
       mediaUrl: mediaPath, // Usar caminho organizado
       ack: 1, // sent
-      dataJson: JSON.stringify(sentMessage)
-    };
+      dataJson: JSON.stringify(sentMessage),
+      remoteJid: jid,
+      participant: undefined,
+      channel: 'whatsapp'
+    } as any;
 
     // Update ticket's last message with friendly description
     const lastMessageText = mediaType === 'image' ? '📷 Imagem' : 

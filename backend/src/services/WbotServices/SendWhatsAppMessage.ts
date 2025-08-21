@@ -6,6 +6,7 @@ import Ticket from "../../models/Ticket";
 import Message from "../../models/Message";
 import CreateMessageService from "../MessageServices/CreateMessageService";
 import { logger } from "../../utils/logger";
+import SerializeWbotMsgId from "../../helpers/SerializeWbotMsgId";
 
 interface Request {
   body: string;
@@ -170,8 +171,9 @@ const SendWhatsAppMessage = async ({
     }
 
     // Create message record in database
+    const uniqueId = SerializeWbotMsgId(ticket, { id: sentMessage.key.id, fromMe: true } as any);
     const messageData = {
-      id: sentMessage.key.id,
+      id: uniqueId,
       ticketId: ticket.id,
       contactId: undefined, // fromMe messages don't have contactId
       body: messageBody,
@@ -180,8 +182,11 @@ const SendWhatsAppMessage = async ({
       mediaType: isButton ? "button" : isList ? "list" : "chat",
       quotedMsgId: quotedMsg?.id,
       ack: 1, // sent
-      dataJson: JSON.stringify(sentMessage)
-    };
+      dataJson: JSON.stringify(sentMessage),
+      remoteJid: jid,
+      participant: undefined,
+      channel: 'whatsapp'
+    } as any;
 
     // Update ticket's last message
     await ticket.update({ lastMessage: messageBody });

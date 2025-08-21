@@ -32,19 +32,19 @@ export const initIO = (httpServer: Server): SocketIOServer => {
     socket.on("joinChatBox", (ticketId: string) => {
       socket.join(`ticket:${ticketId}`);
       socket.join(`company-${companyId}-ticket:${ticketId}`);
-      // Removed verbose logging for ticket chat joins
+      logger.info(`Socket ${socket.id} joined chat rooms for ticket ${ticketId} (company ${companyId})`);
     });
 
     socket.on("joinNotification", () => {
       socket.join("notification");
       socket.join(`company-${companyId}-notification`);
-      // Removed verbose logging for notification connections
+      logger.info(`Socket ${socket.id} joined notification rooms (company ${companyId})`);
     });
 
     socket.on("joinTickets", (status: string) => {
       socket.join(`status:${status}`);
       socket.join(`company-${companyId}-${status}`);
-      // Removed verbose logging for ticket status connections
+      logger.info(`Socket ${socket.id} joined ticket status rooms: status:${status} and company-${companyId}-${status}`);
     });
 
     socket.on("typing", (data: { ticketId: string; fromMe: boolean; typing: boolean }) => {

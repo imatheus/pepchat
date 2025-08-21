@@ -6,6 +6,7 @@ import Ticket from "../../models/Ticket";
 import ShowTicketService from "../TicketServices/ShowTicketService";
 import Queue from "../../models/Queue";
 import UploadHelper from "../../helpers/UploadHelper";
+import Contact from "../../models/Contact";
 
 interface Request {
   ticketId: string;
@@ -44,7 +45,7 @@ const ListMessagesService = async ({
   };
 
   if (queues.length > 0) {
-    options.where["queueId"] = {
+    (options as any).where["queueId"] = {
       [Op.or]: {
         [Op.in]: queues,
         [Op.eq]: null
@@ -55,19 +56,32 @@ const ListMessagesService = async ({
   const { count, rows: messages } = await Message.findAndCountAll({
     ...options,
     limit,
+    offset,
+    subQuery: false, // garantir LEFT JOIN adequado com include e limit em alguns dialetos
     include: [
-      "contact",
+      {
+        model: Contact,
+        as: "contact",
+        required: false // mensagens fromMe têm contactId = null
+      },
       {
         model: Message,
         as: "quotedMsg",
-        include: ["contact"]
+        required: false,
+        include: [
+          {
+            model: Contact,
+            as: "contact",
+            required: false
+          }
+        ]
       },
       {
         model: Queue,
-        as: "queue"
+        as: "queue",
+        required: false
       }
     ],
-    offset,
     order: [["createdAt", "DESC"]]
   });
 
@@ -75,8 +89,8 @@ const ListMessagesService = async ({
 
   // Construir URLs completas para arquivos de mídia
   const messagesWithFullUrls = messages.map(message => {
-    if (message.mediaUrl && !message.mediaUrl.startsWith('http')) {
-      const fullMediaUrl = UploadHelper.getFileUrl(message.mediaUrl);
+    if ((message as any).getDataValue && message.mediaUrl && !message.mediaUrl.startsWith('http')) {
+      const fullMediaUrl = UploadHelper.getFileUrl((message as any).getDataValue("mediaUrl") || message.mediaUrl);
       (message as any).mediaUrl = fullMediaUrl;
     }
     return message;

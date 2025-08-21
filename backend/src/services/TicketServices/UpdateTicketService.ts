@@ -260,20 +260,83 @@ const UpdateTicketService = async ({
 
     await ticketTraking.save();
 
-    // CORREÇÃO: Emissão de eventos melhorada
+    // CORREÇÃO: Emissão de eventos melhorada e consistente com salas que o frontend entra
     if (ticket.status !== oldStatus || ticket.user?.id !== oldUserId) {
       // Remove da lista anterior se o status mudou
       if (ticket.status !== oldStatus) {
-        io.to(`status:${oldStatus}`)
+        // Logs para depuração
+        logger.info(`Emitting remove for ticket ${ticket.id} from old status ${oldStatus}`);
+
+        io.to(oldStatus as any) // compat: salas simples "open/pending/closed"
+          .to(`status:${oldStatus}`)
+          .to(`company-${companyId}-${oldStatus}`)
+          .to(`company-${companyId}`)
+          .emit(`company-${companyId}-ticket`, {
+            action: "removeFromList",
+            ticketId: ticket.id
+          });
+        // Compatibilidade: alguns frontends removem com action "delete"
+        io.to(oldStatus as any)
+          .to(`status:${oldStatus}`)
+          .to(`company-${companyId}-${oldStatus}`)
           .to(`company-${companyId}`)
           .emit(`company-${companyId}-ticket`, {
             action: "delete",
             ticketId: ticket.id
           });
+        // Emissão genérica 'ticket' (compat c/ UIs que escutam "ticket")
+        io.to(oldStatus as any)
+          .to(`status:${oldStatus}`)
+          .to(`company-${companyId}-${oldStatus}`)
+          .emit("ticket", {
+            action: "removeFromList",
+            ticketId: ticket.id
+          });
+        // Também emitir um update no room antigo para UIs que só reagem a 'update'
+        io.to(oldStatus as any)
+          .to(`status:${oldStatus}`)
+          .to(`company-${companyId}-${oldStatus}`)
+          .to(`company-${companyId}`)
+          .emit(`company-${companyId}-ticket`, {
+            action: "update",
+            ticket
+          });
+        // CASO A UI TRATE "ABERTOS" COMO OPEN+PENDING: emitir remoção para ambos
+        const openLikeStatuses = ["open", "pending"] as const;
+        if (openLikeStatuses.includes(oldStatus as any)) {
+          for (const s of openLikeStatuses) {
+            io.to(s as any)
+              .to(`status:${s}`)
+              .to(`company-${companyId}-${s}`)
+              .to(`company-${companyId}`)
+              .emit(`company-${companyId}-ticket`, {
+                action: "removeFromList",
+                ticketId: ticket.id
+              });
+            io.to(s as any)
+              .to(`status:${s}`)
+              .to(`company-${companyId}-${s}`)
+              .to(`company-${companyId}`)
+              .emit(`company-${companyId}-ticket`, {
+                action: "delete",
+                ticketId: ticket.id
+              });
+            io.to(s as any)
+              .to(`status:${s}`)
+              .to(`company-${companyId}-${s}`)
+              .emit("ticket", {
+                action: "removeFromList",
+                ticketId: ticket.id
+              });
+          }
+        }
       }
 
       // Adiciona/atualiza na nova lista
-      io.to(`status:${ticket.status}`)
+      logger.info(`Emitting update for ticket ${ticket.id} to new status ${ticket.status}`);
+      io.to(ticket.status as any)
+        .to(`status:${ticket.status}`)
+        .to(`company-${companyId}-${ticket.status}`)
         .to("notification")
         .to(`ticket:${ticketId}`)
         .to(`company-${companyId}`)
@@ -281,22 +344,43 @@ const UpdateTicketService = async ({
           action: "update",
           ticket
         });
+      io.to(ticket.status as any)
+        .to(`status:${ticket.status}`)
+        .to(`company-${companyId}-${ticket.status}`)
+        .emit("ticket", {
+          action: "update",
+          ticket
+        });
         
       // Para tickets fechados, emitir também especificamente para a aba "closed"
       if (ticket.status === "closed") {
-        io.to("closed")
+        io.to(`status:closed`)
+          .to(`company-${companyId}-closed`)
           .to(`company-${companyId}`)
           .emit(`company-${companyId}-ticket`, {
             action: "update",
             ticket
           });
+        io.to(`status:closed`)
+          .to(`company-${companyId}-closed`)
+          .emit("ticket", {
+            action: "update",
+            ticket
+          });
       }
       
-      // Para tickets pendentes, emitir também para a aba "pending"
+      // Para tickets pendentes, emitir também especificamente para a aba "pending"
       if (ticket.status === "pending") {
-        io.to("pending")
+        io.to(`status:pending`)
+          .to(`company-${companyId}-pending`)
           .to(`company-${companyId}`)
           .emit(`company-${companyId}-ticket`, {
+            action: "update",
+            ticket
+          });
+        io.to(`status:pending`)
+          .to(`company-${companyId}-pending`)
+          .emit("ticket", {
             action: "update",
             ticket
           });
@@ -304,6 +388,7 @@ const UpdateTicketService = async ({
     } else {
       // Se não houve mudança de status/usuário, apenas atualiza
       io.to(`status:${ticket.status}`)
+        .to(`company-${companyId}-${ticket.status}`)
         .to("notification")
         .to(`ticket:${ticketId}`)
         .to(`company-${companyId}`)
