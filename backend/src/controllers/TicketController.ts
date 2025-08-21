@@ -150,16 +150,18 @@ export const update = async (
 
     // Handle AppError instances with their specific status code and message
     if (error instanceof AppError) {
-      return res.status(error.statusCode).json({ 
+      res.status(error.statusCode).json({ 
         error: error.message
       });
+      return;
     }
     
     // Handle other errors as internal server errors
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: "Internal server error", 
       message: (error as any).message || "Failed to update ticket"
     });
+    return;
   }
 };
 

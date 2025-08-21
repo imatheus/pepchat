@@ -438,8 +438,8 @@ const verifyMediaMessage = async (msg: proto.IWebMessageInfo, ticket: Ticket, co
     } as any;
 
     await ticket.update({ lastMessage: body || ticket.lastMessage || '' });
-    await CreateMessageService({ messageData, companyId: ticket.companyId });
-    return message as any; // encerra sem erro
+    const created = await CreateMessageService({ messageData, companyId: ticket.companyId });
+    return created;
   }
 
   // Organizar arquivo por empresa e categoria

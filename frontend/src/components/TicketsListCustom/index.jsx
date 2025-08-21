@@ -375,6 +375,10 @@ const TicketsListCustom = (props) => {
         return;
       }
 
+      // Ignorar mensagens enviadas por nós (fromMe) para não marcar/reordenar como "nova"
+      const isFromMe = data?.message?.fromMe === true;
+      if (isFromMe) return;
+
       // Evitar duplicidade: só processar mensagens na lista correspondente ao status do ticket
       if (data.action === "create" && shouldUpdateTicket(data.ticket) && data.ticket.status === status) {
         dispatch({

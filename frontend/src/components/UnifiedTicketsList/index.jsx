@@ -200,6 +200,9 @@ const UnifiedTicketsList = ({
     });
 
     socket.on(`company-${companyId}-appMessage`, (data) => {
+      // Ignorar mensagens enviadas por nós (fromMe) para não reordenar como "nova"
+      const isFromMe = data?.message?.fromMe === true;
+      if (isFromMe) return;
       if (shouldUpdateTicket(data.ticket) && data.action === "create") {
         dispatch({ type: "UPDATE_TICKET", payload: data.ticket });
       }

@@ -194,6 +194,14 @@ const ListTicketsService = async ({
             { status }
           ]
         };
+      } else if (isChatbotDisabled && status !== "pending") {
+        // Aplicar filtro de status também quando chatbot está desabilitado (ex.: "open")
+        whereCondition = {
+          [Op.and]: [
+            whereCondition,
+            { status }
+          ]
+        };
       }
     }
   }
