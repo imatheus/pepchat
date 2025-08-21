@@ -23,6 +23,7 @@ import MarkdownWrapper from "../MarkdownWrapper";
 import { Tooltip } from "@material-ui/core";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import toastError from "../../errors/toastError";
+import { socketConnection } from "../../services/socket";
 
 const useStyles = makeStyles((theme) => {
   const themeColors = getThemeColors(theme.palette.type === 'dark');
@@ -119,6 +120,23 @@ const useStyles = makeStyles((theme) => {
     color: "#7c7c7c !important",
     backgroundColor: "#e4e4e4 !important",
   },
+
+  // Badge de mensagens não lidas ao lado do nome do contato
+  unreadMessagesBadge: {
+    "& .MuiBadge-badge": {
+      backgroundColor: themeColors.primary.main,
+      color: "white",
+      marginTop:"10px",
+      fontSize: "10px",
+      height: "16px",
+      minWidth: "16px",
+      borderRadius: "8px",
+      padding: "0 4px",
+      fontWeight: 600,
+      transform: "scale(0.9) translate(50%, -50%)",
+      border: `1px solid ${theme.palette.background.paper}`,
+    },
+  },
   });
 });
 
@@ -129,12 +147,111 @@ const TicketListItem = ({ ticket }) => {
   const { ticketId } = useParams();
   const isMounted = useRef(true);
   const { user } = useContext(AuthContext);
+  // NOVA FUNCIONALIDADE: Estado para controlar a exibição da bolinha de mensagens não lidas
+  // Função para obter contador persistente do localStorage
+  const getPersistedUnreadCount = () => {
+    try {
+      const companyId = localStorage.getItem("companyId");
+      const userId = localStorage.getItem("userId");
+      if (!companyId || !userId) return ticket.unreadMessages || 0;
+      
+      const storageKey = `unreadCount_${companyId}_${userId}_${ticket.id}`;
+      const stored = localStorage.getItem(storageKey);
+      
+      if (stored !== null) {
+        const parsedCount = parseInt(stored, 10);
+        return Math.max(parsedCount, ticket.unreadMessages || 0);
+      }
+      
+      return ticket.unreadMessages || 0;
+    } catch (error) {
+      console.warn('Erro ao acessar localStorage para unreadCount:', error);
+      return ticket.unreadMessages || 0;
+    }
+  };
+  
+  // Função para persistir contador no localStorage
+  const persistUnreadCount = (count) => {
+    try {
+      const companyId = localStorage.getItem("companyId");
+      const userId = localStorage.getItem("userId");
+      if (!companyId || !userId) return;
+      
+      const storageKey = `unreadCount_${companyId}_${userId}_${ticket.id}`;
+      if (count > 0) {
+        localStorage.setItem(storageKey, count.toString());
+      } else {
+        localStorage.removeItem(storageKey);
+      }
+    } catch (error) {
+      console.warn('Erro ao salvar unreadCount no localStorage:', error);
+    }
+  };
+  
+  // Inicializar com dados persistentes
+  const [unreadCount, setUnreadCountState] = useState(getPersistedUnreadCount);
+  
+  // Wrapper para setUnreadCount que também persiste no localStorage
+  const setUnreadCount = (count) => {
+    const newCount = typeof count === 'function' ? count(unreadCount) : count;
+    setUnreadCountState(newCount);
+    persistUnreadCount(newCount);
+  };
 
   useEffect(() => {
     return () => {
       isMounted.current = false;
     };
   }, []);
+  
+  // NOVA FUNCIONALIDADE: Sincronizar contador com dados do ticket
+  useEffect(() => {
+    // Usar o maior valor entre localStorage e ticket para não perder mensagens
+    const currentPersisted = getPersistedUnreadCount();
+    const ticketCount = ticket.unreadMessages || 0;
+    const finalCount = Math.max(currentPersisted, ticketCount);
+    
+    if (finalCount !== unreadCount) {
+      setUnreadCount(finalCount);
+    }
+  }, [ticket.unreadMessages]);
+  
+  // NOVA FUNCIONALIDADE: Escutar eventos de socket para controlar a bolinha
+  useEffect(() => {
+    const companyId = localStorage.getItem("companyId");
+    const socket = socketConnection({ companyId });
+
+    // Escutar eventos de mensagens
+    socket.on(`company-${companyId}-ticket`, (data) => {
+      if (data.action === "update" && data.ticket && data.ticket.id === ticket.id) {
+        // Atualizar contador com base no ticket atualizado
+        if (data.ticket.unreadMessages !== undefined) {
+          setUnreadCount(data.ticket.unreadMessages || 0);
+        }
+      }
+      
+      // Zerar contador quando mensagens forem marcadas como lidas
+      if (data.action === "updateUnread" && data.ticketId === ticket.id) {
+        setUnreadCount(0);
+      }
+    });
+    
+    // Incrementar contador quando chegar nova mensagem
+    socket.on(`company-${companyId}-appMessage`, (data) => {
+      if (
+        data.action === "create" &&
+        data.ticket.id === ticket.id &&
+        !data.message.read &&
+        data.message.fromMe === false // Apenas mensagens recebidas, não enviadas
+      ) {
+        setUnreadCount(prevCount => prevCount + 1);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [ticket.id]);
 
   const handleAcepptTicket = async (ticket) => {
     setLoading(true);
@@ -162,6 +279,9 @@ const TicketListItem = ({ ticket }) => {
 
   const handleSelectTicket = (ticket) => {
     history.push(`/tickets/${ticket.uuid}`);
+    
+    // NOVA FUNCIONALIDADE: Zerar contador quando ticket for selecionado
+    setUnreadCount(0);
   };
 
   return (
@@ -198,15 +318,28 @@ const TicketListItem = ({ ticket }) => {
         <ListItemText
           disableTypography
           primary={
-            <span className={classes.contactNameWrapper}>
+            <span className={classes.contactNameWrapper} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Typography
                 noWrap
                 component="span"
                 variant="body2"
                 color="textPrimary"
+                style={{ marginRight: 4 }}
               >
                 {ticket.contact.name}
               </Typography>
+              {unreadCount > 0 && (
+                <Badge
+                  badgeContent={unreadCount}
+                  className={classes.unreadMessagesBadge}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                >
+                  <span style={{ width: 0, height: 0 }} />
+                </Badge>
+              )}
               {ticket.status === "closed" && (
                 <Badge
                   className={classes.closedBadge}

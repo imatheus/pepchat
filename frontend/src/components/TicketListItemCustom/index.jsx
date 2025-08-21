@@ -129,11 +129,11 @@ const useStyles = makeStyles((theme) => {
     },
 
     ticketNameRow: {
-      display: "flex",
+      display: "inline-flex",
       alignItems: "center",
-      gap: 8,
-      fontWeight: 600
-
+      gap: 15,
+      fontWeight: 600,
+      width: "100%",
     },
 
     ticketNumber: {
@@ -268,6 +268,22 @@ const useStyles = makeStyles((theme) => {
       backgroundColor: grey[500],
       color: '#fff',
     },
+
+    // Badge de mensagens não lidas ao lado do nome do contato
+    unreadMessagesBadge: {
+      "& .MuiBadge-badge": {
+        backgroundColor: themeColors.primary.main,
+        color: "white",
+        fontSize: "10px",
+        height: "16px",
+        minWidth: "16px",
+        borderRadius: "8px",
+        padding: "0 14px",
+        fontWeight: 600,
+        transform: "scale(0.9) translate(50%, -50%)",
+        border: `1px solid ${theme.palette.background.paper}`,
+      },
+    },
   });
 });
 
@@ -279,6 +295,88 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   const [ownerImage, setOwnerImage] = useState(null);
   const [whatsAppName, setWhatsAppName] = useState(null);
   const [currentTicketTags, setCurrentTicketTags] = useState(ticket.tags || []);
+  // NOVA FUNCIONALIDADE: Estado para controlar a exibição da bolinha de mensagens não lidas
+  // Função para obter contador persistente do localStorage
+  const getPersistedUnreadCount = () => {
+    try {
+      const companyId = localStorage.getItem("companyId");
+      const userId = localStorage.getItem("userId");
+      if (!companyId || !userId) return ticket.unreadMessages || 0;
+      
+      const storageKey = `unreadCount_${companyId}_${userId}_${ticket.id}`;
+      const stored = localStorage.getItem(storageKey);
+      
+      if (stored !== null) {
+        const parsedCount = parseInt(stored, 10);
+        // Se o valor armazenado é maior que o do ticket, usar o armazenado
+        // Isso garante que mensagens recebidas offline sejam mantidas
+        return Math.max(parsedCount, ticket.unreadMessages || 0);
+      }
+      
+      return ticket.unreadMessages || 0;
+    } catch (error) {
+      console.warn('Erro ao acessar localStorage para unreadCount:', error);
+      return ticket.unreadMessages || 0;
+    }
+  };
+  
+  // Função para persistir contador no localStorage
+  const persistUnreadCount = (count) => {
+    try {
+      const companyId = localStorage.getItem("companyId");
+      const userId = localStorage.getItem("userId");
+      if (!companyId || !userId) return;
+      
+      const storageKey = `unreadCount_${companyId}_${userId}_${ticket.id}`;
+      if (count > 0) {
+        localStorage.setItem(storageKey, count.toString());
+      } else {
+        localStorage.removeItem(storageKey);
+      }
+    } catch (error) {
+      console.warn('Erro ao salvar unreadCount no localStorage:', error);
+    }
+  };
+  
+  // Inicializar com dados persistentes
+  const [unreadCount, setUnreadCountState] = useState(getPersistedUnreadCount);
+  
+  // Wrapper para setUnreadCount que também persiste no localStorage
+  const setUnreadCount = (count) => {
+    const newCount = typeof count === 'function' ? count(unreadCount) : count;
+    setUnreadCountState(newCount);
+    persistUnreadCount(newCount);
+  };
+  
+  // Função para limpar dados antigos do localStorage (executar periodicamente)
+  const cleanupOldUnreadCounts = () => {
+    try {
+      const companyId = localStorage.getItem("companyId");
+      const userId = localStorage.getItem("userId");
+      if (!companyId || !userId) return;
+      
+      const prefix = `unreadCount_${companyId}_${userId}_`;
+      const keysToRemove = [];
+      
+      // Verificar todas as chaves do localStorage
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(prefix)) {
+          const ticketId = key.replace(prefix, '');
+          // Se o valor é 0 ou se é muito antigo, marcar para remoção
+          const value = localStorage.getItem(key);
+          if (value === '0' || value === null) {
+            keysToRemove.push(key);
+          }
+        }
+      }
+      
+      // Remover chaves marcadas
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+    } catch (error) {
+      console.warn('Erro ao limpar localStorage:', error);
+    }
+  };
 
   const { ticketId } = useParams();
   const isMounted = useRef(true);
@@ -290,16 +388,57 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   useEffect(() => {
     // Atualizar tags quando o ticket prop mudar
     setCurrentTicketTags(ticket.tags || []);
-  }, [ticket.tags]);
+    
+    // NOVA FUNCIONALIDADE: Sincronizar contador com dados do ticket
+    // Usar o maior valor entre localStorage e ticket para não perder mensagens
+    const currentPersisted = getPersistedUnreadCount();
+    const ticketCount = ticket.unreadMessages || 0;
+    const finalCount = Math.max(currentPersisted, ticketCount);
+    
+    if (finalCount !== unreadCount) {
+      setUnreadCount(finalCount);
+    }
+  }, [ticket.tags, ticket.unreadMessages]);
+  
+  // Executar limpeza do localStorage uma vez por sessão
+  useEffect(() => {
+    const hasCleanedThisSession = sessionStorage.getItem('unreadCountCleaned');
+    if (!hasCleanedThisSession) {
+      cleanupOldUnreadCounts();
+      sessionStorage.setItem('unreadCountCleaned', 'true');
+    }
+  }, []);
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
 
-    // Escutar mudanças nas tags do ticket
+    // Escutar mudanças nas tags do ticket e eventos de mensagens
     socket.on(`company-${companyId}-ticket`, (data) => {
       if (data.action === "update" && data.ticket && data.ticket.id === ticket.id) {
         setCurrentTicketTags(data.ticket.tags || []);
+        
+        // NOVA FUNCIONALIDADE: Atualizar contador com base no ticket atualizado
+        if (data.ticket.unreadMessages !== undefined) {
+          setUnreadCount(data.ticket.unreadMessages || 0);
+        }
+      }
+      
+      // NOVA FUNCIONALIDADE: Zerar contador quando mensagens forem marcadas como lidas
+      if (data.action === "updateUnread" && data.ticketId === ticket.id) {
+        setUnreadCount(0);
+      }
+    });
+    
+    // NOVA FUNCIONALIDADE: Incrementar contador quando chegar nova mensagem
+    socket.on(`company-${companyId}-appMessage`, (data) => {
+      if (
+        data.action === "create" &&
+        data.ticket.id === ticket.id &&
+        !data.message.read &&
+        data.message.fromMe === false // Apenas mensagens recebidas, não enviadas
+      ) {
+        setUnreadCount(prevCount => prevCount + 1);
       }
     });
 
@@ -403,6 +542,9 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
     const code = uuidv4();
     const { id, uuid } = ticket;
     setCurrentTicket({ id, uuid, code });
+    
+    // NOVA FUNCIONALIDADE: Zerar contador quando ticket for selecionado
+    setUnreadCount(0);
   };
 
   // Função para determinar a cor da barra lateral baseada nas tags
@@ -736,9 +878,22 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                   noWrap
                   variant="body"
                   color="textPrimary"
+                  style={{ marginRight: 4 }}
                 >
                   {(ticket?.contact?.name || ticket?.contact?.number || "Contato")}
                 </Typography>
+                {unreadCount > 0 && (
+                  <Badge
+                    badgeContent={unreadCount}
+                    className={classes.unreadMessagesBadge}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                  >
+                    <span style={{ width: 0, height: 0 }} />
+                  </Badge>
+                )}
 
               </span>
             </span>
