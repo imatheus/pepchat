@@ -64,6 +64,7 @@ const NotificationsPopOver = () => {
 
   // Som de notificação usando utilitário - execução imediata sem await
   const playNotificationSound = () => {
+    console.log('[NotificationsPopOver] Tentando tocar som de notificação');
     notificationSound.play();
   };
 

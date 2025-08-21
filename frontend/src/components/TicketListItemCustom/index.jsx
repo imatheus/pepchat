@@ -308,9 +308,9 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
       
       if (stored !== null) {
         const parsedCount = parseInt(stored, 10);
-        // Se o valor armazenado é maior que o do ticket, usar o armazenado
-        // Isso garante que mensagens recebidas offline sejam mantidas
-        return Math.max(parsedCount, ticket.unreadMessages || 0);
+        // CORREÇÃO: Priorizar localStorage para manter contador local
+        // Só usar ticket.unreadMessages se localStorage estiver vazio
+        return parsedCount;
       }
       
       return ticket.unreadMessages || 0;
@@ -388,17 +388,24 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
   useEffect(() => {
     // Atualizar tags quando o ticket prop mudar
     setCurrentTicketTags(ticket.tags || []);
-    
-    // NOVA FUNCIONALIDADE: Sincronizar contador com dados do ticket
-    // Usar o maior valor entre localStorage e ticket para não perder mensagens
-    const currentPersisted = getPersistedUnreadCount();
+  }, [ticket.tags]);
+  
+  // NOVA FUNCIONALIDADE: Sincronizar contador com dados do ticket (separado para evitar conflitos)
+  useEffect(() => {
+    // Só sincronizar se o valor do backend for MAIOR que o local
+    // Isso evita que o backend "atrase" o contador local
     const ticketCount = ticket.unreadMessages || 0;
-    const finalCount = Math.max(currentPersisted, ticketCount);
     
-    if (finalCount !== unreadCount) {
-      setUnreadCount(finalCount);
+    // Se o backend tem mais mensagens que o local, atualizar
+    if (ticketCount > unreadCount) {
+      setUnreadCount(ticketCount);
     }
-  }, [ticket.tags, ticket.unreadMessages]);
+    // Se o backend zerou (mensagens lidas), zerar o local também
+    else if (ticketCount === 0 && unreadCount > 0) {
+      setUnreadCount(0);
+    }
+    // Caso contrário, manter o valor local (que pode estar à frente do backend)
+  }, [ticket.unreadMessages]);
   
   // Executar limpeza do localStorage uma vez por sessão
   useEffect(() => {
@@ -438,7 +445,15 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
         !data.message.read &&
         data.message.fromMe === false // Apenas mensagens recebidas, não enviadas
       ) {
-        setUnreadCount(prevCount => prevCount + 1);
+        console.log(`[DEBUG] Incrementando contador para ticket ${ticket.id}:`, {
+          currentCount: unreadCount,
+          willBecome: unreadCount + 1
+        });
+        setUnreadCount(prevCount => {
+          const newCount = prevCount + 1;
+          console.log(`[DEBUG] Contador atualizado de ${prevCount} para ${newCount}`);
+          return newCount;
+        });
       }
     });
 

@@ -10,6 +10,10 @@ class NotificationSound {
     this.poolSize = 3;
     this.currentIndex = 0;
     
+    // CORREÇÃO: Sistema de debounce para evitar sons duplicados
+    this.lastPlayTime = 0;
+    this.debounceDelay = 500; // 500ms entre reproduções
+    
     // Detectar primeira interação do usuário
     this.setupUserInteractionDetection();
     
@@ -52,6 +56,15 @@ class NotificationSound {
   play() {
     if (!this.isEnabled) return Promise.resolve(false);
 
+    // CORREÇÃO: Verificar debounce para evitar sons duplicados
+    const now = Date.now();
+    if (now - this.lastPlayTime < this.debounceDelay) {
+      console.log('[NotificationSound] Som ignorado devido ao debounce');
+      return Promise.resolve(false);
+    }
+    
+    this.lastPlayTime = now;
+
     try {
       // Usar próximo áudio disponível do pool
       const audio = this.audioPool[this.currentIndex];
@@ -61,6 +74,8 @@ class NotificationSound {
       if (audio.currentTime > 0) {
         audio.currentTime = 0;
       }
+      
+      console.log('[NotificationSound] Reproduzindo som de notificação');
       
       // Reproduzir imediatamente
       const playPromise = audio.play();
@@ -99,6 +114,15 @@ class NotificationSound {
 
   hasUserInteracted() {
     return this.userInteracted;
+  }
+  
+  // NOVA FUNCIONALIDADE: Configurar delay do debounce
+  setDebounceDelay(delay) {
+    this.debounceDelay = Math.max(0, delay);
+  }
+  
+  getDebounceDelay() {
+    return this.debounceDelay;
   }
 
   // Método para testar o som (usado nas configurações)

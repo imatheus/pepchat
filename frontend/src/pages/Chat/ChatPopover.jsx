@@ -106,6 +106,7 @@ export default function ChatPopover() {
   const { datetimeToClient } = useDate();
 
   const playNotificationSound = () => {
+    console.log('[ChatPopover] Tentando tocar som de notificação');
     notificationSound.play();
   };
 
@@ -138,7 +139,8 @@ export default function ChatPopover() {
       if (data.action === "new-message") {
         dispatch({ type: "CHANGE_CHAT", payload: data });
         if (data.newMessage.senderId !== user.id) {
-          // Tocar som de notificação para mensagens de chat
+          // CORREÇÃO: Tocar som APENAS para mensagens de chat (não tickets)
+          console.log('[ChatPopover] Nova mensagem de chat recebida');
           playNotificationSound();
         }
       }

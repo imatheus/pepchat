@@ -129,7 +129,7 @@ const useStyles = makeStyles((theme) => {
       marginTop:"10px",
       fontSize: "10px",
       height: "16px",
-      minWidth: "16px",
+      minWidth: "10px",
       borderRadius: "8px",
       padding: "0 4px",
       fontWeight: 600,
@@ -160,7 +160,8 @@ const TicketListItem = ({ ticket }) => {
       
       if (stored !== null) {
         const parsedCount = parseInt(stored, 10);
-        return Math.max(parsedCount, ticket.unreadMessages || 0);
+        // CORREÇÃO: Priorizar localStorage para manter contador local
+        return parsedCount;
       }
       
       return ticket.unreadMessages || 0;
@@ -206,14 +207,18 @@ const TicketListItem = ({ ticket }) => {
   
   // NOVA FUNCIONALIDADE: Sincronizar contador com dados do ticket
   useEffect(() => {
-    // Usar o maior valor entre localStorage e ticket para não perder mensagens
-    const currentPersisted = getPersistedUnreadCount();
+    // Só sincronizar se o valor do backend for MAIOR que o local
     const ticketCount = ticket.unreadMessages || 0;
-    const finalCount = Math.max(currentPersisted, ticketCount);
     
-    if (finalCount !== unreadCount) {
-      setUnreadCount(finalCount);
+    // Se o backend tem mais mensagens que o local, atualizar
+    if (ticketCount > unreadCount) {
+      setUnreadCount(ticketCount);
     }
+    // Se o backend zerou (mensagens lidas), zerar o local também
+    else if (ticketCount === 0 && unreadCount > 0) {
+      setUnreadCount(0);
+    }
+    // Caso contrário, manter o valor local (que pode estar à frente do backend)
   }, [ticket.unreadMessages]);
   
   // NOVA FUNCIONALIDADE: Escutar eventos de socket para controlar a bolinha
