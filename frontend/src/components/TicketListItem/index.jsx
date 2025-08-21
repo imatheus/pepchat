@@ -261,12 +261,49 @@ const TicketListItem = ({ ticket }) => {
   const handleAcepptTicket = async (ticket) => {
     setLoading(true);
     try {
+      // Disparo otimista: remover da lista de "Aguardando" e adicionar imediatamente em "Abertos"
+      try {
+        window.dispatchEvent(
+          new CustomEvent('ticket-accepted', {
+            detail: {
+              ticketId: ticket.id,
+              ticketUuid: ticket.uuid,
+              // Enviar o objeto completo para permitir inserção otimista na lista de "Abertos"
+              ticket: {
+                ...ticket,
+                status: 'open',
+                userId: user?.id,
+                user: user || ticket.user,
+                unreadMessages: 0, // Remover destaque opaco imediatamente
+              },
+            },
+          })
+        );
+      } catch (e) { /* noop */ }
+
       await api.put(`/tickets/${ticket.id}`, {
         status: "open",
         userId: user?.id,
       });
+
+      // Limpar contador local de não lidas para este ticket (remove badges residuais)
+      try {
+        const companyId = localStorage.getItem("companyId");
+        const userId = localStorage.getItem("userId");
+        if (companyId && userId && ticket?.id) {
+          localStorage.removeItem(`unreadCount_${companyId}_${userId}_${ticket.id}`);
+        }
+      } catch (e) { /* noop */ }
+      // Garantir que o badge de não lidas deste item suma imediatamente
+      try {
+        setUnreadCount(0);
+      } catch (e) { /* noop */ }
     } catch (err) {
       setLoading(false);
+      // Reverter inserção otimista se a API falhar
+      try {
+        window.dispatchEvent(new CustomEvent('ticket-accept-failed', { detail: { ticketId: ticket.id, ticketUuid: ticket.uuid } }));
+      } catch (e) { /* noop */ }
       // Mostrar mensagem do backend se existir, ou mensagem padrão para aceitar sem fila
       const backendMsg = err?.response?.data?.error || err?.response?.data?.message;
       if (backendMsg) {

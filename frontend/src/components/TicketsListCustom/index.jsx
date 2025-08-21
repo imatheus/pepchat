@@ -341,6 +341,17 @@ const TicketsListCustom = (props) => {
         });
       }
 
+      // Novo: tratar criação de ticket (ex.: reaberto automaticamente pelo backend)
+      if (data.action === "create") {
+        if (data.ticket && data.ticket.status === status && shouldUpdateTicket(data.ticket)) {
+          dispatch({
+            type: "ADD_TICKET",
+            payload: data.ticket,
+            listStatus: status,
+          });
+        }
+      }
+
       if (data.action === "update") {
         // CORREÇÃO: Verificar se o ticket foi fechado e estamos numa lista de tickets abertos
         if (data.ticket.status === "closed" && (status === "open" || status === "pending")) {
@@ -436,13 +447,31 @@ const TicketsListCustom = (props) => {
     }
   }, [ticketsList, updateCount]);
 
-  // Remoção otimista do ticket da lista quando aceito/fechado
+  // Remoção/inserção otimista do ticket quando aceito/fechado/reaberto
   useEffect(() => {
     const onTicketAccepted = (e) => {
-      const { ticketId } = (e && e.detail) || {};
+      const { ticketId, ticket } = (e && e.detail) || {};
       if (!ticketId) return;
       if (status === "pending") {
+        // Remover imediatamente da lista "Aguardando"
         dispatch({ type: "DELETE_TICKET", payload: ticketId });
+      }
+      if (status === "open" && ticket) {
+        // Inserir imediatamente na lista "Abertos" (otimista)
+        // Respeitar seleção de setores (inclui no-queue)
+        let queueOk = true;
+        if (Array.isArray(selectedQueueIds) && selectedQueueIds.length > 0) {
+          const includesNoQueue = selectedQueueIds.includes("no-queue");
+          if (!ticket.queueId) {
+            queueOk = includesNoQueue || selectedQueueIds.length === 0;
+          } else {
+            queueOk = selectedQueueIds.filter(id => id !== "no-queue").includes(ticket.queueId);
+          }
+        }
+        if (queueOk) {
+          const normalized = { ...ticket, unreadMessages: 0 };
+          dispatch({ type: "ADD_TICKET", payload: normalized, listStatus: "open" });
+        }
       }
     };
     const onTicketClosed = (e) => {
@@ -459,15 +488,25 @@ const TicketsListCustom = (props) => {
         dispatch({ type: "DELETE_TICKET", payload: ticketId });
       }
     };
+    const onTicketAcceptFailed = (e) => {
+      const { ticketId } = (e && e.detail) || {};
+      if (!ticketId) return;
+      if (status === "open") {
+        // Reverter inserção otimista
+        dispatch({ type: "DELETE_TICKET", payload: ticketId });
+      }
+    };
     window.addEventListener('ticket-accepted', onTicketAccepted);
     window.addEventListener('ticket-closed', onTicketClosed);
     window.addEventListener('ticket-reopened', onTicketReopened);
+    window.addEventListener('ticket-accept-failed', onTicketAcceptFailed);
     return () => {
       window.removeEventListener('ticket-accepted', onTicketAccepted);
       window.removeEventListener('ticket-closed', onTicketClosed);
       window.removeEventListener('ticket-reopened', onTicketReopened);
+      window.removeEventListener('ticket-accept-failed', onTicketAcceptFailed);
     };
-  }, [status]);
+  }, [status, selectedQueueIds]);
 
 
   const loadMore = () => {

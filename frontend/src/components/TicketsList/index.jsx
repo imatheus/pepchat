@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer, useContext } from "react";
+import React, { useState, useEffect, useReducer, useContext, useRef } from "react";
 
 import { makeStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
@@ -231,8 +231,18 @@ const TicketsList = ({
       ) &&
       (!ticket.queueId || selectedQueueIds.indexOf(ticket.queueId) > -1);
 
-    const notBelongsToUserQueues = (ticket) =>
-      ticket.queueId && selectedQueueIds.indexOf(ticket.queueId) === -1;
+    // Rastrear tickets aceitos de forma otimista para evitar piscar/remover antes do backend confirmar
+    const acceptedOptimistic = new Set();
+
+    const handleAccepted = (e) => {
+      const { ticketId } = (e && e.detail) || {};
+      if (ticketId) {
+        acceptedOptimistic.add(parseInt(ticketId));
+        // Limpeza após 6s para evitar manter para sempre
+        setTimeout(() => acceptedOptimistic.delete(parseInt(ticketId)), 6000);
+      }
+    };
+    window.addEventListener('ticket-accepted', handleAccepted);
 
     socket.on("connect", () => {
       if (status) {
@@ -240,8 +250,6 @@ const TicketsList = ({
       } else {
         socket.emit("joinNotification");
       }
-      // Dica: pedir imediatamente unread reset na conexão para evitar espera de outra ação
-      // Mantém compatibilidade pois o backend ignora se não aplicável
     });
 
     socket.on(`company-${companyId}-ticket`, (data) => {
@@ -252,8 +260,24 @@ const TicketsList = ({
         });
       }
 
+      // Novo: tratar criação de ticket (ex.: reaberto pelo backend)
+      if (data.action === "create") {
+        if (data.ticket && data.ticket.status === status && shouldUpdateTicket(data.ticket)) {
+          // UPDATE_TICKET já insere se não existir
+          dispatch({
+            type: "UPDATE_TICKET",
+            payload: data.ticket,
+            listStatus: status,
+          });
+        }
+      }
+
       if (data.action === "update") {
-        // CORREÇÃO: Verificar se o ticket foi fechado e estamos numa lista de tickets abertos
+        // Se o backend enviar uma atualização intermediária ainda como "pending"
+        // NÃO remover da lista "Abertos" se acabamos de aceitar esse ticket
+        const isOptimisticallyAccepted = acceptedOptimistic.has(parseInt(data.ticket.id));
+
+        // Remover se foi fechado e estamos em listas abertas/pendentes
         if (data.ticket.status === "closed" && (status === "open" || status === "pending")) {
           dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });
           return;
@@ -264,30 +288,40 @@ const TicketsList = ({
             dispatch({
               type: "UPDATE_TICKET",
               payload: data.ticket,
-              listStatus: status, // CORREÇÃO: Passar o status da lista atual
+              listStatus: status,
             });
           } else {
-            dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });
+            // Exceção: se estamos na lista "Abertos" e este ticket foi aceito otimisticamente,
+            // ignore a remoção até o backend confirmar o status "open" para evitar piscar
+            if (!(status === "open" && isOptimisticallyAccepted)) {
+              dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });
+            }
           }
         } else {
-          dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });
+          if (!(status === "open" && isOptimisticallyAccepted)) {
+            dispatch({ type: "DELETE_TICKET", payload: data.ticket.id });
+          }
         }
       }
 
       if (data.action === "delete") {
-        dispatch({ type: "DELETE_TICKET", payload: data.ticketId });
+        const isOptimisticallyAccepted = acceptedOptimistic.has(parseInt(data.ticketId));
+        if (!(status === "open" && isOptimisticallyAccepted)) {
+          dispatch({ type: "DELETE_TICKET", payload: data.ticketId });
+        }
       }
 
       if (data.action === "removeFromList") {
-        dispatch({ type: "DELETE_TICKET", payload: data.ticketId });
+        const isOptimisticallyAccepted = acceptedOptimistic.has(parseInt(data.ticketId));
+        if (!(status === "open" && isOptimisticallyAccepted)) {
+          dispatch({ type: "DELETE_TICKET", payload: data.ticketId });
+        }
       }
     });
 
     socket.on(`company-${companyId}-appMessage`, (data) => {
-      // Ignorar mensagens enviadas por nós (fromMe) para não marcar/reordenar como "nova"
       const isFromMe = data?.message?.fromMe === true;
       if (isFromMe) return;
-      // Evitar duplicidade: só processar mensagens na lista correspondente ao status do ticket
       if (data.action === "create" && shouldUpdateTicket(data.ticket) && data.ticket.status === status) {
         dispatch({
           type: "UPDATE_TICKET_UNREAD_MESSAGES",
@@ -306,6 +340,7 @@ const TicketsList = ({
     });
 
     return () => {
+      window.removeEventListener('ticket-accepted', handleAccepted);
       socket.disconnect();
     };
   }, [status, showAll, user, selectedQueueIds]);
@@ -339,13 +374,51 @@ const TicketsList = ({
         dispatch({ type: "DELETE_TICKET", payload: ticketId });
       }
     };
+    const onTicketAccepted = (e) => {
+      const { ticketId, ticket } = (e && e.detail) || {};
+      if (!ticketId) return;
+      if (status === "pending") {
+        // Remover imediatamente da lista de Aguardando
+        dispatch({ type: "DELETE_TICKET", payload: ticketId });
+      }
+      if (status === "open" && ticket) {
+        // Inserir imediatamente na lista de Abertos (otimista)
+        // Respeitar seleção de setores
+        let queueOk = true;
+        if (Array.isArray(selectedQueueIds) && selectedQueueIds.length > 0) {
+          const includesNoQueue = selectedQueueIds.includes("no-queue");
+          if (!ticket.queueId) {
+            queueOk = includesNoQueue || selectedQueueIds.length === 0;
+          } else {
+            queueOk = selectedQueueIds.filter(id => id !== "no-queue").includes(ticket.queueId);
+          }
+        }
+        if (queueOk) {
+          // Garantir que o destaque opaco saia imediatamente
+          const normalized = { ...ticket, unreadMessages: 0 };
+          dispatch({ type: "UPDATE_TICKET", payload: normalized, listStatus: "open" });
+        }
+      }
+    };
+    const onTicketAcceptFailed = (e) => {
+      const { ticketId } = (e && e.detail) || {};
+      if (!ticketId) return;
+      if (status === "open") {
+        // Reverter inserção otimista em caso de falha
+        dispatch({ type: "DELETE_TICKET", payload: ticketId });
+      }
+    };
     window.addEventListener('ticket-closed', onTicketClosed);
     window.addEventListener('ticket-reopened', onTicketReopened);
+    window.addEventListener('ticket-accepted', onTicketAccepted);
+    window.addEventListener('ticket-accept-failed', onTicketAcceptFailed);
     return () => {
       window.removeEventListener('ticket-closed', onTicketClosed);
       window.removeEventListener('ticket-reopened', onTicketReopened);
+      window.removeEventListener('ticket-accepted', onTicketAccepted);
+      window.removeEventListener('ticket-accept-failed', onTicketAcceptFailed);
     };
-  }, [status]);
+  }, [status, selectedQueueIds]);
 
   return (
     <div className={classes.ticketsListWrapper}>
