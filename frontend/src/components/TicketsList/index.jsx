@@ -81,16 +81,33 @@ const reducer = (state, action) => {
     const newState = [...state];
 
     incoming.forEach((ticket) => {
-      // CORREÇÃO: Não adicionar tickets que não pertencem ao status da lista
+      // Não adicionar tickets que não pertencem ao status da lista
       if (listStatus && ticket.status !== listStatus) {
-        return; // Pular este ticket
+        return;
       }
       
       const idx = newState.findIndex(
         (t) => parseInt(t.id) === parseInt(ticket.id)
       );
       if (idx !== -1) {
-        newState[idx] = ticket;
+        // Merge preservando campos críticos quando update vier parcial/nulo
+        const merged = { ...newState[idx], ...ticket };
+        if ((ticket.contact === null || ticket.contact === undefined) && newState[idx].contact) {
+          merged.contact = newState[idx].contact;
+        } else if (ticket.contact && newState[idx].contact) {
+          merged.contact = { ...newState[idx].contact, ...ticket.contact };
+        }
+        if ((ticket.queue === null || ticket.queue === undefined) && newState[idx].queue) {
+          merged.queue = newState[idx].queue;
+        } else if (ticket.queue && newState[idx].queue) {
+          merged.queue = { ...newState[idx].queue, ...ticket.queue };
+        }
+        if ((ticket.whatsapp === null || ticket.whatsapp === undefined) && newState[idx].whatsapp) {
+          merged.whatsapp = newState[idx].whatsapp;
+        } else if (ticket.whatsapp && newState[idx].whatsapp) {
+          merged.whatsapp = { ...newState[idx].whatsapp, ...ticket.whatsapp };
+        }
+        newState[idx] = merged;
         if (ticket.unreadMessages > 0) {
           newState.unshift(newState.splice(idx, 1)[0]);
         }
@@ -118,7 +135,7 @@ const reducer = (state, action) => {
   if (action.type === "UPDATE_TICKET") {
     const ticket = action.payload;
 
-    // CORREÇÃO: Verificar se o ticket ainda pertence a esta lista baseado no status
+    // Verificar se o ticket ainda pertence a esta lista baseado no status
     if (action.listStatus && ticket.status !== action.listStatus) {
       const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
       if (ticketIndex !== -1) {
@@ -129,7 +146,25 @@ const reducer = (state, action) => {
 
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
     if (ticketIndex !== -1) {
-      state[ticketIndex] = ticket;
+      // Merge preservando contact, whatsapp, queue ao receber parciais
+      const prev = state[ticketIndex];
+      const merged = { ...prev, ...ticket };
+      if ((ticket.contact === null || ticket.contact === undefined) && prev.contact) {
+        merged.contact = prev.contact;
+      } else if (ticket.contact && prev.contact) {
+        merged.contact = { ...prev.contact, ...ticket.contact };
+      }
+      if ((ticket.queue === null || ticket.queue === undefined) && prev.queue) {
+        merged.queue = prev.queue;
+      } else if (ticket.queue && prev.queue) {
+        merged.queue = { ...prev.queue, ...ticket.queue };
+      }
+      if ((ticket.whatsapp === null || ticket.whatsapp === undefined) && prev.whatsapp) {
+        merged.whatsapp = prev.whatsapp;
+      } else if (ticket.whatsapp && prev.whatsapp) {
+        merged.whatsapp = { ...prev.whatsapp, ...ticket.whatsapp };
+      }
+      state[ticketIndex] = merged;
     } else {
       // Só adicionar se o status corresponder à lista ou se não foi especificado
       if (!action.listStatus || ticket.status === action.listStatus) {
@@ -146,7 +181,24 @@ const reducer = (state, action) => {
 
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
     if (ticketIndex !== -1) {
-      state[ticketIndex] = ticket;
+      const prev = state[ticketIndex];
+      const merged = { ...prev, ...ticket };
+      if ((ticket.contact === null || ticket.contact === undefined) && prev.contact) {
+        merged.contact = prev.contact;
+      } else if (ticket.contact && prev.contact) {
+        merged.contact = { ...prev.contact, ...ticket.contact };
+      }
+      if ((ticket.queue === null || ticket.queue === undefined) && prev.queue) {
+        merged.queue = prev.queue;
+      } else if (ticket.queue && prev.queue) {
+        merged.queue = { ...prev.queue, ...ticket.queue };
+      }
+      if ((ticket.whatsapp === null || ticket.whatsapp === undefined) && prev.whatsapp) {
+        merged.whatsapp = prev.whatsapp;
+      } else if (ticket.whatsapp && prev.whatsapp) {
+        merged.whatsapp = { ...prev.whatsapp, ...ticket.whatsapp };
+      }
+      state[ticketIndex] = merged;
       state.unshift(state.splice(ticketIndex, 1)[0]);
     } else {
       const exists = state.some((t) => String(t.uuid) === String(ticket.uuid));
@@ -378,12 +430,9 @@ const TicketsList = ({
       const { ticketId, ticket } = (e && e.detail) || {};
       if (!ticketId) return;
       if (status === "pending") {
-        // Remover imediatamente da lista de Aguardando
         dispatch({ type: "DELETE_TICKET", payload: ticketId });
       }
       if (status === "open" && ticket) {
-        // Inserir imediatamente na lista de Abertos (otimista)
-        // Respeitar seleção de setores
         let queueOk = true;
         if (Array.isArray(selectedQueueIds) && selectedQueueIds.length > 0) {
           const includesNoQueue = selectedQueueIds.includes("no-queue");
@@ -394,7 +443,6 @@ const TicketsList = ({
           }
         }
         if (queueOk) {
-          // Garantir que o destaque opaco saia imediatamente
           const normalized = { ...ticket, unreadMessages: 0 };
           dispatch({ type: "UPDATE_TICKET", payload: normalized, listStatus: "open" });
         }
@@ -404,19 +452,26 @@ const TicketsList = ({
       const { ticketId } = (e && e.detail) || {};
       if (!ticketId) return;
       if (status === "open") {
-        // Reverter inserção otimista em caso de falha
         dispatch({ type: "DELETE_TICKET", payload: ticketId });
       }
+    };
+    const onTicketOwnerUpdated = (e) => {
+      const { ticketId, user } = (e && e.detail) || {};
+      if (!ticketId || !user) return;
+      // Atualização pontual do dono do ticket na lista
+      dispatch({ type: "UPDATE_TICKET", payload: { id: ticketId, userId: user.id, user }, listStatus: status });
     };
     window.addEventListener('ticket-closed', onTicketClosed);
     window.addEventListener('ticket-reopened', onTicketReopened);
     window.addEventListener('ticket-accepted', onTicketAccepted);
     window.addEventListener('ticket-accept-failed', onTicketAcceptFailed);
+    window.addEventListener('ticket-owner-updated', onTicketOwnerUpdated);
     return () => {
       window.removeEventListener('ticket-closed', onTicketClosed);
       window.removeEventListener('ticket-reopened', onTicketReopened);
       window.removeEventListener('ticket-accepted', onTicketAccepted);
       window.removeEventListener('ticket-accept-failed', onTicketAcceptFailed);
+      window.removeEventListener('ticket-owner-updated', onTicketOwnerUpdated);
     };
   }, [status, selectedQueueIds]);
 

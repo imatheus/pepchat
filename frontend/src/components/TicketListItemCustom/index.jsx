@@ -895,7 +895,7 @@ const TicketListItemCustom = ({ ticket, setUpdate }) => {
                   color="textPrimary"
                   style={{ marginRight: 4 }}
                 >
-                  {(ticket?.contact?.name || ticket?.contact?.number || "Contato")}
+                  {(ticket?.contact?.name || ticket?.contact?.number || "")}
                 </Typography>
                 {unreadCount > 0 && (
                   <Badge

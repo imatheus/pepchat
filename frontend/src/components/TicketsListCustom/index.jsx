@@ -82,16 +82,33 @@ const reducer = (state, action) => {
     let newState = [...state];
 
     newTickets.forEach((ticket) => {
-      // CORREÇÃO: Não adicionar tickets que não pertencem ao status da lista
       if (listStatus && ticket.status !== listStatus) {
-        return; // Pular este ticket
+        return;
       }
       
       const ticketIndex = newState.findIndex(
         (t) => parseInt(t.id) === parseInt(ticket.id)
       );
       if (ticketIndex !== -1) {
-        newState[ticketIndex] = ticket;
+        // Merge preservando contact/whatsapp/queue
+        const prev = newState[ticketIndex];
+        const merged = { ...prev, ...ticket };
+        if ((ticket.contact === null || ticket.contact === undefined) && prev.contact) {
+          merged.contact = prev.contact;
+        } else if (ticket.contact && prev.contact) {
+          merged.contact = { ...prev.contact, ...ticket.contact };
+        }
+        if ((ticket.queue === null || ticket.queue === undefined) && prev.queue) {
+          merged.queue = prev.queue;
+        } else if (ticket.queue && prev.queue) {
+          merged.queue = { ...prev.queue, ...ticket.queue };
+        }
+        if ((ticket.whatsapp === null || ticket.whatsapp === undefined) && prev.whatsapp) {
+          merged.whatsapp = prev.whatsapp;
+        } else if (ticket.whatsapp && prev.whatsapp) {
+          merged.whatsapp = { ...prev.whatsapp, ...ticket.whatsapp };
+        }
+        newState[ticketIndex] = merged;
         if (ticket.unreadMessages > 0) {
           const updatedTicket = newState.splice(ticketIndex, 1)[0];
           newState.unshift(updatedTicket);
@@ -151,28 +168,42 @@ const reducer = (state, action) => {
     const ticket = action.payload;
     const ticketIndex = state.findIndex((t) => parseInt(t.id) === parseInt(ticket.id));
     
-    // CORREÇÃO: Verificar se o ticket ainda pertence a esta lista baseado no status
-    // Se o status do ticket não corresponde ao status da lista, remover o ticket
     if (action.listStatus && ticket.status !== action.listStatus) {
       if (ticketIndex !== -1) {
         const newState = [...state];
         newState.splice(ticketIndex, 1);
         return newState;
       }
-      return state; // Ticket não existe na lista e não pertence a ela
+      return state;
     }
     
     if (ticketIndex !== -1) {
       const newState = [...state];
-      newState[ticketIndex] = ticket;
-      // Se o ticket tem mensagens não lidas, move para o topo
+      // Merge para preservar dados prévios e campos aninhados
+      const prev = newState[ticketIndex];
+      const merged = { ...prev, ...ticket };
+      if ((ticket.contact === null || ticket.contact === undefined) && prev.contact) {
+        merged.contact = prev.contact;
+      } else if (ticket.contact && prev.contact) {
+        merged.contact = { ...prev.contact, ...ticket.contact };
+      }
+      if ((ticket.queue === null || ticket.queue === undefined) && prev.queue) {
+        merged.queue = prev.queue;
+      } else if (ticket.queue && prev.queue) {
+        merged.queue = { ...prev.queue, ...ticket.queue };
+      }
+      if ((ticket.whatsapp === null || ticket.whatsapp === undefined) && prev.whatsapp) {
+        merged.whatsapp = prev.whatsapp;
+      } else if (ticket.whatsapp && prev.whatsapp) {
+        merged.whatsapp = { ...prev.whatsapp, ...ticket.whatsapp };
+      }
+      newState[ticketIndex] = merged;
       if (ticket.unreadMessages > 0) {
         const updatedTicket = newState.splice(ticketIndex, 1)[0];
         newState.unshift(updatedTicket);
       }
       return newState;
     } else {
-      // Só adicionar novo ticket se o status corresponder à lista
       if (!action.listStatus || ticket.status === action.listStatus) {
         return [ticket, ...state];
       }
@@ -186,13 +217,28 @@ const reducer = (state, action) => {
     
     if (ticketIndex !== -1) {
       const newState = [...state];
-      newState[ticketIndex] = ticket;
-      // Move ticket to top if it has unread messages
+      const prev = newState[ticketIndex];
+      const merged = { ...prev, ...ticket };
+      if ((ticket.contact === null || ticket.contact === undefined) && prev.contact) {
+        merged.contact = prev.contact;
+      } else if (ticket.contact && prev.contact) {
+        merged.contact = { ...prev.contact, ...ticket.contact };
+      }
+      if ((ticket.queue === null || ticket.queue === undefined) && prev.queue) {
+        merged.queue = prev.queue;
+      } else if (ticket.queue && prev.queue) {
+        merged.queue = { ...prev.queue, ...ticket.queue };
+      }
+      if ((ticket.whatsapp === null || ticket.whatsapp === undefined) && prev.whatsapp) {
+        merged.whatsapp = prev.whatsapp;
+      } else if (ticket.whatsapp && prev.whatsapp) {
+        merged.whatsapp = { ...prev.whatsapp, ...ticket.whatsapp };
+      }
+      newState[ticketIndex] = merged;
       const updatedTicket = newState.splice(ticketIndex, 1)[0];
       newState.unshift(updatedTicket);
       return newState;
     } else {
-      // Evitar duplicata: se já existe por UUID, não re-adicionar
       const exists = state.some((t) => String(t.uuid) === String(ticket.uuid));
       return exists ? state : [ticket, ...state];
     }
@@ -447,18 +493,15 @@ const TicketsListCustom = (props) => {
     }
   }, [ticketsList, updateCount]);
 
-  // Remoção/inserção otimista do ticket quando aceito/fechado/reaberto
+  // Remoção/inserção otimista do ticket quando aceito/fechado/reaberto + atualização de dono
   useEffect(() => {
     const onTicketAccepted = (e) => {
       const { ticketId, ticket } = (e && e.detail) || {};
       if (!ticketId) return;
       if (status === "pending") {
-        // Remover imediatamente da lista "Aguardando"
         dispatch({ type: "DELETE_TICKET", payload: ticketId });
       }
       if (status === "open" && ticket) {
-        // Inserir imediatamente na lista "Abertos" (otimista)
-        // Respeitar seleção de setores (inclui no-queue)
         let queueOk = true;
         if (Array.isArray(selectedQueueIds) && selectedQueueIds.length > 0) {
           const includesNoQueue = selectedQueueIds.includes("no-queue");
@@ -492,19 +535,25 @@ const TicketsListCustom = (props) => {
       const { ticketId } = (e && e.detail) || {};
       if (!ticketId) return;
       if (status === "open") {
-        // Reverter inserção otimista
         dispatch({ type: "DELETE_TICKET", payload: ticketId });
       }
+    };
+    const onTicketOwnerUpdated = (e) => {
+      const { ticketId, user } = (e && e.detail) || {};
+      if (!ticketId || !user) return;
+      dispatch({ type: "UPDATE_TICKET", payload: { id: ticketId, userId: user.id, user }, listStatus: status });
     };
     window.addEventListener('ticket-accepted', onTicketAccepted);
     window.addEventListener('ticket-closed', onTicketClosed);
     window.addEventListener('ticket-reopened', onTicketReopened);
     window.addEventListener('ticket-accept-failed', onTicketAcceptFailed);
+    window.addEventListener('ticket-owner-updated', onTicketOwnerUpdated);
     return () => {
       window.removeEventListener('ticket-accepted', onTicketAccepted);
       window.removeEventListener('ticket-closed', onTicketClosed);
       window.removeEventListener('ticket-reopened', onTicketReopened);
       window.removeEventListener('ticket-accept-failed', onTicketAcceptFailed);
+      window.removeEventListener('ticket-owner-updated', onTicketOwnerUpdated);
     };
   }, [status, selectedQueueIds]);
 

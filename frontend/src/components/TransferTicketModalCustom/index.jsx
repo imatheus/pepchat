@@ -99,18 +99,22 @@ const TransferTicketModalCustom = ({ modalOpen, onClose, ticketid }) => {
   const handleSaveTicket = async (e) => {
     e.preventDefault();
     if (!ticketid) return;
-    if (!selectedQueue || selectedQueue === "") return;
+    // Permitir transferência somente de atendente, mesmo sem trocar de fila
+    if (!selectedUser && (!selectedQueue || selectedQueue === "")) return;
     setLoading(true);
     try {
-      let data = {};
+      const data = {};
 
+      // Se escolher um atendente, transfere a propriedade para ele
       if (selectedUser) {
         data.userId = selectedUser.id;
+        // Ao transferir para um atendente e manter a mesma fila, não enviar queueId
       }
 
-      if (selectedQueue && selectedQueue !== null) {
+      // Se escolher uma fila, atualiza a fila
+      if (selectedQueue && selectedQueue !== null && selectedQueue !== "") {
         data.queueId = selectedQueue;
-
+        // Se mudar de fila e não escolher atendente, volta para pending sem dono
         if (!selectedUser) {
           data.status = "pending";
           data.userId = null;
@@ -118,6 +122,15 @@ const TransferTicketModalCustom = ({ modalOpen, onClose, ticketid }) => {
       }
 
       await api.put(`/tickets/${ticketid}`, data);
+
+      // Atualização otimista do dono no front-end
+      if (selectedUser) {
+        try {
+          window.dispatchEvent(new CustomEvent('ticket-owner-updated', {
+            detail: { ticketId: ticketid, user: selectedUser }
+          }));
+        } catch {}
+      }
 
       history.push(`/tickets`);
     } catch (err) {

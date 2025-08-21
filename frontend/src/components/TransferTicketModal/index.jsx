@@ -65,9 +65,9 @@ const TransferTicketModal = ({ modalOpen, onClose, ticketid }) => {
 		if (!ticketid || !selectedUser) return;
 		setLoading(true);
 		try {
+			// Transferir apenas o atendente, preservando a fila atual do ticket
 			await api.put(`/tickets/${ticketid}`, {
 				userId: selectedUser.id,
-				queueId: null,
 				status: "open",
 			});
 			setLoading(false);
