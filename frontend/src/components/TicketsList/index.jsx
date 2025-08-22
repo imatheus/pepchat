@@ -34,10 +34,10 @@ const useStyles = makeStyles((theme) => ({
   },
 
   ticketsListHeader: {
-    color: "rgb(67, 83, 105)",
+    color: theme.palette.text.secondary,
     zIndex: 2,
-    backgroundColor: "white",
-    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+    backgroundColor: theme.palette.background.paper,
+    borderBottom: `1px solid ${theme.palette.divider}`,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -241,15 +241,38 @@ const TicketsList = ({
   noTopDivider,
 }) => {
   const classes = useStyles();
-  const [pageNumber, setPageNumber] = useState(1);
-  const [ticketsList, dispatch] = useReducer(reducer, []);
   const { user } = useContext(AuthContext);
-  const { refreshTickets, triggerRefresh } = useContext(TicketsContext);
+  const { refreshTickets, triggerRefresh, getCachedList, setCachedList, updateCacheMeta } = useContext(TicketsContext);
+
+  // Build cache key before state init
+  const cacheKey = JSON.stringify({
+    view: 'ticketsList',
+    status,
+    searchParam: searchParam || '',
+    showAll: !!showAll,
+    queueIds: selectedQueueIds || []
+  });
+  const cached = getCachedList(cacheKey);
+
+  // Progressive rendering to optimize initial paint on slow networks
+  const initialChunk = 12;
+  const stepChunk = 12;
+  const initialTickets = Array.isArray(cached?.list) ? cached.list : [];
+  const initialPage = cached?.pageNumber || 1;
+  const [ticketsList, dispatch] = useReducer(reducer, initialTickets);
+  const [pageNumber, setPageNumber] = useState(initialPage);
+  const [visibleCount, setVisibleCount] = useState(Math.min(initialChunk, initialTickets.length) || initialChunk);
+
 
   useEffect(() => {
-    dispatch({ type: "RESET" });
-    setPageNumber(1);
-  }, [status, searchParam, dispatch, showAll, selectedQueueIds, refreshTickets]);
+    // when filters change, if no cache for new key, reset and fetch
+    const cachedNow = getCachedList(cacheKey);
+    if (!(cachedNow && Array.isArray(cachedNow.list) && cachedNow.list.length > 0)) {
+      dispatch({ type: 'RESET' });
+      setPageNumber(1);
+      setVisibleCount(initialChunk);
+    }
+  }, [cacheKey]);
 
   const { tickets, hasMore, loading } = useTickets({
     pageNumber,
@@ -263,12 +286,38 @@ const TicketsList = ({
 
   useEffect(() => {
     if (!status && !searchParam) return;
-    dispatch({
-      type: "LOAD_TICKETS",
-      payload: tickets,
-      listStatus: status,
-    });
+    if (Array.isArray(tickets) && tickets.length > 0) {
+      dispatch({ type: 'LOAD_TICKETS', payload: tickets, listStatus: status });
+      // update cache with merged list from reducer on next tick
+      setTimeout(() => {
+        // Merge unique by id using latest ticketsList snapshot
+        const merged = [];
+        const seen = new Set();
+        [...ticketsList, ...tickets].forEach(t => {
+          const id = String(t.id);
+          if (!seen.has(id)) {
+            seen.add(id);
+            merged.push(t);
+          }
+        });
+        setCachedList(cacheKey, merged, { pageNumber, hasMore });
+      }, 0);
+    }
   }, [tickets, status, searchParam]);
+
+  // Increase visible items progressively without blocking main thread
+  useEffect(() => {
+    if (ticketsList.length > visibleCount) {
+      const schedule = () => setVisibleCount((prev) => Math.min(prev + stepChunk, ticketsList.length));
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(schedule, { timeout: 300 });
+        return () => window.cancelIdleCallback && window.cancelIdleCallback(id);
+      } else {
+        const t = setTimeout(schedule, 50);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [ticketsList.length, visibleCount]);
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
@@ -398,16 +447,23 @@ const TicketsList = ({
   }, [status, showAll, user, selectedQueueIds]);
 
   const loadMore = () => {
-    setPageNumber((prevState) => prevState + 1);
+    const next = (pageNumber || 1) + 1;
+    setPageNumber(next);
+    updateCacheMeta(cacheKey, { pageNumber: next });
   };
 
-  const handleScroll = (e) => {
-    if (!hasMore || loading) return;
 
+  const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
 
-    if (scrollHeight - (scrollTop + 100) < clientHeight) {
-      loadMore();
+    // Reveal more already-fetched items as the user scrolls
+    const nearEndReveal = 300;
+    if (scrollHeight - (scrollTop + nearEndReveal) < clientHeight) {
+      if (visibleCount < ticketsList.length) {
+        setVisibleCount((v) => Math.min(v + stepChunk, ticketsList.length));
+      } else if (hasMore && !loading) {
+        loadMore();
+      }
     }
   };
 
@@ -517,7 +573,7 @@ const TicketsList = ({
             </div>
           ) : (
             <>
-              {ticketsList.map((ticket) => (
+              {ticketsList.slice(0, visibleCount).map((ticket) => (
                 <TicketListItem ticket={ticket} key={ticket.id} />
               ))}
             </>

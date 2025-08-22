@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const TicketInfo = ({ contact, ticket, onClick }) => {
+const TicketInfo = ({ contact, ticket, loading, onClick }) => {
 	const classes = useStyles();
 	const { user } = ticket
 	const [contactName, setContactName] = useState('')
@@ -152,6 +152,25 @@ const TicketInfo = ({ contact, ticket, onClick }) => {
     );
   };
 
+  if (loading) {
+    // Skeleton inline header for TicketInfo area (avatar + lines)
+    return (
+      <CardHeader
+        titleTypographyProps={{ noWrap: true }}
+        subheaderTypographyProps={{ noWrap: true }}
+        avatar={
+          <Skeleton animation="wave" variant="circle">
+            <Avatar alt="contact_image" />
+          </Skeleton>
+        }
+        title={<Skeleton animation="wave" width={120} />}
+        subheader={<Skeleton animation="wave" width={180} />}
+        style={{ backgroundColor: (/* theme not directly available here */ undefined) }}
+      />
+    );
+
+  }
+
 	return (
 		<CardHeader
 			onClick={onClick}
@@ -184,7 +203,7 @@ const TicketInfo = ({ contact, ticket, onClick }) => {
 					/>
 				</Badge>
 			}
-			title={`${contactName} #${ticket.id}`}
+			title={`${contactName || ''} ${ticket?.id ? '#' + ticket.id : ''}`}
 			subheader={renderSubheader()}
 		/>
 	);

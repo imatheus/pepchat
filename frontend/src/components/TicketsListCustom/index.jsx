@@ -288,17 +288,41 @@ const TicketsListCustom = (props) => {
   } = props;
   
   const classes = useStyles();
-  const [pageNumber, setPageNumber] = useState(1);
-  const [, setUpdate] = useState(0);
-  const [ticketsList, dispatch] = useReducer(reducer, []);
   const { user } = useContext(AuthContext);
-  const { refreshTickets } = useContext(TicketsContext);
+  const { refreshTickets, getCachedList, setCachedList, updateCacheMeta } = useContext(TicketsContext);
   const { profile, queues } = user;
 
+  const cacheKey = JSON.stringify({
+    view: 'ticketsListCustom',
+    status,
+    searchParam: searchParam || '',
+    showAll: !!showAll,
+    queueIds: selectedQueueIds || [],
+    tags: tags || [],
+    users: users || [],
+  });
+  const cached = getCachedList(cacheKey);
+
+  // Progressive rendering on slow networks
+  const initialChunk = 12;
+  const stepChunk = 12;
+  const initialTickets = Array.isArray(cached?.list) ? cached.list : [];
+  const initialPage = cached?.pageNumber || 1;
+  const [pageNumber, setPageNumber] = useState(initialPage);
+  const [, setUpdate] = useState(0);
+  const [ticketsList, dispatch] = useReducer(reducer, initialTickets);
+  const [visibleCount, setVisibleCount] = useState(Math.min(initialChunk, initialTickets.length) || initialChunk);
+
   useEffect(() => {
-    dispatch({ type: "RESET" });
-    setPageNumber(1);
-  }, [status, searchParam, dispatch, showAll, tags, users, selectedQueueIds, refreshTickets]);
+    const cachedNow = getCachedList(cacheKey);
+    if (!(cachedNow && Array.isArray(cachedNow.list) && cachedNow.list.length > 0)) {
+      dispatch({ type: "RESET" });
+      setPageNumber(1);
+      setVisibleCount(initialChunk);
+    }
+  }, [cacheKey]);
+
+
 
   const { tickets, hasMore, loading } = useTickets({
     pageNumber,
@@ -329,8 +353,31 @@ const TicketsListCustom = (props) => {
       });
     }
 
-    dispatch({ type: "LOAD_TICKETS", payload: filteredTickets, listStatus: status });
+    if (Array.isArray(filteredTickets) && filteredTickets.length > 0) {
+      dispatch({ type: "LOAD_TICKETS", payload: filteredTickets, listStatus: status });
+      setTimeout(() => {
+        setCachedList(cacheKey, ticketsList.concat(filteredTickets).reduce((acc, t) => {
+          if (!acc.find(x => String(x.id) === String(t.id))) acc.push(t);
+          return acc;
+        }, []), { pageNumber, hasMore });
+      }, 0);
+    }
   }, [tickets, status, searchParam, queues, profile, selectedQueueIds]);
+
+
+  // Reveal already-fetched items progressively and only fetch when needed
+  useEffect(() => {
+    if (ticketsList.length > visibleCount) {
+      const schedule = () => setVisibleCount((prev) => Math.min(prev + stepChunk, ticketsList.length));
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(schedule, { timeout: 300 });
+        return () => window.cancelIdleCallback && window.cancelIdleCallback(id);
+      } else {
+        const t = setTimeout(schedule, 50);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [ticketsList.length, visibleCount]);
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
@@ -559,16 +606,20 @@ const TicketsListCustom = (props) => {
 
 
   const loadMore = () => {
-    setPageNumber((prevState) => prevState + 1);
+    const next = (pageNumber || 1) + 1;
+    setPageNumber(next);
+    updateCacheMeta(cacheKey, { pageNumber: next });
   };
 
   const handleScroll = (e) => {
-    if (!hasMore || loading) return;
-
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-
-    if (scrollHeight - (scrollTop + 100) < clientHeight) {
-      loadMore();
+    const nearEndReveal = 300;
+    if (scrollHeight - (scrollTop + nearEndReveal) < clientHeight) {
+      if (visibleCount < ticketsList.length) {
+        setVisibleCount((v) => Math.min(v + stepChunk, ticketsList.length));
+      } else if (hasMore && !loading) {
+        loadMore();
+      }
     }
   };
 
@@ -594,7 +645,7 @@ const TicketsListCustom = (props) => {
             </div>
           ) : (
             <>
-              {ticketsList.map((ticket) => (
+              {ticketsList.slice(0, visibleCount).map((ticket) => (
                 <TicketListItem ticket={ticket} setUpdate={setUpdate} key={ticket.id} />
               ))}
             </>

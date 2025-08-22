@@ -201,7 +201,12 @@ const Ticket = () => {
         <TicketHeader loading={loading}>
           <div style={{ display: 'flex', alignItems: 'flex-start', width: '100%' }}>
             <div style={{ flex: 1 }}>
-              {renderTicketInfo()}
+              <TicketInfo
+                contact={contact}
+                ticket={ticket}
+                loading={loading}
+                onClick={handleDrawerOpen}
+              />
               <div style={{ marginLeft: 72, marginTop: -8 }}>
                 <TagsContainer ticket={ticket} />
               </div>

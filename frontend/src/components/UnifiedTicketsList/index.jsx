@@ -114,15 +114,39 @@ const UnifiedTicketsList = ({
   noTopDivider,
 }) => {
   const classes = useStyles();
-  const [pageNumber, setPageNumber] = useState(1);
-  const [ticketsList, dispatch] = useReducer(reducer, []);
   const { user } = useContext(AuthContext);
-  const { refreshTickets } = useContext(TicketsContext);
+  const { refreshTickets, getCachedList, setCachedList, updateCacheMeta } = useContext(TicketsContext);
+
+
+  const cacheKey = JSON.stringify({
+    view: 'unifiedTicketsList',
+    searchParam: searchParam || '',
+    showAll: !!showAll,
+    queueIds: selectedQueueIds || [],
+    tags: tags || [],
+    users: users || [],
+  });
+  const cached = getCachedList(cacheKey);
+
+  // Progressive rendering
+  const initialChunk = 12;
+  const stepChunk = 12;
+  const initialTickets = Array.isArray(cached?.list) ? cached.list : [];
+  const initialPage = cached?.pageNumber || 1;
+  const [pageNumber, setPageNumber] = useState(initialPage);
+  const [ticketsList, dispatch] = useReducer(reducer, initialTickets);
+  const [visibleCount, setVisibleCount] = useState(Math.min(initialChunk, initialTickets.length) || initialChunk);
 
   useEffect(() => {
-    dispatch({ type: "RESET" });
-    setPageNumber(1);
-  }, [searchParam, showAll, tags, users, selectedQueueIds, refreshTickets]);
+    const cachedNow = getCachedList(cacheKey);
+    if (!(cachedNow && Array.isArray(cachedNow.list) && cachedNow.list.length > 0)) {
+      dispatch({ type: "RESET" });
+      setPageNumber(1);
+      setVisibleCount(initialChunk);
+    }
+  }, [cacheKey]);
+
+
 
   // Fetch both open and pending
   const openQuery = useTickets({
@@ -155,6 +179,12 @@ const UnifiedTicketsList = ({
       .concat(pendingQuery.tickets || []);
     if (combined.length) {
       dispatch({ type: "LOAD_TICKETS", payload: combined });
+      setTimeout(() => {
+        setCachedList(cacheKey, ticketsList.concat(combined).reduce((acc, t) => {
+          if (!acc.find(x => String(x.id) === String(t.id))) acc.push(t);
+          return acc;
+        }, []), { pageNumber, hasMore });
+      }, 0);
     }
   }, [openQuery.tickets, pendingQuery.tickets]);
 
@@ -219,15 +249,37 @@ const UnifiedTicketsList = ({
     };
   }, [showAll, user, selectedQueueIds]);
 
-  const loadMore = () => setPageNumber((prev) => prev + 1);
+  const loadMore = () => {
+    const next = (pageNumber || 1) + 1;
+    setPageNumber(next);
+    updateCacheMeta(cacheKey, { pageNumber: next });
+  };
 
   const handleScroll = (e) => {
-    if (!hasMore || loading) return;
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - (scrollTop + 100) < clientHeight) {
-      loadMore();
+    const nearEndReveal = 300;
+    if (scrollHeight - (scrollTop + nearEndReveal) < clientHeight) {
+      if (visibleCount < ticketsList.length) {
+        setVisibleCount((v) => Math.min(v + stepChunk, ticketsList.length));
+      } else if (hasMore && !loading) {
+        loadMore();
+      }
     }
   };
+
+  // Increase visible items progressively
+  useEffect(() => {
+    if (ticketsList.length > visibleCount) {
+      const schedule = () => setVisibleCount((prev) => Math.min(prev + stepChunk, ticketsList.length));
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(schedule, { timeout: 300 });
+        return () => window.cancelIdleCallback && window.cancelIdleCallback(id);
+      } else {
+        const t = setTimeout(schedule, 50);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [ticketsList.length, visibleCount]);
 
   // Remoção otimista ao fechar/resolver e ao reabrir
   useEffect(() => {
@@ -263,7 +315,7 @@ const UnifiedTicketsList = ({
       >
         <List style={{ paddingTop: 0, paddingLeft: 0, paddingRight: 0 }}>
           {/* Sem cabeçalhos ou mensagens de vazio para a visualização unificada */}
-          {ticketsList.map((ticket) => (
+          {ticketsList.slice(0, visibleCount).map((ticket) => (
             <TicketListItem ticket={ticket} key={ticket.id} />
           ))}
           {loading && <TicketsListSkeleton />}

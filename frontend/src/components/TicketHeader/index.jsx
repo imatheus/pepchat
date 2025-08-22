@@ -10,6 +10,7 @@ const useStyles = makeStyles(theme => ({
 		backgroundColor: theme.palette.background.paper,
 		flex: "none",
 		borderBottom: `1px solid ${theme.palette.divider}`,
+		color: theme.palette.text.primary,
 	},
 }));
 

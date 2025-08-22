@@ -415,10 +415,19 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
 
+  // Progressive rendering: render last N messages first
+  const INITIAL_VISIBLE = 30;
+  const STEP_VISIBLE = 30;
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const initialReadyRef = useRef(false);
+  const lastScrollTopRef = useRef(0);
+  const scrollingUpRef = useRef(false);
+
   useEffect(() => {
     dispatch({ type: "RESET" });
     setPageNumber(1);
-
+    setVisibleCount(INITIAL_VISIBLE);
+    initialReadyRef.current = false;
     currentTicketId.current = ticketId;
   }, [ticketId]);
 
@@ -440,8 +449,10 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
             setLoading(false);
           }
 
-          if (pageNumber === 1 && data.messages.length > 1) {
+          if (pageNumber === 1 && data.messages.length > 0) {
             scrollToBottom();
+            // mark as ready to allow infinite scroll only after first load & scroll
+            initialReadyRef.current = true;
           }
         } catch (err) {
           setLoading(false);
@@ -538,6 +549,21 @@ useEffect(() => {
     setPageNumber((prevPageNumber) => prevPageNumber + 1);
   };
 
+  // reveal more already-fetched messages progressively (without refetch)
+  useEffect(() => {
+    const total = messagesList.length;
+    if (total > visibleCount) {
+      const schedule = () => setVisibleCount((v) => Math.min(v + STEP_VISIBLE, total));
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(schedule, { timeout: 300 });
+        return () => window.cancelIdleCallback && window.cancelIdleCallback(id);
+      } else {
+        const t = setTimeout(schedule, 40);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [messagesList.length, visibleCount]);
+
   const scrollToBottom = () => {
     if (lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
@@ -545,18 +571,18 @@ useEffect(() => {
   };
 
   const handleScroll = (e) => {
-    if (!hasMore) return;
     const { scrollTop } = e.currentTarget;
 
-    if (scrollTop === 0) {
-      document.getElementById("messagesList").scrollTop = 1;
-    }
+    // determine scroll direction
+    scrollingUpRef.current = scrollTop < lastScrollTopRef.current;
+    lastScrollTopRef.current = scrollTop;
 
-    if (loading) {
-      return;
-    }
+    if (!initialReadyRef.current) return; // avoid eager loads before first render is ready
+    if (loading) return;
+    if (!hasMore) return;
 
-    if (scrollTop < 50) {
+    // Only load more when user is scrolling up and near top
+    if (scrollTop < 50 && scrollingUpRef.current) {
       loadMore();
     }
   };
@@ -937,7 +963,11 @@ useEffect(() => {
 
   const renderMessages = () => {
     if (Array.isArray(messagesList) && messagesList.length > 0) {
-      const viewMessagesList = messagesList.map((message, index) => {
+      // render only the last 'visibleCount' messages
+      const startIndex = Math.max(0, messagesList.length - visibleCount);
+      const slice = messagesList.slice(startIndex);
+      const viewMessagesList = slice.map((message, idx) => {
+        const index = startIndex + idx;
         if (!message.fromMe) {
           return (
             <React.Fragment key={message.id}>
