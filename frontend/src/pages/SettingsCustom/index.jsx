@@ -10,7 +10,6 @@ import CompaniesManager from "../../components/CompaniesManager";
 import PlansManager from "../../components/PlansManager";
 import Options from "../../components/Settings/Options";
 import AsaasManager from "../../components/AsaasManager";
-import SystemStats from "../../components/SystemStats";
 
 import { i18n } from "../../translate/i18n.js";
 import { toast } from "react-toastify";
@@ -117,24 +116,11 @@ const SettingsCustom = () => {
           className={classes.tab}
         >
           <Tab label="Opções" value={"options"} />
-          {isSuper() ? <Tab label="Sistema" value={"system"} /> : null}
           {isSuper() ? <Tab label="Empresas" value={"companies"} /> : null}
           {isSuper() ? <Tab label="Planos" value={"plans"} /> : null}
           {isSuper() ? <Tab label="Asaas" value={"asaas"} /> : null}
         </Tabs>
         <Paper className={classes.paper} elevation={0}>
-          <OnlyForSuperUser
-            user={currentUser}
-            yes={() => (
-              <TabPanel
-                className={classes.container}
-                value={tab}
-                name={"system"}
-              >
-                <SystemStats />
-              </TabPanel>
-            )}
-          />
           <OnlyForSuperUser
             user={currentUser}
             yes={() => (

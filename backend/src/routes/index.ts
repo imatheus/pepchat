@@ -31,7 +31,6 @@ import migrationRoutes from "./migrationRoutes";
 import asaasRoutes from "./asaasRoutes";
 import autoRatingRoutes from "./autoRatingRoutes";
 import securityRoutes from "./securityRoutes";
-import systemStatsRoutes from "./systemStatsRoutes";
 import healthRoutes from "./healthRoutes";
 import ticketUserRoutes from "./ticketUserRoutes";
 
@@ -69,7 +68,6 @@ routes.use(invoiceRoutes);
 routes.use(asaasRoutes);
 routes.use(autoRatingRoutes);
 routes.use(securityRoutes);
-routes.use(systemStatsRoutes);
 routes.use(healthRoutes);
 
 export default routes;
